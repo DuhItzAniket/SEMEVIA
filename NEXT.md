@@ -1,4 +1,4 @@
-﻿# NEXT: SEMEVIA handoff
+# NEXT: SEMEVIA handoff
 
 ## GPU PC run (2026-11-07, host LEGION) â€” in progress; this PC is the only one committing
 * Machine: RTX 4050 Laptop GPU (6 GB), i7-14650HX, 15.7 GB RAM, **C: only (no E: drive)**, so the
