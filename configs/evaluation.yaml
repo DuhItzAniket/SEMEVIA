@@ -1,0 +1,20 @@
+# Frozen evaluation populations and stress conditions (design choices, not a standard benchmark).
+seed: 20261106
+stress_subset:
+  per_class: 2                 # seeded, stratified; 2 x 196 = 392 on the official test split
+  manifests:
+    test: artifacts/manifests/stress_test_m1.csv     # final (P6) population, predeclared
+    tune: artifacts/manifests/stress_tune_m1.csv     # development population for tooling checks
+conditions:                    # applied to the stored-pixel image BEFORE detection; nothing reuses clean boxes
+  clean: {type: none}
+  bright_0.5: {type: brightness, factor: 0.5}        # multiply RGB, round, clip to [0, 255]
+  bright_1.5: {type: brightness, factor: 1.5}
+  down_0.50: {type: downsample, factor: 0.50}        # INTER_AREA down, INTER_LINEAR back to original size
+  down_0.25: {type: downsample, factor: 0.25}
+  occl_0.15: {type: occlusion, area_frac: 0.15}      # grey (128) rectangle inside the annotated box,
+  occl_0.30: {type: occlusion, area_frac: 0.30}      # box aspect ratio, seeded uniform placement
+viewpoint_subset:
+  count: 60
+  manifest: artifacts/manifests/viewpoint_test_m1.csv
+  labels: reports/viewpoint_labels.csv
+  categories: [front, rear, side, three_quarter_front, three_quarter_rear, indeterminate]

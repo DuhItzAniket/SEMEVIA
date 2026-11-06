@@ -1,0 +1,29 @@
+{
+ "seed": 20261106,
+ "source_manifest_version": "m1",
+ "subsets": {
+  "stress_test": {
+   "file": "stress_test_m1.csv",
+   "count": 392,
+   "sha256": "8f8af6c052688722eddea7650958d482ef7c568f14d81d27716131f4e0627711",
+   "classes": 196,
+   "from": "test",
+   "rule": "seeded stratified, up to 2 per class"
+  },
+  "stress_tune": {
+   "file": "stress_tune_m1.csv",
+   "count": 392,
+   "sha256": "b8c7995805475d828c15c05c1dab1026af195f08e1d3f8488d6024d28c3d8e31",
+   "classes": 196,
+   "from": "tune",
+   "rule": "seeded stratified, up to 2 per class"
+  },
+  "viewpoint_test": {
+   "file": "viewpoint_test_m1.csv",
+   "count": 60,
+   "sha256": "7170571897bcbc9303b9c39db0480dd56461bf0ae925a9f6ee61d6500bc159db",
+   "from": "test",
+   "rule": "seeded random, disjoint from stress_test"
+  }
+ }
+}

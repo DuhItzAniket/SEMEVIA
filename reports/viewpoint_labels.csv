@@ -1,0 +1,61 @@
+index,image_key,viewpoint,natural_occlusion,multiple_vehicles,notes,labeller,labelled_before_results
+0,test/00281.jpg,front,none,False,,claude-agent; team review pending,True
+1,test/00465.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+2,test/00468.jpg,indeterminate,partial,True,collage of two views; top-down angle,claude-agent; team review pending,True
+3,test/00579.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+4,test/00621.jpg,three_quarter_rear,none,False,,claude-agent; team review pending,True
+5,test/00733.jpg,side,none,False,,claude-agent; team review pending,True
+6,test/00817.jpg,three_quarter_rear,none,False,,claude-agent; team review pending,True
+7,test/00835.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+8,test/00841.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+9,test/01022.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+10,test/01229.jpg,side,none,False,,claude-agent; team review pending,True
+11,test/01355.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+12,test/01661.jpg,three_quarter_front,none,True,two similar vehicles,claude-agent; team review pending,True
+13,test/01695.jpg,side,none,False,,claude-agent; team review pending,True
+14,test/01732.jpg,front,none,False,,claude-agent; team review pending,True
+15,test/02007.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+16,test/02075.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+17,test/02111.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+18,test/02235.jpg,side,none,False,,claude-agent; team review pending,True
+19,test/02269.jpg,indeterminate,none,False,top-down view,claude-agent; team review pending,True
+20,test/02505.jpg,front,none,False,,claude-agent; team review pending,True
+21,test/02529.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+22,test/02868.jpg,three_quarter_rear,none,False,,claude-agent; team review pending,True
+23,test/02886.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+24,test/03592.jpg,three_quarter_rear,none,False,,claude-agent; team review pending,True
+25,test/03648.jpg,three_quarter_front,partial,False,car cut by left frame edge,claude-agent; team review pending,True
+26,test/03823.jpg,rear,none,False,,claude-agent; team review pending,True
+27,test/04110.jpg,front,none,False,,claude-agent; team review pending,True
+28,test/04264.jpg,three_quarter_front,none,True,other vehicles in scene,claude-agent; team review pending,True
+29,test/04297.jpg,side,none,False,,claude-agent; team review pending,True
+30,test/04543.jpg,three_quarter_rear,none,False,,claude-agent; team review pending,True
+31,test/04589.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+32,test/04852.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+33,test/04868.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+34,test/04876.jpg,three_quarter_rear,none,False,,claude-agent; team review pending,True
+35,test/05189.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+36,test/05195.jpg,front,none,False,,claude-agent; team review pending,True
+37,test/05225.jpg,three_quarter_front,partial,False,text overlay over lower body,claude-agent; team review pending,True
+38,test/05320.jpg,side,none,True,small distant car beside another vehicle,claude-agent; team review pending,True
+39,test/05406.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+40,test/05456.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+41,test/05462.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+42,test/05478.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+43,test/05491.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+44,test/05635.jpg,front,none,False,,claude-agent; team review pending,True
+45,test/05880.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+46,test/05892.jpg,side,none,False,,claude-agent; team review pending,True
+47,test/06016.jpg,front,partial,False,person leaning on the bonnet,claude-agent; team review pending,True
+48,test/06060.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+49,test/06084.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+50,test/06130.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+51,test/06271.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+52,test/06341.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+53,test/06344.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+54,test/06763.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+55,test/07113.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+56,test/07203.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+57,test/07357.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+58,test/07378.jpg,three_quarter_front,none,False,,claude-agent; team review pending,True
+59,test/07422.jpg,side,none,False,,claude-agent; team review pending,True

@@ -15,7 +15,6 @@ box -> crop -> head. Ground truth is never used at inference; it is used only fo
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import sys
@@ -34,7 +33,7 @@ from src.evaluation.metrics import (  # noqa: E402
     coco_ap, ece, end_to_end_topk, localization, nll, ranked, ratio, set_metrics,
 )
 from src.models.cache_io import store_dir  # noqa: E402
-from src.models.detector import Detection, select_target  # noqa: E402
+from src.models.detector import select_target  # noqa: E402
 from src.models.heads import softmax  # noqa: E402
 from src.passport.conformal import ConformalQuantile, candidate_set, failure_set  # noqa: E402
 from src.passport.hierarchy import Hierarchy  # noqa: E402
@@ -44,9 +43,11 @@ from src.vision.coordinates import crop_bounds, expand_box, iou  # noqa: E402
 MODES = ("classical", "deep", "hybrid")
 
 
-def load_image(path: Path, max_long: int):
+def load_image(path: Path, max_long: int, transform=None):
     with Image.open(path) as im:
         rgb = np.asarray(im.convert("RGB"))
+    if transform is not None:
+        rgb = transform(rgb)   # stress condition on stored pixels, before any detection
     s = 1.0
     if max(rgb.shape[:2]) > max_long:
         s = max_long / max(rgb.shape[:2])
@@ -61,7 +62,11 @@ def main() -> None:
     ap.add_argument("--confirm-frozen", action="store_true")
     ap.add_argument("--data-root", default=os.environ.get("SEMEVIA_DATA_ROOT"))
     ap.add_argument("--batch", type=int, default=16)
+    ap.add_argument("--subset", default=None, choices=[None, "stress_tune", "stress_test"])
+    ap.add_argument("--condition", default="clean")
     args = ap.parse_args()
+    if args.subset:
+        args.partition = args.subset.split("_", 1)[1]
     rt = yaml.safe_load((ROOT / "configs/runtime.yaml").read_text(encoding="utf-8"))
     rc = rt["recognition"]
     cal = json.loads((ROOT / rc["calibration"]).read_text(encoding="utf-8"))
@@ -84,6 +89,16 @@ def main() -> None:
     idx = json.loads((ROOT / "artifacts/manifests/manifest_index.json").read_text(encoding="utf-8"))
     part = idx["partitions"][args.partition]
     recs = read_manifest(ROOT / "artifacts/manifests" / part["file"])
+    ecfg = yaml.safe_load((ROOT / "configs/evaluation.yaml").read_text(encoding="utf-8"))
+    cond = ecfg["conditions"][args.condition]
+    pop_name = args.partition
+    if args.subset:
+        sub = json.loads((ROOT / "artifacts/manifests/subsets_index.json").read_text(encoding="utf-8"))["subsets"][args.subset]
+        recs = read_manifest(ROOT / "artifacts/manifests" / sub["file"])
+        part = {"sha256": sub["sha256"], "file": sub["file"]}
+        pop_name = args.subset
+    elif args.condition != "clean":
+        raise SystemExit("stress conditions run only on a declared stress subset")
     d = rt["detector"]
     asset = next(a for a in manifest["assets"] if a["name"] == "yolo11n.pt")
     det = VehicleDetector(ROOT / d["weights"], d["imgsz"], d["conf_floor"], d["nms_iou"], d["max_det"],
@@ -93,7 +108,7 @@ def main() -> None:
     bundle = manifest["bundle_id"]
     out_dir = store_dir() / "predictions"
     out_dir.mkdir(parents=True, exist_ok=True)
-    jl = out_dir / f"e2e_{args.partition}_{part['sha256'][:10]}_{bundle}.jsonl"
+    jl = out_dir / f"e2e_{pop_name}_{args.condition}_{part['sha256'][:10]}_{bundle}.jsonl"
     done: dict = {}
     if args.resume and jl.exists():
         for line in jl.read_text(encoding="utf-8").splitlines():
@@ -109,7 +124,11 @@ def main() -> None:
             batch = todo[b0:b0 + args.batch]
             rows, yolo_crops, cls_crops = [], [], []
             for rec in batch:
-                rgb, s = load_image(Path(args.data_root) / rec.rel_path, rt["upload"]["max_long_edge"])
+                from src.evaluation.stress import apply_condition
+
+                tf = (lambda im, rec=rec: apply_condition(im, cond, rec.box, rec.image_key, ecfg["seed"], args.condition))
+                rgb, s = load_image(Path(args.data_root) / rec.rel_path, rt["upload"]["max_long_edge"],
+                                    None if cond["type"] == "none" else tf)
                 h, w = rgb.shape[:2]
                 t0 = time.perf_counter()
                 cands, _, _ = det.detect(rgb)
@@ -153,9 +172,10 @@ def main() -> None:
     rows = [done.get(r.image_key) for r in recs]
     if any(r is None for r in rows) or len(done) != len(recs):
         raise SystemExit("incomplete population; rerun with --resume")
-    report = build_report(rows, recs, args.partition, part, bundle, cal, rt, jl.name)
+    report = build_report(rows, recs, pop_name, part, bundle, cal, rt, jl.name)
+    report["condition"] = {"name": args.condition, **cond}
     report["wall_seconds_this_run"] = round(time.time() - t_all, 1)
-    name = f"e2e_{args.partition}_{bundle}.json"
+    name = f"e2e_{pop_name}_{bundle}.json" if not args.subset else f"e2e_{pop_name}_{args.condition}_{bundle}.json"
     (ROOT / "reports" / name).write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(report["summary"], indent=1))
 
