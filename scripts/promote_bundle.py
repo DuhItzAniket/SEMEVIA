@@ -60,6 +60,11 @@ def main() -> None:
                         "url": IMAGENET_URL, "optional": True,
                         "license": "torchvision ImageNet-1K weights (BSD-3 code licence)",
                         "status": "development backbone: frozen ImageNet, not fine-tuned"})
+    ref = ROOT / rc["reference_index"]
+    for p in (ref, ref.with_suffix(".json")):
+        if p.exists():
+            entries.append({"name": p.name, "path": p.relative_to(ROOT).as_posix(), "sha256": sha(p), "bytes": p.stat().st_size,
+                            "url": None, "optional": True, "source": "scripts/build_references.py (training split only)"})
     cal = ROOT / rc["calibration"]
     if cal.exists():
         entries.append({"name": "development_calibration.json", "path": rc["calibration"], "sha256": sha(cal),

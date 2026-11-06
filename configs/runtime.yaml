@@ -27,6 +27,10 @@ recognition:
     hybrid: artifacts/store/release/heads/hybrid.joblib
   calibration: artifacts/development_calibration.json
   default_mode: hybrid
+  backbone_tag: imagenet_frozen          # must match the reference index embedding version
+  precision: fp32
+  reference_index: artifacts/store/release/reference_index.npz
+  reference_thumbnails: false            # image rights unresolved: identifiers, labels, similarity only
 server:
   torch_threads: 2
   max_active_jobs: 1

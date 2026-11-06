@@ -1,7 +1,7 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const form = $('form'), file = $('file'), analyze = $('analyze'), reset = $('reset'), status = $('status');
-  const cards = ['result', 'pred-card', 'passport-card', 'challenge-card', 'proc-card', 'record-card'];
+  const cards = ['result', 'pred-card', 'passport-card', 'challenge-card', 'ref-card', 'proc-card', 'record-card'];
   let generation = 0, current = null, challenge = null, showAll = false, challengeBusy = false;
 
   const setStatus = (el, text, kind) => { el.textContent = text; el.className = 'status' + (kind ? ' ' + kind : ''); };
@@ -121,6 +121,21 @@
     $('measurements').replaceChildren(...Object.entries(m).flatMap(([k, v]) => [el('dt', k.replace(/_/g, ' ')), el('dd', String(v))]));
   };
 
+  const renderRefs = (resp) => {
+    const r = resp.references || {};
+    $('ref-card').hidden = !(r.state === 'available' && r.items && r.items.length);
+    if ($('ref-card').hidden) return;
+    const ol = $('refs'); ol.replaceChildren();
+    r.items.forEach((it, i) => {
+      const li = el('li');
+      li.appendChild(el('span', `${it.name} (training photo ${it.sample_key})`));
+      li.appendChild(el('span', `similarity ${it.cosine_similarity.toFixed(3)}`, 'score'));
+      if (r.agrees_with_best_guess && !r.agrees_with_best_guess[i]) li.appendChild(el('div', 'Differs from the best guess.', 'muted small'));
+      ol.appendChild(li);
+    });
+    $('ref-note').textContent = 'Thumbnails are not shown: public reuse rights for dataset images are unresolved. Index ' + r.index_id + '.';
+  };
+
   const render = (resp) => {
     current = resp; challenge = null; showAll = false;
     $('result').hidden = false;
@@ -151,7 +166,7 @@
       ['Server time', `${t.total_ms} ms` + Object.entries(t).filter(([k]) => k !== 'total_ms').map(([k, v]) => `, ${k.replace('_ms', '')} ${v}`).join('')],
     ];
     $('facts').replaceChildren(...facts.flatMap(([k, v]) => [el('dt', k), el('dd', v)]));
-    renderPrediction(resp); renderPassport(resp); renderProcessing(resp);
+    renderPrediction(resp); renderPassport(resp); renderRefs(resp); renderProcessing(resp);
     const chAvail = resp.challenge && resp.challenge.state === 'not_requested';
     $('challenge-card').hidden = !chAvail;
     $('ch-result').hidden = true; setStatus($('ch-status'), ''); $('run-challenge').disabled = false;

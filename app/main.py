@@ -37,7 +37,8 @@ MODES = ("classical", "deep", "hybrid")
 
 STATE: dict = {"ready": False, "reasons": ["starting"], "detector": None, "bundle": None, "warmup_ms": None,
                "predictor": None, "calibration": None, "cq": None, "hierarchy": None, "classes": None,
-               "recognition_reason": "not loaded", "asset_sha": {}}
+               "recognition_reason": "not loaded", "asset_sha": {},
+               "references": None, "references_reason": "not loaded", "encoder_version": None}
 
 
 class RequestStore:
@@ -111,6 +112,21 @@ def _load_recognition(manifest: dict, status: dict) -> None:
     STATE["classes"] = STATE["hierarchy"].classes
     STATE["asset_sha"] = {a["name"]: a["sha256"][:12] for a in manifest["assets"]}
     STATE["recognition_reason"] = None
+    # Reference index: optional; disabled unless present, verified and version-matched to the encoder
+    from src.models.backbone import PREPROCESS_VERSION
+    from src.passport.references import load_index
+
+    STATE["encoder_version"] = f"effb0_pool1280_{rc['backbone_tag']}|{PREPROCESS_VERSION}|{rc['precision']}"
+    ref = rc.get("reference_index")
+    if ref and ref in by_path and status.get(by_path[ref]["name"]) == "ok":
+        idx = load_index(ROOT / ref)
+        if idx["embedding_version"] == STATE["encoder_version"]:
+            STATE["references"] = idx
+            STATE["references_reason"] = None
+        else:
+            STATE["references_reason"] = "reference index built with a different encoder version"
+    else:
+        STATE["references_reason"] = "reference index not present in this build"
 
 
 def _load_models() -> None:
@@ -170,7 +186,7 @@ def _envelope(rid: str, status: str, mode: str, error: dict | None = None) -> di
         "passport": {"decision_state": "unavailable", "reason_codes": ["classifier_not_available"] if not recog else [],
                      "accepted_identity": None, "candidate_set": [], "candidate_count": 0},
         "challenge": {"state": "unavailable" if not recog else "not_requested"},
-        "references": {"state": "unavailable", "reason": "reference index not built yet", "items": []},
+        "references": {"state": "unavailable", "reason": STATE["references_reason"], "items": []},
         "cnn_diagnostic": {"state": "unavailable", "reason": "optional; not implemented"},
         "processing": {},
         "model_status": {"recognition": recog, "backbone": CFG["recognition"]["backbone_status"] if recog else None,
@@ -251,9 +267,20 @@ def _run_pipeline(data: bytes, rid: str, mode: str, t_queue: float) -> dict:
         if pred_ok:
             t3 = time.perf_counter()
             cin = CropInput(crop, [float(l), float(t), float(r), float(b)], (img.width, img.height))
-            z, hc = STATE["predictor"].score_crops(mode, [cin], want_views=True)
-            z = z[0]
+            pr = STATE["predictor"]
+            L = pr.learned([cin]) if pr.model is not None else None   # one embedding: head + references
+            hcX, hc = pr.classical([cin], want_views=True)
+            z = pr.score_features(mode, L, hcX)[0]
             timings["features_and_classifier_ms"] = round((time.perf_counter() - t3) * 1000, 1)
+            if STATE["references"] is not None and L is not None:
+                from src.passport.references import query
+
+                refs = query(STATE["references"], L[0], STATE["encoder_version"])
+                for it in refs["items"]:
+                    it.update(name=STATE["classes"][it["class_id"]]["name"], thumbnail=None,
+                              thumbnail_reason="image rights unresolved; identifier and label only")
+                refs["agrees_with_best_guess"] = [it["class_id"] == int(np.argmax(z)) for it in refs["items"]]
+                resp["references"] = refs
             cal = STATE["calibration"]
             is_prod = mode == cal["production_mode"]
             T = cal["temperature"] if is_prod else 1.0
@@ -357,7 +384,8 @@ def readyz():
                 "modes": STATE["predictor"].modes if STATE["predictor"] else [],
                 "production_mode": cal["production_mode"] if cal else None,
                 "calibration_kind": cal["kind"] if cal else None,
-                "backbone": CFG["recognition"]["backbone_status"] if STATE["predictor"] else None}
+                "backbone": CFG["recognition"]["backbone_status"] if STATE["predictor"] else None,
+                "references": STATE["references"] is not None, "references_reason": STATE["references_reason"]}
     return JSONResponse(status_code=503, content={"ready": False, "reasons": STATE["reasons"]})
 
 

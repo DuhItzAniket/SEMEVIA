@@ -71,3 +71,17 @@ def test_challenge_six_real_variants_and_cached_repeat(client):
 def test_challenge_unknown_request_is_expired(client):
     r = client.post("/challenge", json={"request_id": "nope"})
     assert r.status_code == 404 and r.json()["reason"] == "expired"
+
+
+@pytest.mark.skipif(not IMG.exists(), reason="dataset not available")
+def test_references_are_training_only_and_labelled(client):
+    ready = client.get("/readyz").json()
+    if not ready.get("references"):
+        pytest.skip(ready.get("references_reason"))
+    j = client.post("/predict", files={"file": ("car.jpg", IMG.read_bytes(), "image/jpeg")}, data={"mode": "hybrid"}).json()
+    r = j["references"]
+    assert r["state"] == "available" and len(r["items"]) == 3
+    assert all(it["sample_key"].startswith("train/") for it in r["items"])
+    assert all(it["thumbnail"] is None for it in r["items"])
+    sims = [it["cosine_similarity"] for it in r["items"]]
+    assert sims == sorted(sims, reverse=True)

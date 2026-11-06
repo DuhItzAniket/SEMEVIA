@@ -1,5 +1,5 @@
 {
- "bundle_id": "dev_imagenet_frozen_097c99803f",
+ "bundle_id": "dev_imagenet_frozen_504165ac73",
  "note": "Development bundle: YOLO11n detector (final) + frozen ImageNet EfficientNet-B0 + classical/deep/hybrid heads + development calibration. Not the fine-tuned release.",
  "assets": [
   {
@@ -49,6 +49,24 @@
    "optional": true,
    "license": "torchvision ImageNet-1K weights (BSD-3 code licence)",
    "status": "development backbone: frozen ImageNet, not fine-tuned"
+  },
+  {
+   "name": "reference_index.npz",
+   "path": "artifacts/store/release/reference_index.npz",
+   "sha256": "489a2bde2039ed50f724d966a0ea92a335885b3be37ec444983e2008263381d0",
+   "bytes": 1542480,
+   "url": null,
+   "optional": true,
+   "source": "scripts/build_references.py (training split only)"
+  },
+  {
+   "name": "reference_index.json",
+   "path": "artifacts/store/release/reference_index.json",
+   "sha256": "cb8871744cd760143c038bdd0d55431d7a6536078c8fad3130348b8b2cff8110",
+   "bytes": 174,
+   "url": null,
+   "optional": true,
+   "source": "scripts/build_references.py (training split only)"
   },
   {
    "name": "development_calibration.json",
