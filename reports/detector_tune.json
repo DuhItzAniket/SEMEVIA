@@ -1,0 +1,144 @@
+{
+ "population": {
+  "partition": "tune",
+  "count": 815,
+  "manifest_sha256": "0f54c77a26c98e021bf8472511f7db67e84e2cbc0258caa3048298efb0da79e3",
+  "frame": "stored pixels, no EXIF; runtime long-edge resize applied then boxes mapped back"
+ },
+ "detector": {
+  "version": "yolo11n:0ebbc80d4a76",
+  "imgsz": 640,
+  "conf_floor": 0.05,
+  "nms_iou": 0.7,
+  "max_det": 50,
+  "vehicle_mapping": {
+   "2": "car",
+   "5": "bus",
+   "7": "truck"
+  }
+ },
+ "generic_vehicle_ap": {
+  "AP50_95": 0.7705439552740883,
+  "AP50": 0.847241343675442,
+  "num_predictions": 3630,
+  "num_ground_truth": 815,
+  "settings": {
+   "iouThrs": "0.50:0.05:0.95",
+   "recThrs": 101,
+   "maxDets": [
+    1,
+    10,
+    100
+   ],
+   "areaRng": "all"
+  },
+  "evaluator": "pycocotools COCOeval bbox"
+ },
+ "detector_recall_any_candidate_iou50": {
+  "numerator": 815,
+  "denominator": 815,
+  "value": 1.0
+ },
+ "primary_target_by_threshold": {
+  "0.1": {
+   "population_count": 815,
+   "mean_iou_valid_selected": {
+    "numerator": 767.7048188672952,
+    "denominator": 815,
+    "value": 0.9419691029046567
+   },
+   "mean_iou_zero_for_failures": {
+    "numerator": 767.7048188672952,
+    "denominator": 815,
+    "value": 0.9419691029046567
+   },
+   "primary_recall_at_iou": {
+    "numerator": 812,
+    "denominator": 815,
+    "value": 0.996319018404908
+   },
+   "iou_threshold": 0.5,
+   "missing": 0,
+   "invalid": 0,
+   "wrong_target_below_thr": 3
+  },
+  "0.25": {
+   "population_count": 815,
+   "mean_iou_valid_selected": {
+    "numerator": 765.2910137780341,
+    "denominator": 811,
+    "value": 0.943638734621497
+   },
+   "mean_iou_zero_for_failures": {
+    "numerator": 765.2910137780341,
+    "denominator": 815,
+    "value": 0.9390073788687535
+   },
+   "primary_recall_at_iou": {
+    "numerator": 809,
+    "denominator": 815,
+    "value": 0.992638036809816
+   },
+   "iou_threshold": 0.5,
+   "missing": 4,
+   "invalid": 0,
+   "wrong_target_below_thr": 2
+  },
+  "0.4": {
+   "population_count": 815,
+   "mean_iou_valid_selected": {
+    "numerator": 763.8298993721237,
+    "denominator": 808,
+    "value": 0.9453340338763907
+   },
+   "mean_iou_zero_for_failures": {
+    "numerator": 763.8298993721237,
+    "denominator": 815,
+    "value": 0.9372146004565934
+   },
+   "primary_recall_at_iou": {
+    "numerator": 808,
+    "denominator": 815,
+    "value": 0.9914110429447853
+   },
+   "iou_threshold": 0.5,
+   "missing": 7,
+   "invalid": 0,
+   "wrong_target_below_thr": 0
+  },
+  "0.55": {
+   "population_count": 815,
+   "mean_iou_valid_selected": {
+    "numerator": 739.5965303625646,
+    "denominator": 784,
+    "value": 0.9433629213808222
+   },
+   "mean_iou_zero_for_failures": {
+    "numerator": 739.5965303625646,
+    "denominator": 815,
+    "value": 0.90748040535284
+   },
+   "primary_recall_at_iou": {
+    "numerator": 782,
+    "denominator": 815,
+    "value": 0.9595092024539877
+   },
+   "iou_threshold": 0.5,
+   "missing": 31,
+   "invalid": 0,
+   "wrong_target_below_thr": 2
+  }
+ },
+ "latency_ms_detector_only": {
+  "p50": 139.95,
+  "p95": 196.8639999999998,
+  "mean": 149.93782822085888,
+  "hardware": "Intel i5-1135G7, 4 torch threads, CPU",
+  "note": "detector call only, warm process, excludes decode/network"
+ },
+ "notes": [
+  "Stanford Cars annotates one target vehicle per image; extra visible vehicles are unannotated, so generic AP false positives include real but unlabelled vehicles.",
+  "Development population (tune). Final test evaluation happens in P6 after the configuration freeze."
+ ],
+ "predictions_file": "detector_tune_0f54c77a26_yolo11n_0ebbc80d4a76.jsonl"
+}
