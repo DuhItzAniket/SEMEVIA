@@ -60,6 +60,15 @@ def main() -> None:
                         "url": IMAGENET_URL, "optional": True,
                         "license": "torchvision ImageNet-1K weights (BSD-3 code licence)",
                         "status": "development backbone: frozen ImageNet, not fine-tuned"})
+    onnx_enc = ROOT / rc["onnx_encoder"]
+    if onnx_enc.exists():
+        info = json.loads(onnx_enc.with_suffix(".json").read_text(encoding="utf-8"))
+        if not info.get("parity_ok") or info["sha256"] != sha(onnx_enc) or info["source_backbone_sha256"] != sha(bb_dst):
+            raise SystemExit("ONNX encoder does not match its parity record or the current backbone; re-export it")
+        entries.append({"name": onnx_enc.name, "path": rc["onnx_encoder"], "sha256": info["sha256"], "bytes": info["bytes"],
+                        "url": None, "optional": True,
+                        "source": "python -m src.models.export_onnx (parity-gated export of the backbone above)",
+                        "parity_max_abs_diff": info["parity_max_abs_diff"]})
     ref = ROOT / rc["reference_index"]
     for p in (ref, ref.with_suffix(".json")):
         if p.exists():

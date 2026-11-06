@@ -34,6 +34,8 @@ categories changes.
 | Nearest training references (588-entry training-only index; identifiers, labels, similarity) | Implemented; thumbnails withheld (rights unresolved) |
 | Optimization: ONNX FP32 encoder, INT8 encoder attempts, INT8 linear head | Measured on the development backbone; app runtime unchanged until the freeze |
 | End-to-end evaluator (Top-1/5 with IoU gating, IoU, AP, Passport, calibration) | Implemented; run on tune; test run waits for the freeze (P6) |
+| Robustness: 6 fixed stress conditions on a predeclared 392-image subset; 60 viewpoint-labelled photos | Tooling done; tune-subset run done; test run waits for the freeze |
+| Evaluation file `eval_P5_TeamID.md` | Generated from reports by `scripts/report.py`; final values pending; USNs needed |
 
 Supported vehicle categories: the 196 Stanford Cars classes (49 makes, model years 1991-2012),
 listed in [artifacts/class_metadata.json](artifacts/class_metadata.json).
@@ -151,9 +153,15 @@ End-to-end on the same 815 tune images (runtime box rule, misses count as failur
 | Deep | 0.645 | 0.888 | 0.598 |
 | Hybrid | 0.640 | 0.899 | 0.593 |
 
+Robustness (392-image tune stress subset, conditions applied before detection;
+[reports/robustness_stress_tune_dev_imagenet_frozen_504165ac73.md](reports/robustness_stress_tune_dev_imagenet_frozen_504165ac73.md)):
+hybrid end-to-end top-1 0.648 clean, 0.630 at half brightness, 0.597 at half resolution, 0.383 at quarter
+resolution, 0.559 with 15% occlusion and 0.344 with 30% occlusion.
+
 Optimization (development backbone, tune split; [docs/checkpoints/P5_dev.md](docs/checkpoints/P5_dev.md)):
 ONNX FP32 encoder gives identical predictions at about 20 ms instead of 52 ms per crop on a 4-core
-laptop CPU; full-network INT8 failed (accuracy collapsed); an INT8 linear head keeps top-1 within
+laptop CPU (isolated encoder; inside a full request the gain was about 12%, selectable with
+`SEMEVIA_ENCODER_RUNTIME=onnx_fp32`); full-network INT8 failed (accuracy collapsed); an INT8 linear head keeps top-1 within
 0.25 points and is 4x smaller.
 
 These are not end-to-end or test accuracy: they use ground-truth crops on the tuning split that

@@ -38,3 +38,12 @@ The head is a negligible part of end-to-end time; no speed gain is claimed from 
   index with the released encoder (cache invalidation matrix).
 * Rerun on the fine-tuned checkpoint: `python scripts/optimize.py --backbone <tag>` and
   `python scripts/optimize_head.py --mode hybrid --backbone <tag>`.
+
+## In-app check (added after integrating the ONNX runtime)
+
+`SEMEVIA_ENCODER_RUNTIME=onnx_fp32` serves the same predictions (hybrid top-1 probability 0.454727 vs
+0.454729 on one test photo). Inside a full request, features + classifier took a median of 34.2 ms
+with ONNX vs 38.8 ms with PyTorch (5 warm requests, same photo, this laptop): about 12% faster, much
+less than the 2.6x isolated-encoder gain, because classical features and other per-request work are a
+large share. With the ONNX runtime the reference panel is disabled by design until the index is
+rebuilt with that encoder.

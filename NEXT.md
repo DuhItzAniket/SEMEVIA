@@ -50,12 +50,14 @@ docker compose up --build    # after Docker storage is on D:
 ```
 
 ## Single next bounded task
-Done since last handoff: end-to-end tune evaluation (`scripts/evaluate.py`), training-only reference
-index + panel (`scripts/build_references.py`), optimization experiments (`docs/checkpoints/P5_dev.md`).
-Next, still not needing the GPU run: (1) robustness stress tooling for the predeclared 392-image subset
-(six conditions, rerun detection) and the viewpoint-label sheet; (2) ONNX encoder as a selectable
-runtime in `Predictor`; (3) once Docker storage is on D:, the container check. Final test runs wait for
-the fine-tuned backbone and the P5 freeze.
+Done since last handoff: D: restore verified (dataset reproduces manifests; heads refit byte-identical);
+stress/viewpoint subsets predeclared; six-condition robustness run on the tune subset; viewpoint labels
+(agent, team review pending); ONNX encoder runtime (parity-gated, selectable); `scripts/report.py`
+generates `eval_P5_TeamID.md` (final values pending, USNs needed).
+Next without the GPU run: Docker container check once Docker storage is on D:; negative-suite
+collection (needs licensed images: ask the team); README/design polish. Everything else waits for
+`best_finetuned.pt` (see the section above) and the P5 freeze, then P6 test runs:
+`python scripts/evaluate.py --partition test --resume --confirm-frozen` plus each stress condition.
 
 ## File ownership
 See `docs/ownership.md`.
