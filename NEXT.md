@@ -1,5 +1,13 @@
 # NEXT: SEMEVIA handoff
 
+## Iteration r2 decision record (written before any r2 test result exists)
+* Decided before r2's test run (this commit precedes it): iteration r2 (`configs/train_v2.yaml`, run effb0_r2)
+  **replaces r1 as the release whatever its test result**, as long as its own pipeline checks pass. Its heads,
+  calibration and freeze use tune/calibration data only; hybrid stays the production mode (tune tie with deep);
+  the freeze uses the 40-photo tune negative suite; the test split and the 40 held-out negatives are evaluated
+  once. Both r1 and r2 test results are reported in `eval_P5_T35.md`. r1's freeze and calibration are archived in
+  `artifacts/history/r1/`.
+
 ## GPU PC run (2026-11-07, host LEGION) â€” in progress; this PC is the only one committing
 * Machine: RTX 4050 Laptop GPU (6 GB), i7-14650HX, 15.7 GB RAM, **C: only (no E: drive)**, so the
   runbook's `E:\semevia` is `C:\semevia` here (data, venv, store, torch cache, tmp). Env: `C:\semevia\env.ps1`.

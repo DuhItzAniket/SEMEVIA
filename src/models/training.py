@@ -8,6 +8,7 @@ best scores, config, split hashes, RNG states and AMP scaler state.
 from __future__ import annotations
 
 import json
+import math
 import random
 import time
 from pathlib import Path
@@ -104,6 +105,14 @@ def _optimizer(model, stage, cfg):
     return torch.optim.AdamW(groups, weight_decay=cfg["weight_decay"])
 
 
+def _base_lrs(stage, opt):
+    """Initial LR of each optimizer group, in _optimizer's order (head first, then body)."""
+    base = [stage.get("lr_head", stage.get("lr"))]
+    if len(opt.param_groups) > 1:
+        base.append(stage["lr_backbone"])
+    return base
+
+
 def run(cfg: dict, train_recs, tune_recs, data_root: Path, run_dir: Path, split_hashes: dict,
         resume: bool, log=print, max_steps_per_epoch: int | None = None) -> dict:
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -150,6 +159,11 @@ def run(cfg: dict, train_recs, tune_recs, data_root: Path, run_dir: Path, split_
             loader = DataLoader(CropDataset(train_recs, data_root, cfg, True, cfg["seed"] + state["global_epoch"]),
                                 batch_size=cfg["batch_size"], shuffle=True, generator=g, num_workers=workers,
                                 drop_last=False)
+            if stage.get("schedule") == "cosine":
+                # Per-epoch cosine decay computed from the epoch counter, so a resumed run gets the same LR.
+                f = 0.5 * (1 + math.cos(math.pi * state["epoch_in_stage"] / stage["epochs"]))
+                for grp, base in zip(opt.param_groups, _base_lrs(stage, opt)):
+                    grp["lr"] = base * f
             train_mode_respecting_freeze(model, stage["trainable"])
             t0, seen, tl = time.time(), 0, 0.0
             for step, (x, y) in enumerate(loader):
@@ -158,7 +172,7 @@ def run(cfg: dict, train_recs, tune_recs, data_root: Path, run_dir: Path, split_
                 x, y = x.to(device), y.to(device)
                 opt.zero_grad(set_to_none=True)
                 with torch.autocast(device.type, enabled=amp):
-                    loss = torch.nn.functional.cross_entropy(model(x), y)
+                    loss = torch.nn.functional.cross_entropy(model(x), y, label_smoothing=cfg.get("label_smoothing", 0.0))
                 scaler.scale(loss).backward()
                 scaler.step(opt)
                 scaler.update()
@@ -171,7 +185,8 @@ def run(cfg: dict, train_recs, tune_recs, data_root: Path, run_dir: Path, split_
                 state["finetune_epochs_completed"] += 1
             rec = {"stage": stage["name"], "epoch_in_stage": state["epoch_in_stage"], "global_epoch": state["global_epoch"],
                    "train_loss": tl / max(seen, 1), "train_images": seen, "tune": metrics,
-                   "epoch_seconds": round(time.time() - t0, 1), "trainable_tensors": len(trainable), "device": device.type}
+                   "epoch_seconds": round(time.time() - t0, 1), "trainable_tensors": len(trainable), "device": device.type,
+                   "lr": [round(g["lr"], 8) for g in opt.param_groups]}
             if is_ft:
                 rec["pretrained_changed"] = {p: param_digest(model, p) != state["pretrained_digest"][p]
                                              for p in ("features.7", "features.8")}
