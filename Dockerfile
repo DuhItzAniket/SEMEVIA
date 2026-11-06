@@ -15,8 +15,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2
 
 WORKDIR /srv
 COPY requirements-infer.txt .
+# Ultralytics pulls in the GUI build of OpenCV; replace it with the headless build. Uninstalling
+# opencv-python deletes the shared cv2 package, so the headless wheel is reinstalled afterwards.
 RUN pip install -r requirements-infer.txt \
-    && pip uninstall -y opencv-python || true
+    && pip uninstall -y opencv-python \
+    && pip install --force-reinstall --no-deps opencv-python-headless==5.0.0.93 \
+    && python -c "import cv2, uvicorn, torch, ultralytics, sklearn, onnxruntime; print('imports ok', cv2.__version__)"
 
 COPY src ./src
 COPY app ./app

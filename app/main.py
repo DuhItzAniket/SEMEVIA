@@ -423,6 +423,9 @@ async def predict(file: UploadFile = File(...), mode: str = Form("")):
 @app.post("/challenge")
 async def challenge(payload: dict = Body(...)):
     rid = str(payload.get("request_id", ""))
+    if not STATE["ready"] or STATE["predictor"] is None:
+        return JSONResponse(status_code=503, content={"request_id": rid, "state": "unavailable", "reason": "not_ready",
+                                                      "message": "Recognition is not available right now; the original result is unchanged."})
     try:
         out = await _admit(_run_challenge, rid)
     except Exception as exc:
