@@ -52,14 +52,29 @@ docker compose up --build    # after Docker storage is on D:
 ```
 
 ## Single next bounded task
-Done since last handoff: D: restore verified (dataset reproduces manifests; heads refit byte-identical);
-stress/viewpoint subsets predeclared; six-condition robustness run on the tune subset; viewpoint labels
-(agent, team review pending); ONNX encoder runtime (parity-gated, selectable); `scripts/report.py`
-generates `eval_P5_TeamID.md` (final values pending, USNs needed).
-Next without the GPU run: offline container run (after the user approves a rebuild); negative-suite
-collection (needs licensed images: ask the team); README/design polish. Everything else waits for
-`best_finetuned.pt` (see the section above) and the P5 freeze, then P6 test runs:
-`python scripts/evaluate.py --partition test --resume --confirm-frozen` plus each stress condition.
+**The GPU / large-storage PC takes over the heavy work: follow `docs/runbook_other_pc.md` step by step**
+(it ends with a ready prompt for Claude Code on that PC). The laptop stops committing while that PC works.
+
+Code completed for that run (fixture-tested, guarded): checkpoint promotion + `artifacts/release_config.json`,
+`scripts/freeze.py` (refuses the development backbone), `scripts/calibrate.py --final`, freeze-fingerprint
+guards in `scripts/evaluate.py` (calibration/test locked until the freeze), `scripts/analyze_results.py`
+(viewpoint subgroups + rule-based failures), `scripts/evaluate_negatives.py`, negative manifest templates.
+
+### Remaining for completion
+| Item | Who / where |
+|---|---|
+| Fine-tuning run, rebuild bundle on it (runbook 2-3) | GPU PC |
+| P5 freeze, final conformal calibration (runbook 5) | GPU PC |
+| Official test run, stress test, analysis, eval file (runbook 6) | GPU PC |
+| Publish model files as a GitHub Release, fill URLs (runbook 7) | GPU PC (needs repo write + `gh` or web) |
+| Docker image, offline check, deployment and release checks (runbook 8-9) | GPU PC + chosen host |
+| Choose an always-on public host and billing | Team |
+| Collect the negative suite (`docs/negative_suite.md`) | Team (licensed images with provenance) |
+| Review agent viewpoint labels (`reports/viewpoint_labels.csv`) | Team |
+| Team names and USNs (README, eval file first line) | Team |
+| Thumbnail rights decision for references | Team |
+| Demo rehearsal (3 minutes) and viva preparation | Team |
+| Pull request into `main` (remote has no `main` yet) | Team decision |
 
 ## File ownership
 See `docs/ownership.md`.

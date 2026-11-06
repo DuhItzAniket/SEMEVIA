@@ -1,13 +1,15 @@
 # Fine-tuning run on the training PC
 
+> **Superseded scope (2026-11-06):** the GPU PC now runs the whole remaining heavy pipeline
+> (training, final bundle, freeze, calibration, test runs, Docker, deployment) and commits its results.
+> Follow `docs/runbook_other_pc.md`; this file remains the detailed reference for the training step.
+
 This closes the mandatory requirement "transfer learning and model fine-tuning": at least one
 completed epoch with the final pretrained EfficientNet-B0 stage unfrozen, validated and
 checkpointed. The script has been smoke-tested on CPU (plumbing only, 64 images); the real run
 has **not** happened yet.
 
-**Scope of the training PC: training only.** It does not commit or push to Git, so the two
-machines never edit the branch at the same time. The development machine records the results
-in Git after the files come back.
+Git: one machine commits at a time (see `docs/runbook_other_pc.md`).
 
 Commands below are Windows PowerShell. Bash equivalents: `export NAME=value` instead of
 `$env:NAME = "value"`, and `venv/bin/python` instead of `venv\Scripts\python`.
