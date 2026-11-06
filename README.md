@@ -2,9 +2,10 @@
 
 **Vehicle identity through evidence.** Every identity needs evidence.
 
-> **Status (2026-11-06): early development, phases P0-P1.** Vehicle *detection* works; fine-grained
-> make/model/year recognition, the Identity Evidence Passport and all evaluation results are
-> **not implemented yet**. No accuracy numbers exist yet, and none are claimed.
+> **Status (2026-11-06): early development, phases P0-P2 (partial).** Vehicle *detection* works and a
+> classical-feature baseline is trained; fine-grained
+> make/model/year recognition in the app, the Identity Evidence Passport and all test-set
+> evaluation results are **not implemented yet**. No test accuracy exists yet, and none is claimed.
 
 **Live application URL:** not deployed yet. No public host has been provisioned
 (see [docs/hosting_lock.md](docs/hosting_lock.md)).
@@ -24,8 +25,9 @@ categories changes.
 | Upload, validation, typed errors | Implemented, tested |
 | Vehicle detection (YOLO11n, COCO car/bus/truck) with primary-target rule | Implemented, tested locally |
 | Verified Stanford Cars manifests and class hierarchy | Implemented, tested |
-| Classical features (edges, contours, HOG, LBP, HSV, geometry) | Planned (P2) |
-| EfficientNet-B0 196-class classifier, fine-tuned | Planned (P2; needs a training run) |
+| Classical features (edges, contours, HOG, LBP, HSV, geometry), classical ROI proposals | Implemented, tested |
+| Classical (handcrafted-only) 196-class head | Trained; tuning diagnostic only, not in the app yet |
+| EfficientNet-B0 196-class classifier, fine-tuned | Training script ready and smoke-tested; real run pending on the team's GPU PC |
 | Hybrid classical + deep head; three comparison modes | Planned (P3) |
 | Passport, Evidence Challenge, references | Planned (P4) |
 | INT8 / ONNX optimization | Planned (P5) |
@@ -76,6 +78,16 @@ python scripts/prepare_data.py --config configs/data.yaml
 python -m pytest
 ```
 
+Classical baseline (CPU, about one minute in total on a 4-core laptop):
+
+```bash
+export SEMEVIA_ARTIFACT_STORE=<store dir>
+python scripts/cache_features.py --features classical --partitions train tune
+python scripts/fit_heads.py --head classical
+```
+
+Deep model training (GPU recommended): see [docs/training_handoff.md](docs/training_handoff.md).
+
 `prepare_data.py` checks the labeled test annotations against the TFDS published SHA256,
 decodes all 16,185 images, validates boxes, finds duplicates and writes the split manifests
 (reproduced byte-for-byte in our runs). Findings, including 37 duplicate image groups with
@@ -91,7 +103,14 @@ Architecture and design documents are written as components are built.
 
 ## Results
 
-None yet. Every number will come from saved prediction files with a named population.
+No test-set results yet. Development diagnostics so far (every number from a saved report):
+
+| What | Population | Top-1 | Top-5 | Source |
+|---|---|---|---|---|
+| Classical head (handcrafted features only, logistic regression) | Tune partition, 815 images, annotation (oracle) crops | 0.1865 | 0.3816 | [reports/classical_tune.json](reports/classical_tune.json) |
+
+This is not end-to-end accuracy and not test accuracy; it uses ground-truth crops on the
+development tuning split.
 
 ## Limitations (known so far)
 

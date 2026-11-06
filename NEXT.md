@@ -1,6 +1,6 @@
 # NEXT: SEMEVIA handoff
 
-Updated 2026-11-06 at the P0/P1 checkpoint. Branch `semevia/implementation`.
+Updated 2026-11-06 at the P0/P1 checkpoint and partial P2. Branch `semevia/implementation`.
 Commit SHA and push status: see the bottom of this file (updated after each push).
 
 ## What works (verified)
@@ -8,8 +8,13 @@ Commit SHA and push status: see the bottom of this file (updated after each push
   calibration 815 / test 8,041), class metadata with make/family hierarchy, audit report.
 * Detection: real YOLO11n vehicle detection with bounded uploads and typed errors, through
   the FastAPI app and the browser UI (local uvicorn). 24/24 tests pass.
-* Not implemented yet: any fine-grained (196-class) prediction, classical features, hybrid,
-  Passport, challenge, references, optimization, evaluation. The UI says so explicitly.
+* Classical features (1816-dim) + classical proposals + versioned caches + classical head
+  (tune top-1 0.1865 / top-5 0.3816 on annotation crops; development diagnostic). See
+  `docs/checkpoints/P2.md`.
+* `scripts/train.py` ready and smoke-tested; real fine-tuning run is waiting for the training PC
+  (`docs/training_handoff.md`).
+* Not implemented yet: deep/hybrid heads, the 196-class prediction in the app, Passport,
+  challenge, references, optimization, evaluation. The UI says so explicitly.
 
 ## Open blockers
 1. **C: drive full** (Docker Desktop disk image on C:). User is moving it to D:. Then:
@@ -36,10 +41,12 @@ docker compose up --build    # after Docker storage is on D:
 ```
 
 ## Single next bounded task
-P2A2 (CPU-safe): implement `src/vision/features.py` (HOG 1764 + LBP 10 + HSV 32 + geometry 8 +
-flags 2 = 1816) and `src/vision/proposals.py` with blank/empty tests, then the classical head
-via `scripts/fit_heads.py` on annotation crops of train, scored on tune. In parallel prepare
-`scripts/train.py` (resumable) for the fine-tuning run.
+Development deep/hybrid wiring that does not need fine-tuning: cache frozen ImageNet
+EfficientNet-B0 embeddings (labelled development, non-compliant backbone), fit matched
+deep-only and hybrid heads, and wire classical/deep/hybrid modes into the app with
+"development model" labelling. Swap in `best_finetuned.pt` when the training PC run returns
+and regenerate all caches/heads (cache invalidation matrix). Also: rebuild Docker after the
+disk-image move and close the P1 container check.
 
 ## File ownership
 See `docs/ownership.md`.
