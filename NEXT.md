@@ -15,7 +15,9 @@ Commit SHA and push status: see the bottom of this file (updated after each push
 
 ## Open blockers
 1. **Fine-tuning run** on the training PC (`docs/training_handoff.md`). Required for compliance.
-2. **Docker container run** blocked until Docker Desktop's disk image is moved to D:.
+2. **Docker container**: build and run verified locally after two fixes (see `docs/checkpoints/P1.md`);
+   the offline (`--network none`) run is still open. Image deleted to free C:; Docker's disk file is on C:.
+   **Ask the user before any Docker build** (writes about 3 GB into C:\Users\SCM Testing\AppData\Local\Docker\wsl\disk\docker_data.vhdx).
 3. **No public host** (`docs/hosting_lock.md`).
 4. **Heads have no public storage**: clean builds are detection-only until they get a URL.
 5. Negative (unsupported-image) suite not collected; reject threshold is development-only.
@@ -54,7 +56,7 @@ Done since last handoff: D: restore verified (dataset reproduces manifests; head
 stress/viewpoint subsets predeclared; six-condition robustness run on the tune subset; viewpoint labels
 (agent, team review pending); ONNX encoder runtime (parity-gated, selectable); `scripts/report.py`
 generates `eval_P5_TeamID.md` (final values pending, USNs needed).
-Next without the GPU run: Docker container check once Docker storage is on D:; negative-suite
+Next without the GPU run: offline container run (after the user approves a rebuild); negative-suite
 collection (needs licensed images: ask the team); README/design polish. Everything else waits for
 `best_finetuned.pt` (see the section above) and the P5 freeze, then P6 test runs:
 `python scripts/evaluate.py --partition test --resume --confirm-frozen` plus each stress condition.
