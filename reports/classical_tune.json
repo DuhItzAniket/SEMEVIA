@@ -1,0 +1,60 @@
+{
+ "head": "classical (handcrafted only)",
+ "feature_version": "hc_v1",
+ "features_config_sha256": "ac990825061c510699b47f8a21f5fc6ba9cf6c859303a7242ebf68162237ad2f",
+ "crop_policy": "annotation_margin0.05",
+ "train": {
+  "partition": "train",
+  "count": 6514,
+  "manifest_sha256": "a78aaf50b8171e4452179e8095dc54899ed16a280233a7152c3997b1fd87c179"
+ },
+ "tune": {
+  "partition": "tune",
+  "count": 815,
+  "manifest_sha256": "0f54c77a26c98e021bf8472511f7db67e84e2cbc0258caa3048298efb0da79e3"
+ },
+ "population_note": "Tune partition with annotation (oracle) crops; a development diagnostic, not test or end-to-end accuracy.",
+ "grid": [
+  {
+   "C": 0.005,
+   "tune_top1": 0.18650306748466258,
+   "tune_top5": 0.3815950920245399,
+   "tune_nll": 3.9662,
+   "train_top1": 0.9645379183297513,
+   "n_iter": 51,
+   "fit_seconds": 7.1
+  },
+  {
+   "C": 0.02,
+   "tune_top1": 0.17791411042944785,
+   "tune_top5": 0.3914110429447853,
+   "tune_nll": 3.9559,
+   "train_top1": 0.9992324224746699,
+   "n_iter": 68,
+   "fit_seconds": 12.2
+  },
+  {
+   "C": 0.1,
+   "tune_top1": 0.1754601226993865,
+   "tune_top5": 0.3791411042944785,
+   "tune_nll": 4.1978,
+   "train_top1": 0.9992324224746699,
+   "n_iter": 30,
+   "fit_seconds": 5.1
+  }
+ ],
+ "selected": {
+  "C": 0.005,
+  "tune_top1": 0.18650306748466258,
+  "tune_top5": 0.3815950920245399,
+  "tune_nll": 3.9662,
+  "train_top1": 0.9645379183297513,
+  "n_iter": 51,
+  "fit_seconds": 7.1
+ },
+ "artifact": {
+  "path": "heads\\classical_hc_v1_C0.005.joblib",
+  "sha256": "5e2999cdaa0cf8d4ab438971f0f9a73eefcb56d87784bf69a26a349fcdf0e3de",
+  "bytes": 1471049
+ }
+}

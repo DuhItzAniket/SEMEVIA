@@ -1,0 +1,8 @@
+# Lightweight head contract (P2/P3). Grid values are fixed before looking at tuning results.
+classical:
+  scaler: standard            # fit on train rows only
+  pca_components: null        # standalone classical head uses all 1816 standardized features
+  classifier: logistic_regression_multinomial
+  C_grid: [0.005, 0.02, 0.1]  # selection by tune top-1 (annotation crops); ties -> smaller C
+  max_iter: 500
+  seed: 20261106

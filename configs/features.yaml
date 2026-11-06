@@ -1,0 +1,26 @@
+# Frozen handcrafted feature contract (P2). Any change requires a new feature_version.
+feature_version: "hc_v1"
+roi_size: 128                 # square grayscale ROI for HOG and LBP
+geometry_long_edge: 256       # aspect-preserving resize used for contours and edges
+smoothing: {gaussian_ksize: 5}
+canny: {low: 50, high: 150}
+morphology: {close_ksize: 5}
+hog: {orientations: 9, pixels_per_cell: 16, cells_per_block: 2, block_norm: L2-Hys}   # 1764
+lbp: {points: 8, radius: 1, method: uniform}                                          # 10 bins
+hsv: {h_bins: 16, s_bins: 8, v_bins: 8}                                               # 32, each channel sums to 1
+near_uniform_std: 4.0         # grayscale std below this sets the near-uniform flag
+lengths: {hog: 1764, lbp: 10, hsv: 32, geometry: 8, flags: 2, total: 1816}
+geometry_order: [crop_aspect, contour_area_frac, solidity, extent, edge_density, box_image_area_frac, box_center_x, box_center_y]
+flags_order: [empty_contour, near_uniform]
+proposals:                    # classical (non-learned) ROI proposal baseline
+  long_edge: 512
+  close_ksize: 15
+  min_area_frac: 0.05
+  max_area_frac: 0.98
+  min_aspect: 0.8
+  max_aspect: 4.0
+  max_proposals: 5
+  min_score: 0.15
+crops:
+  margin: 0.05
+  cache_dir_env: SEMEVIA_ARTIFACT_STORE
