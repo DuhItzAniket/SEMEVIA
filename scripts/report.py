@@ -197,6 +197,12 @@ def main() -> None:
     L += ["## 1. Classification performance (Top-1 and Top-5)", ""]
     if final:
         L += ["Final, official test:", ""] + classification_table(test) + [""]
+        orc, orc_f = find(f"oracle_test_{bundle}.json")
+        if orc:
+            L += [f"Standard Stanford Cars protocol on the same frozen model (classify the ground-truth car region, no "
+                  f"detector; the usual way published results are reported; `reports/{orc_f}`):", "",
+                  "| Mode | Top-1 (ground-truth crop) | Top-5 (ground-truth crop) |", "|---|---|---|"]
+            L += [f"| {m} | {frac(orc['modes'][m]['top1'])} | {frac(orc['modes'][m]['top5'])} |" for m in MODES] + [""]
         tm = test["modes"]
         best_test = max(MODES, key=lambda m: tm[m]["end_to_end_top1"]["value"])
         best_tune = max(MODES, key=lambda m: tune["modes"][m]["end_to_end_top1"]["value"]) if tune else None
@@ -472,10 +478,10 @@ def main() -> None:
     out.write_text("\n".join(L) + "\n", encoding="utf-8", newline="\n")
     print(f"wrote {out.name} ({len(L)} lines; final={'yes' if final else 'no'})")
     if args.readme and final:
-        write_readme_block(test, test_f, neg, neg_f, acc, out.name, bundle)
+        write_readme_block(test, test_f, neg, neg_f, acc, out.name, bundle, find(f"oracle_test_{bundle}.json"))
 
 
-def write_readme_block(test, test_f, neg, neg_f, acc, eval_name, bundle) -> None:
+def write_readme_block(test, test_f, neg, neg_f, acc, eval_name, bundle, oracle=(None, None)) -> None:
     """Replace the README block between the RESULTS markers with a table generated from the reports."""
     readme = ROOT / "README.md"
     t = readme.read_text(encoding="utf-8")
@@ -498,6 +504,11 @@ def write_readme_block(test, test_f, neg, neg_f, acc, eval_name, bundle) -> None
     if acc and acc.get("passed"):
         extra.append(f"public-URL latency p50 {acc['fresh_uploads']['p50_ms']:.0f} ms / p95 "
                      f"{acc['fresh_uploads']['p95_ms']:.0f} ms (`reports/release_acceptance.json`)")
+    orc, orc_f = oracle
+    if orc:
+        extra.insert(0, f"standard protocol (ground-truth car crop, no detector) hybrid top-1 "
+                        f"{pct(orc['modes']['hybrid']['top1']['value'])}, top-5 {pct(orc['modes']['hybrid']['top5']['value'])} "
+                        f"(`reports/{orc_f}`)")
     if extra:
         B += ["", "Also: " + "; ".join(extra) + "."]
     B.append(b)

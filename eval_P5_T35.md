@@ -27,6 +27,14 @@ Final, official test:
 | deep | 89.6% (7207/8041) | 97.3% (7821/8041) | 90.4% (7207/7971) | 90.3% (7218/7992) |
 | hybrid | 89.6% (7205/8041) | 97.2% (7819/8041) | 90.4% (7205/7971) | 90.3% (7215/7992) |
 
+Standard Stanford Cars protocol on the same frozen model (classify the ground-truth car region, no detector; the usual way published results are reported; `reports/oracle_test_ft_ckpt_4f3584f597d5_9662c2e703.json`):
+
+| Mode | Top-1 (ground-truth crop) | Top-5 (ground-truth crop) |
+|---|---|---|
+| classical | 19.6% (1573/8041) | 40.9% (3285/8041) |
+| deep | 90.2% (7255/8041) | 98.1% (7888/8041) |
+| hybrid | 90.2% (7251/8041) | 98.1% (7889/8041) |
+
 Comparison: on test the highest end-to-end top-1 is **deep** (89.6%); deep minus hybrid is +0.02 pt top-1 and +0.02 pt top-5. Classical-only is far behind (6.3% top-1): its contour box is often wrong (section 2) and handcrafted features alone separate few of the 196 classes. The production mode `hybrid` was fixed before this bundle's test run (decision record in `NEXT.md`): on the tune split deep and hybrid were level (end-to-end top-1 732 vs 731 of 815 images), and the project rule keeps hybrid unless deep is clearly better on tune. It was not changed after seeing test results.
 
 Development, tune split (815 images, same protocol; `reports/e2e_tune_ft_ckpt_4f3584f597d5_c13883508a.json`):
