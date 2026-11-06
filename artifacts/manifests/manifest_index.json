@@ -1,0 +1,32 @@
+{
+ "manifest_version": "m1",
+ "metadata_version": "meta_v1_family_eq_name_minus_year",
+ "seed": 20261106,
+ "bbox_format": "ltrb_halfopen_0based_v1",
+ "partitions": {
+  "train": {
+   "file": "train_m1.csv",
+   "count": 6514,
+   "sha256": "a78aaf50b8171e4452179e8095dc54899ed16a280233a7152c3997b1fd87c179",
+   "classes": 196
+  },
+  "tune": {
+   "file": "tune_m1.csv",
+   "count": 815,
+   "sha256": "0f54c77a26c98e021bf8472511f7db67e84e2cbc0258caa3048298efb0da79e3",
+   "classes": 196
+  },
+  "calibration": {
+   "file": "calibration_m1.csv",
+   "count": 815,
+   "sha256": "f3b19f8386f10c491c62964fe8aa16c57779376fca6d3a4c69f5559dbbf34495",
+   "classes": 194
+  },
+  "test": {
+   "file": "test_m1.csv",
+   "count": 8041,
+   "sha256": "5eb7f6150857e11078a7ff50d08d5905badcd259d2159187a4c27cf5412cb531",
+   "classes": 196
+  }
+ }
+}

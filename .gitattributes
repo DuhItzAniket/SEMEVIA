@@ -1,0 +1,6 @@
+# Keep line endings stable across platforms; manifest bytes are hashed, so keep them exact.
+* text=auto eol=lf
+*.csv -text
+*.png binary
+*.pt binary
+*.onnx binary

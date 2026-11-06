@@ -1,0 +1,1023 @@
+{
+ "manifest_version": "m1",
+ "source": "https://github.com/jhpohovey/StanfordCars (git clone, extracted original layout)",
+ "generated_unix": 1793956399,
+ "file_checksums": {
+  "cars_meta.mat": {
+   "sha256": "fe43dfda289448f97c25b09e09fafc0414e22fc4143831537780884a0a5f4a1a",
+   "bytes": 3177,
+   "published_sha256": null,
+   "matches_published": null
+  },
+  "cars_train_annos.mat": {
+   "sha256": "1c1973dd828a2964060b0bbc0e423466393fe3001a3f8e303f41fbf22067dfb1",
+   "bytes": 187916,
+   "published_sha256": null,
+   "matches_published": null
+  },
+  "cars_test_annos.mat": {
+   "sha256": "17a7837554437d4b58041cc2fc084ba46ccf315a1b5a3ee1264501ff68ca7c79",
+   "bytes": 155831,
+   "published_sha256": null,
+   "matches_published": null
+  },
+  "cars_test_annos_withlabels.mat": {
+   "sha256": "790f75be8ea34eeded134cc559332baf23e30e91367e9ddca97d26ed9b895f05",
+   "bytes": 185758,
+   "published_sha256": "790f75be8ea34eeded134cc559332baf23e30e91367e9ddca97d26ed9b895f05",
+   "matches_published": true
+  }
+ },
+ "metadata": {
+  "num_classes": 196,
+  "num_makes": 49,
+  "num_families": 189,
+  "years": [
+   1991,
+   1993,
+   1994,
+   1997,
+   1998,
+   1999,
+   2000,
+   2001,
+   2002,
+   2006,
+   2007,
+   2008,
+   2009,
+   2010,
+   2011,
+   2012
+  ],
+  "multi_member_families": 7
+ },
+ "train_coverage": {
+  "annotated": 8144,
+  "on_disk": 8144,
+  "annotated_missing_on_disk": 0,
+  "on_disk_unannotated": 0,
+  "per_class_min": 24,
+  "per_class_max": 68
+ },
+ "test_coverage": {
+  "annotated": 8041,
+  "on_disk": 8041,
+  "annotated_missing_on_disk": 0,
+  "on_disk_unannotated": 0,
+  "per_class_min": 24,
+  "per_class_max": 68
+ },
+ "decode_failures": [],
+ "box_edge_statistics": {
+  "x1_eq_1": 339,
+  "y1_eq_1": 203,
+  "x1_eq_0": 0,
+  "x2_eq_W": 431,
+  "y2_eq_H": 347,
+  "x2_gt_W": 0,
+  "y2_gt_H": 0,
+  "exif_rotated": 33,
+  "non_rgb_mode": 34,
+  "near_uniform": 0
+ },
+ "exif_orientation_values": {
+  "1": 16152,
+  "0": 32,
+  "6": 1
+ },
+ "exif_policy": "Dataset images are used in their stored pixel frame; EXIF orientation is NOT applied. Verified on the only tag-6 image (train/07389.jpg): stored pixels are upright and the box matches them. Uploads do apply EXIF orientation.",
+ "invalid_box_records": [],
+ "modes": {
+  "RGB": 16151,
+  "L": 34
+ },
+ "duplicates": {
+  "exact_groups": 39,
+  "exact_examples": [
+   [
+    "train/00050.jpg",
+    "train/03436.jpg"
+   ],
+   [
+    "train/00114.jpg",
+    "test/07699.jpg"
+   ],
+   [
+    "train/00115.jpg",
+    "test/04160.jpg"
+   ],
+   [
+    "train/00151.jpg",
+    "train/04892.jpg"
+   ],
+   [
+    "train/00595.jpg",
+    "train/03516.jpg"
+   ],
+   [
+    "train/00862.jpg",
+    "test/05487.jpg"
+   ],
+   [
+    "train/01321.jpg",
+    "test/04507.jpg"
+   ],
+   [
+    "train/01969.jpg",
+    "test/02880.jpg"
+   ],
+   [
+    "train/02045.jpg",
+    "train/04665.jpg"
+   ],
+   [
+    "train/02176.jpg",
+    "test/04006.jpg"
+   ],
+   [
+    "train/02268.jpg",
+    "test/05725.jpg"
+   ],
+   [
+    "train/02456.jpg",
+    "train/02598.jpg"
+   ],
+   [
+    "train/02641.jpg",
+    "train/07765.jpg"
+   ],
+   [
+    "train/02668.jpg",
+    "test/05831.jpg"
+   ],
+   [
+    "train/02843.jpg",
+    "train/06839.jpg"
+   ],
+   [
+    "train/02967.jpg",
+    "test/02449.jpg"
+   ],
+   [
+    "train/03371.jpg",
+    "test/05250.jpg"
+   ],
+   [
+    "train/03416.jpg",
+    "test/06881.jpg"
+   ],
+   [
+    "train/04223.jpg",
+    "train/06153.jpg"
+   ],
+   [
+    "train/04250.jpg",
+    "train/06713.jpg"
+   ],
+   [
+    "train/04639.jpg",
+    "test/07681.jpg"
+   ],
+   [
+    "train/04676.jpg",
+    "test/06781.jpg"
+   ],
+   [
+    "train/04922.jpg",
+    "train/05994.jpg"
+   ],
+   [
+    "train/05334.jpg",
+    "train/05614.jpg"
+   ],
+   [
+    "train/06353.jpg",
+    "train/07381.jpg"
+   ],
+   [
+    "train/07019.jpg",
+    "test/05059.jpg"
+   ],
+   [
+    "train/07152.jpg",
+    "test/04813.jpg"
+   ],
+   [
+    "train/07371.jpg",
+    "test/07365.jpg"
+   ],
+   [
+    "train/07535.jpg",
+    "test/04250.jpg"
+   ],
+   [
+    "train/07743.jpg",
+    "test/06693.jpg"
+   ],
+   [
+    "train/08130.jpg",
+    "test/07855.jpg"
+   ],
+   [
+    "test/00288.jpg",
+    "test/06136.jpg"
+   ],
+   [
+    "test/01236.jpg",
+    "test/05844.jpg"
+   ],
+   [
+    "test/01389.jpg",
+    "test/05063.jpg"
+   ],
+   [
+    "test/01723.jpg",
+    "test/02854.jpg"
+   ],
+   [
+    "test/03331.jpg",
+    "test/07491.jpg"
+   ],
+   [
+    "test/03745.jpg",
+    "test/06765.jpg"
+   ],
+   [
+    "test/04340.jpg",
+    "test/06530.jpg"
+   ],
+   [
+    "test/07308.jpg",
+    "test/07703.jpg"
+   ]
+  ],
+  "exact_groups_with_conflicting_labels": 37,
+  "conflicting_label_groups": [
+   [
+    [
+     "train/00050.jpg",
+     41
+    ],
+    [
+     "train/03436.jpg",
+     42
+    ]
+   ],
+   [
+    [
+     "train/00114.jpg",
+     70
+    ],
+    [
+     "test/07699.jpg",
+     63
+    ]
+   ],
+   [
+    [
+     "train/00115.jpg",
+     82
+    ],
+    [
+     "test/04160.jpg",
+     83
+    ]
+   ],
+   [
+    [
+     "train/00151.jpg",
+     4
+    ],
+    [
+     "train/04892.jpg",
+     1
+    ]
+   ],
+   [
+    [
+     "train/00595.jpg",
+     68
+    ],
+    [
+     "train/03516.jpg",
+     74
+    ]
+   ],
+   [
+    [
+     "train/01321.jpg",
+     176
+    ],
+    [
+     "test/04507.jpg",
+     175
+    ]
+   ],
+   [
+    [
+     "train/01969.jpg",
+     83
+    ],
+    [
+     "test/02880.jpg",
+     82
+    ]
+   ],
+   [
+    [
+     "train/02045.jpg",
+     176
+    ],
+    [
+     "train/04665.jpg",
+     175
+    ]
+   ],
+   [
+    [
+     "train/02176.jpg",
+     16
+    ],
+    [
+     "test/04006.jpg",
+     15
+    ]
+   ],
+   [
+    [
+     "train/02268.jpg",
+     70
+    ],
+    [
+     "test/05725.jpg",
+     63
+    ]
+   ],
+   [
+    [
+     "train/02456.jpg",
+     24
+    ],
+    [
+     "train/02598.jpg",
+     13
+    ]
+   ],
+   [
+    [
+     "train/02641.jpg",
+     12
+    ],
+    [
+     "train/07765.jpg",
+     13
+    ]
+   ],
+   [
+    [
+     "train/02668.jpg",
+     83
+    ],
+    [
+     "test/05831.jpg",
+     82
+    ]
+   ],
+   [
+    [
+     "train/02843.jpg",
+     4
+    ],
+    [
+     "train/06839.jpg",
+     1
+    ]
+   ],
+   [
+    [
+     "train/02967.jpg",
+     42
+    ],
+    [
+     "test/02449.jpg",
+     41
+    ]
+   ],
+   [
+    [
+     "train/03371.jpg",
+     75
+    ],
+    [
+     "test/05250.jpg",
+     94
+    ]
+   ],
+   [
+    [
+     "train/03416.jpg",
+     175
+    ],
+    [
+     "test/06881.jpg",
+     176
+    ]
+   ],
+   [
+    [
+     "train/04223.jpg",
+     123
+    ],
+    [
+     "train/06153.jpg",
+     124
+    ]
+   ],
+   [
+    [
+     "train/04250.jpg",
+     44
+    ],
+    [
+     "train/06713.jpg",
+     45
+    ]
+   ],
+   [
+    [
+     "train/04639.jpg",
+     16
+    ],
+    [
+     "test/07681.jpg",
+     15
+    ]
+   ],
+   [
+    [
+     "train/04676.jpg",
+     21
+    ],
+    [
+     "test/06781.jpg",
+     12
+    ]
+   ],
+   [
+    [
+     "train/04922.jpg",
+     146
+    ],
+    [
+     "train/05994.jpg",
+     144
+    ]
+   ],
+   [
+    [
+     "train/05334.jpg",
+     70
+    ],
+    [
+     "train/05614.jpg",
+     63
+    ]
+   ],
+   [
+    [
+     "train/06353.jpg",
+     82
+    ],
+    [
+     "train/07381.jpg",
+     83
+    ]
+   ],
+   [
+    [
+     "train/07019.jpg",
+     68
+    ],
+    [
+     "test/05059.jpg",
+     74
+    ]
+   ],
+   [
+    [
+     "train/07152.jpg",
+     63
+    ],
+    [
+     "test/04813.jpg",
+     70
+    ]
+   ],
+   [
+    [
+     "train/07371.jpg",
+     83
+    ],
+    [
+     "test/07365.jpg",
+     82
+    ]
+   ],
+   [
+    [
+     "train/07535.jpg",
+     15
+    ],
+    [
+     "test/04250.jpg",
+     16
+    ]
+   ],
+   [
+    [
+     "train/07743.jpg",
+     178
+    ],
+    [
+     "test/06693.jpg",
+     179
+    ]
+   ],
+   [
+    [
+     "train/08130.jpg",
+     45
+    ],
+    [
+     "test/07855.jpg",
+     44
+    ]
+   ],
+   [
+    [
+     "test/00288.jpg",
+     188
+    ],
+    [
+     "test/06136.jpg",
+     185
+    ]
+   ],
+   [
+    [
+     "test/01236.jpg",
+     13
+    ],
+    [
+     "test/05844.jpg",
+     18
+    ]
+   ],
+   [
+    [
+     "test/01389.jpg",
+     83
+    ],
+    [
+     "test/05063.jpg",
+     82
+    ]
+   ],
+   [
+    [
+     "test/01723.jpg",
+     42
+    ],
+    [
+     "test/02854.jpg",
+     43
+    ]
+   ],
+   [
+    [
+     "test/03331.jpg",
+     15
+    ],
+    [
+     "test/07491.jpg",
+     16
+    ]
+   ],
+   [
+    [
+     "test/03745.jpg",
+     70
+    ],
+    [
+     "test/06765.jpg",
+     63
+    ]
+   ],
+   [
+    [
+     "test/04340.jpg",
+     30
+    ],
+    [
+     "test/06530.jpg",
+     35
+    ]
+   ]
+  ],
+  "test_images_with_exact_copy_outside_test": [
+   "test/02449.jpg",
+   "test/02880.jpg",
+   "test/04006.jpg",
+   "test/04160.jpg",
+   "test/04250.jpg",
+   "test/04507.jpg",
+   "test/04813.jpg",
+   "test/05059.jpg",
+   "test/05250.jpg",
+   "test/05487.jpg",
+   "test/05725.jpg",
+   "test/05831.jpg",
+   "test/06693.jpg",
+   "test/06781.jpg",
+   "test/06881.jpg",
+   "test/07365.jpg",
+   "test/07681.jpg",
+   "test/07699.jpg",
+   "test/07855.jpg"
+  ],
+  "phash_threshold": 4,
+  "near_pairs": 60,
+  "near_pairs_cross_split": 32,
+  "near_examples": [
+   [
+    "train/00022.jpg",
+    "test/04974.jpg",
+    2
+   ],
+   [
+    "train/00050.jpg",
+    "train/03436.jpg",
+    0
+   ],
+   [
+    "train/00114.jpg",
+    "test/07699.jpg",
+    0
+   ],
+   [
+    "train/00115.jpg",
+    "test/04160.jpg",
+    0
+   ],
+   [
+    "train/00151.jpg",
+    "train/04892.jpg",
+    0
+   ],
+   [
+    "train/00595.jpg",
+    "train/03516.jpg",
+    0
+   ],
+   [
+    "train/00694.jpg",
+    "test/07659.jpg",
+    4
+   ],
+   [
+    "train/00862.jpg",
+    "test/05487.jpg",
+    0
+   ],
+   [
+    "train/01074.jpg",
+    "test/07627.jpg",
+    2
+   ],
+   [
+    "train/01179.jpg",
+    "test/01821.jpg",
+    2
+   ],
+   [
+    "train/01321.jpg",
+    "test/04507.jpg",
+    0
+   ],
+   [
+    "train/01937.jpg",
+    "test/01286.jpg",
+    2
+   ],
+   [
+    "train/01944.jpg",
+    "test/00186.jpg",
+    4
+   ],
+   [
+    "train/01969.jpg",
+    "test/02880.jpg",
+    0
+   ],
+   [
+    "train/02032.jpg",
+    "test/06963.jpg",
+    0
+   ],
+   [
+    "train/02045.jpg",
+    "train/04665.jpg",
+    0
+   ],
+   [
+    "train/02176.jpg",
+    "test/04006.jpg",
+    0
+   ],
+   [
+    "train/02268.jpg",
+    "test/05725.jpg",
+    0
+   ],
+   [
+    "train/02456.jpg",
+    "train/02598.jpg",
+    0
+   ],
+   [
+    "train/02641.jpg",
+    "train/07765.jpg",
+    0
+   ],
+   [
+    "train/02668.jpg",
+    "test/05831.jpg",
+    0
+   ],
+   [
+    "train/02843.jpg",
+    "train/06839.jpg",
+    0
+   ],
+   [
+    "train/02946.jpg",
+    "test/00303.jpg",
+    4
+   ],
+   [
+    "train/02967.jpg",
+    "test/02449.jpg",
+    0
+   ],
+   [
+    "train/03175.jpg",
+    "train/06072.jpg",
+    0
+   ],
+   [
+    "train/03353.jpg",
+    "train/06624.jpg",
+    4
+   ],
+   [
+    "train/03371.jpg",
+    "test/05250.jpg",
+    0
+   ],
+   [
+    "train/03397.jpg",
+    "test/05836.jpg",
+    4
+   ],
+   [
+    "train/03416.jpg",
+    "test/06881.jpg",
+    0
+   ],
+   [
+    "train/04223.jpg",
+    "train/06153.jpg",
+    0
+   ],
+   [
+    "train/04250.jpg",
+    "train/06713.jpg",
+    0
+   ],
+   [
+    "train/04323.jpg",
+    "train/07354.jpg",
+    0
+   ],
+   [
+    "train/04639.jpg",
+    "test/07681.jpg",
+    0
+   ],
+   [
+    "train/04676.jpg",
+    "test/06781.jpg",
+    0
+   ],
+   [
+    "train/04922.jpg",
+    "train/05994.jpg",
+    0
+   ],
+   [
+    "train/04989.jpg",
+    "train/06936.jpg",
+    2
+   ],
+   [
+    "train/05334.jpg",
+    "train/05614.jpg",
+    0
+   ],
+   [
+    "train/05425.jpg",
+    "train/08087.jpg",
+    4
+   ],
+   [
+    "train/05934.jpg",
+    "test/00016.jpg",
+    4
+   ],
+   [
+    "train/06353.jpg",
+    "train/07381.jpg",
+    0
+   ],
+   [
+    "train/06857.jpg",
+    "test/07826.jpg",
+    2
+   ],
+   [
+    "train/07019.jpg",
+    "test/05059.jpg",
+    0
+   ],
+   [
+    "train/07152.jpg",
+    "test/04813.jpg",
+    0
+   ],
+   [
+    "train/07345.jpg",
+    "test/05381.jpg",
+    4
+   ],
+   [
+    "train/07371.jpg",
+    "test/07365.jpg",
+    0
+   ],
+   [
+    "train/07525.jpg",
+    "test/02491.jpg",
+    4
+   ],
+   [
+    "train/07535.jpg",
+    "test/04250.jpg",
+    0
+   ],
+   [
+    "train/07743.jpg",
+    "test/06693.jpg",
+    0
+   ],
+   [
+    "train/08130.jpg",
+    "test/07855.jpg",
+    0
+   ],
+   [
+    "test/00288.jpg",
+    "test/06136.jpg",
+    0
+   ],
+   [
+    "test/01236.jpg",
+    "test/05844.jpg",
+    0
+   ],
+   [
+    "test/01389.jpg",
+    "test/05063.jpg",
+    0
+   ],
+   [
+    "test/01693.jpg",
+    "test/04151.jpg",
+    4
+   ],
+   [
+    "test/01723.jpg",
+    "test/02854.jpg",
+    0
+   ],
+   [
+    "test/02085.jpg",
+    "test/04834.jpg",
+    4
+   ],
+   [
+    "test/03331.jpg",
+    "test/07491.jpg",
+    0
+   ],
+   [
+    "test/03541.jpg",
+    "test/07641.jpg",
+    4
+   ],
+   [
+    "test/03745.jpg",
+    "test/06765.jpg",
+    0
+   ],
+   [
+    "test/04340.jpg",
+    "test/06530.jpg",
+    0
+   ],
+   [
+    "test/07308.jpg",
+    "test/07703.jpg",
+    0
+   ]
+  ],
+  "note": "Recorded only; official populations are not modified."
+ },
+ "partition_content_overlap_exact": {
+  "train|tune": 1,
+  "calibration|train": 3,
+  "calibration|tune": 2,
+  "calibration|test": 0,
+  "test|train": 15,
+  "test|tune": 4
+ },
+ "partitions": {
+  "train": {
+   "file": "train_m1.csv",
+   "count": 6514,
+   "sha256": "a78aaf50b8171e4452179e8095dc54899ed16a280233a7152c3997b1fd87c179",
+   "classes": 196
+  },
+  "tune": {
+   "file": "tune_m1.csv",
+   "count": 815,
+   "sha256": "0f54c77a26c98e021bf8472511f7db67e84e2cbc0258caa3048298efb0da79e3",
+   "classes": 196
+  },
+  "calibration": {
+   "file": "calibration_m1.csv",
+   "count": 815,
+   "sha256": "f3b19f8386f10c491c62964fe8aa16c57779376fca6d3a4c69f5559dbbf34495",
+   "classes": 194
+  },
+  "test": {
+   "file": "test_m1.csv",
+   "count": 8041,
+   "sha256": "5eb7f6150857e11078a7ff50d08d5905badcd259d2159187a4c27cf5412cb531",
+   "classes": 196
+  }
+ },
+ "overlay_samples": [
+  "train/01136.jpg",
+  "test/03172.jpg",
+  "train/06000.jpg",
+  "test/05694.jpg",
+  "train/02670.jpg",
+  "test/02599.jpg",
+  "train/07935.jpg",
+  "test/05633.jpg",
+  "test/05568.jpg",
+  "test/04064.jpg",
+  "train/04851.jpg",
+  "test/00286.jpg",
+  "train/04807.jpg",
+  "test/02095.jpg",
+  "test/04186.jpg",
+  "train/05439.jpg",
+  "test/07150.jpg",
+  "train/03333.jpg",
+  "test/00098.jpg",
+  "train/03251.jpg",
+  "test/05165.jpg",
+  "train/03367.jpg",
+  "train/01428.jpg",
+  "test/06439.jpg",
+  "train/02005.jpg",
+  "test/07935.jpg",
+  "test/02451.jpg",
+  "train/02967.jpg",
+  "train/03155.jpg",
+  "train/06690.jpg"
+ ],
+ "elapsed_seconds": 102.5
+}
