@@ -1,0 +1,189 @@
+{
+ "backbone": "ckpt_98b1fb55cc6e",
+ "population": {
+  "partition": "tune",
+  "count": 815,
+  "crops": "annotation"
+ },
+ "calibration_data": {
+  "partition": "train",
+  "count": 128,
+  "seed": 20261106,
+  "selection": "seeded random"
+ },
+ "quantization": {
+  "variants": {
+   "onnx_int8": {
+    "method": "static QDQ per-channel QInt8 weights / QUInt8 activations, MinMax",
+    "seconds": 18.1,
+    "error": null,
+    "size_bytes": 4886078
+   },
+   "onnx_int8_percentile": {
+    "method": "static QDQ per-channel QInt8 weights / QUInt8 activations, Percentile",
+    "seconds": 224.0,
+    "error": null,
+    "size_bytes": 4886092
+   },
+   "onnx_int8_dynamic": {
+    "method": "dynamic weight-only QUInt8",
+    "seconds": 67.2,
+    "error": null,
+    "size_bytes": 4357503
+   }
+  },
+  "opset": 17,
+  "seconds_total": 309.3
+ },
+ "accuracy": {
+  "torch_fp32": {
+   "deep": {
+    "tune_top1": 0.9411042944785276,
+    "tune_top5": 0.9877300613496932
+   },
+   "hybrid": {
+    "tune_top1": 0.9423312883435583,
+    "tune_top5": 0.9877300613496932
+   }
+  },
+  "onnx_fp32": {
+   "deep": {
+    "tune_top1": 0.9411042944785276,
+    "tune_top5": 0.9877300613496932
+   },
+   "hybrid": {
+    "tune_top1": 0.9423312883435583,
+    "tune_top5": 0.9877300613496932
+   }
+  },
+  "onnx_int8": {
+   "deep": {
+    "tune_top1": 0.45153374233128835,
+    "tune_top5": 0.7055214723926381
+   },
+   "hybrid": {
+    "tune_top1": 0.45766871165644174,
+    "tune_top5": 0.7092024539877301
+   }
+  },
+  "onnx_int8_percentile": {
+   "deep": {
+    "tune_top1": 0.8638036809815951,
+    "tune_top5": 0.9644171779141104
+   },
+   "hybrid": {
+    "tune_top1": 0.8613496932515338,
+    "tune_top5": 0.9644171779141104
+   }
+  },
+  "onnx_int8_dynamic": {
+   "deep": {
+    "tune_top1": 0.0049079754601227,
+    "tune_top5": 0.026993865030674847
+   },
+   "hybrid": {
+    "tune_top1": 0.0049079754601227,
+    "tune_top5": 0.02822085889570552
+   }
+  }
+ },
+ "parity": {
+  "deep": {
+   "onnx_fp32_vs_torch": {
+    "max_abs_centered_logit_diff": 0.00016250900617409414,
+    "max_abs_prob_diff": 1.407662262520315e-05,
+    "top1_agreement": 1.0,
+    "passes_atol_1e-4_logits": true,
+    "passes_atol_1e-5_probs": true
+   },
+   "onnx_int8_vs_torch": {
+    "top1_agreement": 0.46503067484662575,
+    "max_abs_centered_logit_diff": 11.94501564699912
+   },
+   "onnx_int8_percentile_vs_torch": {
+    "top1_agreement": 0.9067484662576687,
+    "max_abs_centered_logit_diff": 6.3173329857086475
+   },
+   "onnx_int8_dynamic_vs_torch": {
+    "top1_agreement": 0.0049079754601227,
+    "max_abs_centered_logit_diff": 14.474812488384366
+   }
+  },
+  "hybrid": {
+   "onnx_fp32_vs_torch": {
+    "max_abs_centered_logit_diff": 0.00013704331648112245,
+    "max_abs_prob_diff": 1.4075623381737401e-05,
+    "top1_agreement": 1.0,
+    "passes_atol_1e-4_logits": true,
+    "passes_atol_1e-5_probs": true
+   },
+   "onnx_int8_vs_torch": {
+    "top1_agreement": 0.47484662576687114,
+    "max_abs_centered_logit_diff": 9.987808533137468
+   },
+   "onnx_int8_percentile_vs_torch": {
+    "top1_agreement": 0.905521472392638,
+    "max_abs_centered_logit_diff": 5.309703820109615
+   },
+   "onnx_int8_dynamic_vs_torch": {
+    "top1_agreement": 0.0049079754601227,
+    "max_abs_centered_logit_diff": 12.323091469961167
+   }
+  }
+ },
+ "embedding_max_abs_diff": {
+  "onnx_fp32": 5.841255187988281e-05,
+  "onnx_int8": 2.5917632579803467,
+  "onnx_int8_percentile": 1.748878002166748,
+  "onnx_int8_dynamic": 5.9228620529174805
+ },
+ "size_bytes": {
+  "torch_state_dict_pth": 17335257,
+  "onnx_fp32": 16020231,
+  "onnx_int8": 4886078,
+  "onnx_int8_percentile": 4886092,
+  "onnx_int8_dynamic": 4357503
+ },
+ "latency_single_crop_encoder_only": {
+  "threads": 2,
+  "torch_fp32": {
+   "p50_ms": 36.67929999937769,
+   "p95_ms": 50.32192000126088,
+   "runs": 40
+  },
+  "onnx_fp32": {
+   "p50_ms": 19.60289999806264,
+   "p95_ms": 24.650269997800915,
+   "runs": 40
+  },
+  "onnx_int8": {
+   "p50_ms": 13.268349999634665,
+   "p95_ms": 23.70213500216778,
+   "runs": 40
+  },
+  "onnx_int8_percentile": {
+   "p50_ms": 15.799050001078285,
+   "p95_ms": 23.52538000086497,
+   "runs": 40
+  },
+  "onnx_int8_dynamic": {
+   "p50_ms": 59.91275000087626,
+   "p95_ms": 87.47882000097886,
+   "runs": 40
+  },
+  "hardware": "Intel(R) Core(TM) i7-14650HX CPU, 2 torch threads, 24 logical cores",
+  "note": "encoder forward only, batch 1, warm"
+ },
+ "selection_policy": "keep INT8 only if tune top-1 drop <= 1.0 percentage point for the production head (project choice, not a PS rule)",
+ "wall_seconds": 374.3,
+ "int8_hybrid_top1_drop_pp": {
+  "onnx_int8": 48.47,
+  "onnx_int8_percentile": 8.1,
+  "onnx_int8_dynamic": 93.74
+ },
+ "int8_passes_policy": {
+  "onnx_int8": false,
+  "onnx_int8_percentile": false,
+  "onnx_int8_dynamic": false
+ }
+}

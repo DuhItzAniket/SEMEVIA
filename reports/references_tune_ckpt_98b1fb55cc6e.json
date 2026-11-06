@@ -1,0 +1,21 @@
+{
+ "index_id": "refidx_898b218f77f4",
+ "entries": 588,
+ "embedding_version": "effb0_pool1280_ckpt_98b1fb55cc6e|crop_squash320_bilinear_imagenetnorm_v1|fp32",
+ "population": {
+  "partition": "tune",
+  "count": 815,
+  "crops": "annotation"
+ },
+ "nearest_reference_same_class": {
+  "numerator": 717,
+  "denominator": 815,
+  "value": 0.8797546012269939
+ },
+ "any_of_three_same_class": {
+  "numerator": 752,
+  "denominator": 815,
+  "value": 0.9226993865030675
+ },
+ "note": "Descriptive retrieval diagnostic; references are illustrations, not identity evidence."
+}

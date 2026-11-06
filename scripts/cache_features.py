@@ -115,6 +115,12 @@ def main() -> None:
     import yaml
 
     margin = yaml.safe_load((ROOT / "configs/features.yaml").read_text(encoding="utf-8"))["crops"]["margin"]
+    if args.features == "learned":
+        # Record the encoder input size first: cache_meta() below reads it into preprocess_version.
+        from src.models.backbone import backbone_input_size
+        from src.models.cache_io import register_backbone_size
+
+        register_backbone_size(backbone_tag(args.backbone), backbone_input_size(args.backbone))
     for part in args.partitions:
         btag = backbone_tag(args.backbone) if args.features == "learned" else None
         meta = cache_meta(args.features, part, args.crop, idx, btag)

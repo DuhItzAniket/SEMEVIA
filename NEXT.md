@@ -8,6 +8,10 @@
 * If the rule is not met: r2 stays the release, r3 is **not** evaluated on the test split, and its tune result is
   reported as a negative result. If met: r3 is frozen (tune negatives, as r2), then evaluated once on test, and
   all three iterations are reported. Decision taken by the team (team Hypermetropia) on 2026-11-07.
+* **Rule outcome (recorded before any r3 test run):** r3 tune end-to-end hybrid top-1 = 759/815
+  (`reports/e2e_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json`) >= 740/815, so the rule is met. r3 was then frozen with
+  the tune negatives (`artifacts/production_freeze.json`) and given its final calibration; r2's freeze is archived
+  in `artifacts/history/r2/`. Next: the single r3 test run.
 
 ## Iteration r2 decision record (written before any r2 test result exists)
 * Decided before r2's test run (this commit precedes it): iteration r2 (`configs/train_v2.yaml`, run effb0_r2)
