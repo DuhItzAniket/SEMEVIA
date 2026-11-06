@@ -1,0 +1,415 @@
+{
+ "population": {
+  "partition": "tune",
+  "count": 815,
+  "manifest_sha256": "0f54c77a26c98e021bf8472511f7db67e84e2cbc0258caa3048298efb0da79e3"
+ },
+ "bundle_id": "dev_imagenet_frozen_097c99803f",
+ "predictions_file": "e2e_tune_0f54c77a26_dev_imagenet_frozen_097c99803f.jsonl",
+ "definitions": {
+  "end_to_end_topk": "runtime-selected box IoU >= 0.5 with the annotation AND true class in top-k; misses count as failures; denominator = all images",
+  "predicted_crop_topk": "category-only accuracy on images where the path produced a crop (may be a wrong target)",
+  "matched_primary_topk": "category accuracy only where the runtime box has IoU >= 0.5",
+  "fine_grained_ap": "COCO AP over 196 categories, max one prediction per image (top-1 class), score = localisation score x top-1 probability (ranking score, not a probability)"
+ },
+ "modes": {
+  "classical": {
+   "end_to_end_top1": {
+    "numerator": 53,
+    "denominator": 815,
+    "value": 0.06503067484662577
+   },
+   "end_to_end_top5": {
+    "numerator": 106,
+    "denominator": 815,
+    "value": 0.13006134969325153
+   },
+   "predicted_crop_top1": {
+    "numerator": 54,
+    "denominator": 634,
+    "value": 0.08517350157728706
+   },
+   "predicted_crop_top5": {
+    "numerator": 109,
+    "denominator": 634,
+    "value": 0.1719242902208202
+   },
+   "matched_primary_top1": {
+    "numerator": 53,
+    "denominator": 507,
+    "value": 0.10453648915187377
+   },
+   "matched_primary_top5": {
+    "numerator": 106,
+    "denominator": 507,
+    "value": 0.20907297830374755
+   },
+   "localization": {
+    "population_count": 815,
+    "mean_iou_valid_selected": {
+     "numerator": 422.3268350813714,
+     "denominator": 634,
+     "value": 0.6661306547024786
+    },
+    "mean_iou_zero_for_failures": {
+     "numerator": 422.3268350813714,
+     "denominator": 815,
+     "value": 0.5181924356826644
+    },
+    "primary_recall_at_iou": {
+     "numerator": 507,
+     "denominator": 815,
+     "value": 0.6220858895705521
+    },
+    "iou_threshold": 0.5,
+    "missing": 181,
+    "invalid": 0,
+    "wrong_target_below_thr": 127
+   },
+   "localization_source": "contour proposal",
+   "fine_grained_ap": {
+    "AP50_95": 0.03617617081448823,
+    "AP50": 0.04902695147142456,
+    "num_predictions": 634,
+    "num_ground_truth": 815,
+    "settings": {
+     "iouThrs": "0.50:0.05:0.95",
+     "recThrs": 101,
+     "maxDets": [
+      1,
+      10,
+      100
+     ],
+     "areaRng": "all"
+    },
+    "evaluator": "pycocotools COCOeval bbox"
+   }
+  },
+  "deep": {
+   "end_to_end_top1": {
+    "numerator": 526,
+    "denominator": 815,
+    "value": 0.645398773006135
+   },
+   "end_to_end_top5": {
+    "numerator": 724,
+    "denominator": 815,
+    "value": 0.8883435582822086
+   },
+   "predicted_crop_top1": {
+    "numerator": 526,
+    "denominator": 811,
+    "value": 0.6485819975339088
+   },
+   "predicted_crop_top5": {
+    "numerator": 724,
+    "denominator": 811,
+    "value": 0.8927250308261405
+   },
+   "matched_primary_top1": {
+    "numerator": 526,
+    "denominator": 809,
+    "value": 0.6501854140914709
+   },
+   "matched_primary_top5": {
+    "numerator": 724,
+    "denominator": 809,
+    "value": 0.8949320148331273
+   },
+   "localization": {
+    "population_count": 815,
+    "mean_iou_valid_selected": {
+     "numerator": 765.2910137780341,
+     "denominator": 811,
+     "value": 0.943638734621497
+    },
+    "mean_iou_zero_for_failures": {
+     "numerator": 765.2910137780341,
+     "denominator": 815,
+     "value": 0.9390073788687535
+    },
+    "primary_recall_at_iou": {
+     "numerator": 809,
+     "denominator": 815,
+     "value": 0.992638036809816
+    },
+    "iou_threshold": 0.5,
+    "missing": 4,
+    "invalid": 0,
+    "wrong_target_below_thr": 2
+   },
+   "localization_source": "YOLO11n primary target",
+   "fine_grained_ap": {
+    "AP50_95": 0.5607928008544294,
+    "AP50": 0.5980450996994744,
+    "num_predictions": 811,
+    "num_ground_truth": 815,
+    "settings": {
+     "iouThrs": "0.50:0.05:0.95",
+     "recThrs": 101,
+     "maxDets": [
+      1,
+      10,
+      100
+     ],
+     "areaRng": "all"
+    },
+    "evaluator": "pycocotools COCOeval bbox"
+   }
+  },
+  "hybrid": {
+   "end_to_end_top1": {
+    "numerator": 522,
+    "denominator": 815,
+    "value": 0.6404907975460122
+   },
+   "end_to_end_top5": {
+    "numerator": 733,
+    "denominator": 815,
+    "value": 0.8993865030674847
+   },
+   "predicted_crop_top1": {
+    "numerator": 522,
+    "denominator": 811,
+    "value": 0.6436498150431565
+   },
+   "predicted_crop_top5": {
+    "numerator": 733,
+    "denominator": 811,
+    "value": 0.903822441430333
+   },
+   "matched_primary_top1": {
+    "numerator": 522,
+    "denominator": 809,
+    "value": 0.6452410383189122
+   },
+   "matched_primary_top5": {
+    "numerator": 733,
+    "denominator": 809,
+    "value": 0.9060568603213844
+   },
+   "localization": {
+    "population_count": 815,
+    "mean_iou_valid_selected": {
+     "numerator": 765.2910137780341,
+     "denominator": 811,
+     "value": 0.943638734621497
+    },
+    "mean_iou_zero_for_failures": {
+     "numerator": 765.2910137780341,
+     "denominator": 815,
+     "value": 0.9390073788687535
+    },
+    "primary_recall_at_iou": {
+     "numerator": 809,
+     "denominator": 815,
+     "value": 0.992638036809816
+    },
+    "iou_threshold": 0.5,
+    "missing": 4,
+    "invalid": 0,
+    "wrong_target_below_thr": 2
+   },
+   "localization_source": "YOLO11n primary target",
+   "fine_grained_ap": {
+    "AP50_95": 0.5562035740746086,
+    "AP50": 0.5931470442962664,
+    "num_predictions": 811,
+    "num_ground_truth": 815,
+    "settings": {
+     "iouThrs": "0.50:0.05:0.95",
+     "recThrs": 101,
+     "maxDets": [
+      1,
+      10,
+      100
+     ],
+     "areaRng": "all"
+    },
+    "evaluator": "pycocotools COCOeval bbox"
+   }
+  }
+ },
+ "passport_production_mode": {
+  "mode": "hybrid",
+  "calibration_kind": "development",
+  "calibration_bundle": "devcal_da6c6241b5bd",
+  "caveat": "Development calibration was fitted on this same tune split (annotation crops); coverage here is in-sample and not a valid conformal guarantee.",
+  "sets_all_inputs": {
+   "coverage": {
+    "numerator": 735,
+    "denominator": 815,
+    "value": 0.901840490797546
+   },
+   "mean_set_size": 5.061349693251533,
+   "median_set_size": 3.0,
+   "singleton": {
+    "numerator": 175,
+    "denominator": 815,
+    "value": 0.2147239263803681
+   },
+   "singleton_accuracy": {
+    "numerator": 169,
+    "denominator": 175,
+    "value": 0.9657142857142857
+   },
+   "empty": {
+    "numerator": 0,
+    "denominator": 815,
+    "value": 0.0
+   },
+   "specific_answer_rate": {
+    "numerator": 234,
+    "denominator": 815,
+    "value": 0.2871165644171779
+   }
+  },
+  "accepted": {
+   "retention": {
+    "numerator": 753,
+    "denominator": 815,
+    "value": 0.9239263803680982
+   },
+   "accepted_end_to_end_accuracy": {
+    "numerator": 508,
+    "denominator": 753,
+    "value": 0.6746347941567065
+   },
+   "threshold": 0.25
+  },
+  "calibration_matched_primary": {
+   "n": 809,
+   "excluded_miss_or_wrong_target": 6,
+   "ece_raw": 0.09887815981037433,
+   "ece_calibrated": {
+    "ece": 0.0380666265491985,
+    "n": 809,
+    "bins": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 1,
+      "accuracy": 0.0,
+      "mean_confidence": 0.09509859830130499
+     },
+     {
+      "bin": [
+       0.1,
+       0.2
+      ],
+      "count": 28,
+      "accuracy": 0.21428571428571427,
+      "mean_confidence": 0.16294837782143526
+     },
+     {
+      "bin": [
+       0.2,
+       0.3
+      ],
+      "count": 73,
+      "accuracy": 0.273972602739726,
+      "mean_confidence": 0.2546345526883885
+     },
+     {
+      "bin": [
+       0.3,
+       0.4
+      ],
+      "count": 68,
+      "accuracy": 0.45588235294117646,
+      "mean_confidence": 0.3476929830984004
+     },
+     {
+      "bin": [
+       0.4,
+       0.5
+      ],
+      "count": 88,
+      "accuracy": 0.42045454545454547,
+      "mean_confidence": 0.4459573244608484
+     },
+     {
+      "bin": [
+       0.5,
+       0.6
+      ],
+      "count": 81,
+      "accuracy": 0.49382716049382713,
+      "mean_confidence": 0.5503894920920535
+     },
+     {
+      "bin": [
+       0.6,
+       0.7
+      ],
+      "count": 77,
+      "accuracy": 0.5974025974025974,
+      "mean_confidence": 0.6433373280589737
+     },
+     {
+      "bin": [
+       0.7,
+       0.8
+      ],
+      "count": 76,
+      "accuracy": 0.7368421052631579,
+      "mean_confidence": 0.7519155861586789
+     },
+     {
+      "bin": [
+       0.8,
+       0.9
+      ],
+      "count": 100,
+      "accuracy": 0.8,
+      "mean_confidence": 0.8550789319333739
+     },
+     {
+      "bin": [
+       0.9,
+       1.0
+      ],
+      "count": 217,
+      "accuracy": 0.9493087557603687,
+      "mean_confidence": 0.9653389707004383
+     }
+    ]
+   },
+   "nll_raw": 1.3687926453107515,
+   "nll_calibrated": 1.3090445704076963
+  }
+ },
+ "latency_ms": {
+  "detector_p50": 78.2,
+  "detector_p95": 152.21999999999989,
+  "features_and_heads_per_crop_mean_batched": 62.44870530209618,
+  "hardware": "Intel i5-1135G7 CPU, 4 torch threads",
+  "note": "offline batch timing, not user-visible latency"
+ },
+ "summary": {
+  "classical": {
+   "e2e_top1": 0.06503067484662577,
+   "e2e_top5": 0.13006134969325153,
+   "matched_top1": 0.10453648915187377,
+   "fg_AP50": 0.04902695147142456,
+   "loc_recall50": 0.6220858895705521
+  },
+  "deep": {
+   "e2e_top1": 0.645398773006135,
+   "e2e_top5": 0.8883435582822086,
+   "matched_top1": 0.6501854140914709,
+   "fg_AP50": 0.5980450996994744,
+   "loc_recall50": 0.992638036809816
+  },
+  "hybrid": {
+   "e2e_top1": 0.6404907975460122,
+   "e2e_top5": 0.8993865030674847,
+   "matched_top1": 0.6452410383189122,
+   "fg_AP50": 0.5931470442962664,
+   "loc_recall50": 0.992638036809816
+  }
+ },
+ "wall_seconds_this_run": 168.4
+}

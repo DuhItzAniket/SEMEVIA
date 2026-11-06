@@ -56,6 +56,14 @@ class Predictor:
         res = [extract_classical(c.crop, c.box, c.image_size, want_views=want_views) for c in crops]
         return np.stack([r.vector for r in res]).astype(np.float64), res
 
+    def score_features(self, mode: str, learned: np.ndarray | None, hc: np.ndarray) -> np.ndarray:
+        """Score precomputed branch features (used by batch evaluation to avoid recomputing)."""
+        X = hc if mode == "classical" else np.concatenate([learned, hc], axis=1)
+        z = canonical_logits(self.heads[mode], X)
+        if not np.isfinite(z).all():
+            raise RuntimeError("non-finite logits")
+        return z
+
     def score_crops(self, mode: str, crops: list[CropInput], want_views: bool = False) -> tuple[np.ndarray, list]:
         if mode not in self.heads:
             raise KeyError(f"mode {mode} not available")
