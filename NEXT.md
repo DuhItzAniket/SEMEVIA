@@ -19,7 +19,7 @@ Commit SHA and push status: see the bottom of this file (updated after each push
 3. **No public host** (`docs/hosting_lock.md`).
 4. **Heads have no public storage**: clean builds are detection-only until they get a URL.
 5. Negative (unsupported-image) suite not collected; reject threshold is development-only.
-6. Reference panel not built; thumbnail rights undecided.
+6. Reference thumbnails withheld: image rights undecided (identifiers shown instead).
 7. `gh` CLI missing (PR later); team names/USNs unknown.
 
 ## When best_finetuned.pt arrives (copy to D:/semevia_work/store/runs/effb0_r1/)
@@ -50,10 +50,12 @@ docker compose up --build    # after Docker storage is on D:
 ```
 
 ## Single next bounded task
-While waiting for the GPU run: end-to-end tune evaluation of the full pipeline (detector crops,
-all three modes, end-to-end Top-k with IoU gating), then the training-only reference index
-(P4B) with identifier/distance fallback. After that, the P5 ONNX/INT8 optimization experiment on the
-development backbone so the code is ready when the fine-tuned model lands.
+Done since last handoff: end-to-end tune evaluation (`scripts/evaluate.py`), training-only reference
+index + panel (`scripts/build_references.py`), optimization experiments (`docs/checkpoints/P5_dev.md`).
+Next, still not needing the GPU run: (1) robustness stress tooling for the predeclared 392-image subset
+(six conditions, rerun detection) and the viewpoint-label sheet; (2) ONNX encoder as a selectable
+runtime in `Predictor`; (3) once Docker storage is on D:, the container check. Final test runs wait for
+the fine-tuned backbone and the P5 freeze.
 
 ## File ownership
 See `docs/ownership.md`.

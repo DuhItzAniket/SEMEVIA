@@ -31,9 +31,9 @@ categories changes.
 | EfficientNet-B0 fine-tuning | Script ready and smoke-tested; real run pending on the team's GPU PC |
 | Identity Evidence Passport (candidate set, specificity, decision states, JSON export) | Implemented; development calibration only |
 | Evidence Challenge (six blurred regions, fixed A/B margin) | Implemented, tested |
-| Nearest training references | Planned |
-| INT8 / ONNX optimization | Planned (P5) |
-| Test-set evaluation (Top-1/5, IoU, mAP, efficiency, robustness, confidence) | Metric code tested; runs planned (P6) |
+| Nearest training references (588-entry training-only index; identifiers, labels, similarity) | Implemented; thumbnails withheld (rights unresolved) |
+| Optimization: ONNX FP32 encoder, INT8 encoder attempts, INT8 linear head | Measured on the development backbone; app runtime unchanged until the freeze |
+| End-to-end evaluator (Top-1/5 with IoU gating, IoU, AP, Passport, calibration) | Implemented; run on tune; test run waits for the freeze (P6) |
 
 Supported vehicle categories: the 196 Stanford Cars classes (49 makes, model years 1991-2012),
 listed in [artifacts/class_metadata.json](artifacts/class_metadata.json).
@@ -141,6 +141,20 @@ No test-set results yet. Development diagnostics so far (every number from a sav
 
 Detector on the same 815 tune images: generic vehicle AP50 0.847, AP50:95 0.771; primary-target
 recall at IoU 0.5 is 0.993 ([reports/detector_tune.json](reports/detector_tune.json)).
+
+End-to-end on the same 815 tune images (runtime box rule, misses count as failures;
+[reports/e2e_tune_dev_imagenet_frozen_097c99803f.json](reports/e2e_tune_dev_imagenet_frozen_097c99803f.json)):
+
+| Mode | End-to-end Top-1 | Top-5 | 196-class AP50 |
+|---|---|---|---|
+| Classical (contour proposal ROI) | 0.065 | 0.130 | 0.049 |
+| Deep | 0.645 | 0.888 | 0.598 |
+| Hybrid | 0.640 | 0.899 | 0.593 |
+
+Optimization (development backbone, tune split; [docs/checkpoints/P5_dev.md](docs/checkpoints/P5_dev.md)):
+ONNX FP32 encoder gives identical predictions at about 20 ms instead of 52 ms per crop on a 4-core
+laptop CPU; full-network INT8 failed (accuracy collapsed); an INT8 linear head keeps top-1 within
+0.25 points and is 4x smaller.
 
 These are not end-to-end or test accuracy: they use ground-truth crops on the tuning split that
 was also used to select the heads, and the backbone is not fine-tuned yet.
