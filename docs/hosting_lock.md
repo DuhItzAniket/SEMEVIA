@@ -4,7 +4,7 @@ Status on 2026-11-07: **live at <https://readings-agency-respond-bacteria.tryclo
 
 ## What runs where
 
-* The release image (`docker compose up -d`, bundle `ft_ckpt_2339418979e1_0920511710`) runs in Docker Desktop
+* The release image (`docker compose up -d`, bundle named in `artifacts/release_manifest.json`; iteration r2 since 2026-11-07 03:47) runs in Docker Desktop
   on the team laptop (Intel i7-14650HX), limited to 2 CPUs and 4 GB by `compose.yaml`, restart `unless-stopped`.
 * A Cloudflare quick tunnel (`cloudflared tunnel --url http://localhost:8000`, release 2026.10.7, SHA256 and
   Authenticode signature checked) gives the public HTTPS address. Quick tunnels need no account and show no

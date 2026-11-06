@@ -20,6 +20,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 PENDING = "pending (official test run after the P5 freeze, P6)"
+# Pairs of Stanford Cars makes/models sold as badge-engineered twins (same vehicle, different badge).
+TWINS = [("Chevrolet Express", "GMC Savana"), ("Chevrolet Silverado", "GMC Sierra"), ("Chevrolet Tahoe", "GMC Yukon"),
+         ("Dodge Caliber", "Jeep Compass"), ("Chrysler Town and Country", "Dodge Caravan")]
 MODES = ("classical", "deep", "hybrid")
 
 
@@ -133,18 +136,23 @@ def main() -> None:
     if freeze:
         status.append(f"The production pipeline was frozen in project phase P5 (`artifacts/production_freeze.json`: mode "
                       f"`{freeze.get('production_mode')}`, model fingerprint `{freeze.get('model_fingerprint', '')[:16]}`, "
-                      f"bundle `{freeze.get('bundle_id_at_freeze')}`) before any test image was evaluated; the final "
+                      f"bundle `{freeze.get('bundle_id_at_freeze')}`) before this bundle's test run; the final "
                       f"calibration was then added, which changes the bundle id but not the model fingerprint.")
     status.append("Final values below come from the official Stanford Cars test split (8,041 images), evaluated once "
-                  "after the freeze." if final else "Final values read *pending* until the official test run.")
+                  "for this bundle after its freeze; the same split was evaluated once earlier for the superseded "
+                  "iteration (see Model iterations)." if final else "Final values read *pending* until the official test run.")
     status.append("Tune-split numbers are selection-set diagnostics and are optimistic.")
     L += ["Status: " + " ".join(status), ""]
     if train_sum:
         unfrozen = sorted({k for h in train_sum["history"] for k, v in (h.get("pretrained_changed") or {}).items() if v})
         stages = sorted({h["stage"] for h in train_sum["history"]}, key=lambda s: [h["stage"] for h in train_sum["history"]].index(s))
+        ft_hist = [h for h in train_sum["history"] if h.get("pretrained_changed")]
+        best_ep = next((i + 1 for i, h in enumerate(ft_hist) if h["tune"]["top1"] == train_sum["best_tune_top1_finetuned"]), None)
         L += [f"Fine-tuning: run `{train_sum['run_name']}` (EfficientNet-B0, ImageNet weights; stages {', '.join(stages)}), "
-              f"{train_sum['finetune_epochs_completed']} completed fine-tuning epochs; the final pretrained blocks "
-              f"{', '.join(unfrozen)} are verified changed; best tune top-1 {pct(train_sum['best_tune_top1_finetuned'])}; "
+              f"{train_sum['finetune_epochs_completed']} completed fine-tuning epochs (early stopping on tune); the released "
+              f"checkpoint is the best one, from fine-tuning epoch {best_ep} (this is the epoch count in the bundle's backbone "
+              f"label); the final pretrained blocks {', '.join(unfrozen)} are verified changed; best tune top-1 "
+              f"{pct(train_sum['best_tune_top1_finetuned'])}; "
               f"fine-tuning requirement met: {train_sum['fine_tuning_requirement_met']} (`reports/training/{train_f}`).", ""]
     if final:
         L += [f"Test protocol: end-to-end on every test image ({test['population']['count']} images, manifest "
@@ -159,7 +167,7 @@ def main() -> None:
         if old and rc_old["bundle_id"] != bundle:
             hist.append((Path(f).parent.name, rc_old, old, old_f))
     if final and hist:
-        L += ["### Model iterations (each evaluated once on test after its own freeze)", "",
+        L += ["## Model iterations (each evaluated once on test after its own freeze)", "",
               "| Iteration | Backbone | Production mode | Hybrid E2E top-1 | Deep E2E top-1 | Hybrid E2E top-5 | Source |",
               "|---|---|---|---|---|---|---|"]
         for name, rc_old, old, old_f in hist:
@@ -170,10 +178,20 @@ def main() -> None:
         L.append(f"| current | {rel_cfg.get('backbone_status')} | {(freeze or {}).get('production_mode', '?')} | "
                  f"{pct(test['modes']['hybrid']['end_to_end_top1']['value'])} | {pct(test['modes']['deep']['end_to_end_top1']['value'])} | "
                  f"{pct(test['modes']['hybrid']['end_to_end_top5']['value'])} | `reports/{test_f}` |")
-        L += ["", "The second iteration changed only the training recipe (full-network instead of last-stage fine-tuning; "
-              "`configs/train_v2.yaml` states why), chosen from training and tune behaviour. Every later step (heads, "
-              "calibration, freeze) was redone on tune/calibration data before its single test run. Both test results are "
-              "reported; all numbers below are for the current iteration.", ""]
+        fz_rules = []
+        for name, _rc, _o, _f in hist:
+            rj_old = (read(f"artifacts/history/{name}/production_freeze.json") or {}).get("reject", {})
+            fz_rules.append(f"{name}: threshold {rj_old.get('threshold')}, negatives used {rj_old.get('negatives_used')}")
+        rj_now = (freeze or {}).get("reject", {})
+        fz_rules.append(f"current: threshold {rj_now.get('threshold')}, negatives used {rj_now.get('negatives_used')}")
+        L += ["", "How the second iteration came about, in order: the first iteration was frozen and tested once and its "
+              "test result was known; the second iteration was then designed (full-network instead of last-stage "
+              "fine-tuning, `configs/train_v2.yaml` says why) and trained on train/tune data. Before its test run, the "
+              "decision record in `NEXT.md` (\"Iteration r2 decision record\") fixed that it replaces the first iteration "
+              "whatever its test result, that hybrid stays the production mode, and that its freeze uses the tune negative "
+              "suite. So the freeze rule changed too (reject threshold, from the freeze files: " + "; ".join(fz_rules) + "). "
+              "Heads, calibration and freeze were redone on tune/calibration data before the single test run of this "
+              "bundle. Both test results are reported; all numbers below are for the current iteration.", ""]
 
     # 1 -----------------------------------------------------------------------------------------
     L += ["## 1. Classification performance (Top-1 and Top-5)", ""]
@@ -186,12 +204,16 @@ def main() -> None:
         d1 = 100 * (tm["deep"]["end_to_end_top1"]["value"] - tm["hybrid"]["end_to_end_top1"]["value"])
         d5 = 100 * (tm["deep"]["end_to_end_top5"]["value"] - tm["hybrid"]["end_to_end_top5"]["value"])
         cmp = (f"Comparison: on test the highest end-to-end top-1 is **{best_test}** "
-               f"({pct(tm[best_test]['end_to_end_top1']['value'])}); deep minus hybrid is {d1:+.1f} pt top-1 and "
-               f"{d5:+.1f} pt top-5. Classical-only is far behind ({pct(tm['classical']['end_to_end_top1']['value'])} top-1): "
+               f"({pct(tm[best_test]['end_to_end_top1']['value'])}); deep minus hybrid is {d1:+.2f} pt top-1 and "
+               f"{d5:+.2f} pt top-5. Classical-only is far behind ({pct(tm['classical']['end_to_end_top1']['value'])} top-1): "
                f"its contour box is often wrong (section 2) and handcrafted features alone separate few of the 196 classes.")
-        if prod and best_tune:
-            cmp += (f" The production mode `{prod}` was fixed on the tune split, where the leader was `{best_tune}`; it was "
-                    f"not changed after seeing test results.")
+        if prod and tune:
+            tn = tune["modes"]
+            cmp += (f" The production mode `{prod}` was fixed before this bundle's test run (decision record in `NEXT.md`): "
+                    f"on the tune split deep and hybrid were level (end-to-end top-1 {tn['deep']['end_to_end_top1']['numerator']} "
+                    f"vs {tn['hybrid']['end_to_end_top1']['numerator']} of {tn['hybrid']['end_to_end_top1']['denominator']} images), "
+                    f"and the project rule keeps hybrid unless deep is clearly better on tune. It was not changed after "
+                    f"seeing test results.")
         L += [cmp, ""]
     else:
         L += [f"Final (official test, end-to-end): {PENDING}", ""]
@@ -257,7 +279,9 @@ def main() -> None:
                          f"{pct(opt['accuracy'][key]['hybrid']['tune_top1'])} |")
         L += ["", f"Selection policy: {opt['selection_policy']}. Encoder INT8 variants passing it: "
               f"{', '.join(k for k, v in opt['int8_passes_policy'].items() if v) or 'none'}. ONNX FP32 keeps the same "
-              f"tune accuracy at lower encoder latency.", ""]
+              f"tune accuracy at lower encoder latency but is measured, not deployed: inside a whole request the encoder is "
+              f"only part of the time (detector, features and Passport also run; see `docs/checkpoints/P5_dev.md`), and "
+              f"switching runtime would change the frozen model fingerprint, so it would need a new freeze.", ""]
     if opth:
         L += [f"INT8 linear head (`reports/{opth_f}`): the hybrid head's final linear layer exported to ONNX, "
               f"{opth['size_bytes']['onnx_fp32'] / 1e6:.2f} MB (FP32) -> {opth['size_bytes']['onnx_int8'] / 1e6:.2f} MB (INT8), "
@@ -272,8 +296,10 @@ def main() -> None:
         L += [f"Deployed end-to-end latency through the public URL (`reports/release_acceptance.json`, {acc['created_at'][:10]}; "
               f"{acc['host_note']}): {fu['count']} fresh uploads, client wall time including the network, p50 "
               f"{fu['p50_ms']:.0f} ms, p95 {fu['p95_ms']:.0f} ms, max {fu['max_ms']:.0f} ms; {cc['clients']} simultaneous "
-              f"clients all answered in {cc['wall_ms']:.0f} ms; {len(acc['bad_inputs'])} bad-input cases answered with "
-              f"typed errors.", ""]
+              f"clients all answered in {cc['wall_ms']:.0f} ms; "
+              f"{sum(1 for v in acc['bad_inputs'].values() if v.get('error_code'))} invalid files rejected with typed errors "
+              f"and {sum(1 for v in acc['bad_inputs'].values() if not v.get('error_code'))} no-car image answered "
+              f"`{next((v['status'] for v in acc['bad_inputs'].values() if not v.get('error_code')), '')}`.", ""]
     else:
         L += ["Deployed end-to-end latency (p50/p95 over fresh uploads on the public host): pending (no passing "
               "`reports/release_acceptance.json`).", ""]
@@ -319,8 +345,12 @@ def main() -> None:
         if rj:
             L += ["", f"Threshold choice (`artifacts/production_freeze.json`, tune known images, before the test run): rule "
                   f"'{rj['rule']}', target known retention {pct(rj['known_retention_target'])}, chosen threshold "
-                  f"{rj['threshold']}.", "", "| Threshold | Tune known retention |", "|---|---|"]
-            L += [f"| {r['threshold']} | {pct(r['known_retention'])} |" for r in rj["table"]]
+                  f"{rj['threshold']}" + (" (ties on negative false acceptance go to the threshold with higher known "
+                                           "retention)" if rj.get("negatives_used") else "") + ".", "",
+                  "| Threshold | Tune known retention |" + (" Tune negative false acceptance |" if rj.get("negatives_used") else ""),
+                  "|---|---|" + ("---|" if rj.get("negatives_used") else "")]
+            L += [f"| {r['threshold']} | {pct(r['known_retention'])} |" +
+                  (f" {pct(r['negative_false_acceptance'])} |" if rj.get("negatives_used") else "") for r in rj["table"]]
             L.append("")
     else:
         L += [f"Final: {PENDING}"]
@@ -331,11 +361,18 @@ def main() -> None:
               f"after the freeze; `reports/{neg_f}`, sources in `artifacts/negative_manifests/negatives_test.csv`). A photo is "
               f"falsely accepted when the system returns a confident car identity (calibrated max probability >= "
               f"{neg['reject_threshold']}); a detector miss counts as a correct rejection. {neg.get('note', '')}", "",
-              "| Bucket | Photos | Reached classifier | Falsely accepted | False acceptance |", "|---|---|---|---|---|"]
+              "| Bucket | Photos | Reached classifier | Falsely accepted | Whole-system false acceptance | Among photos that reached the classifier |",
+              "|---|---|---|---|---|---|"]
         for b, v in neg["per_bucket"].items():
-            L.append(f"| {b} | {v['count']} | {v['reached_classifier']} | {v['accepted']} | {pct(v['false_acceptance'])} |")
-        L += [f"| **all** | {o['denominator']} | {sum(v['reached_classifier'] for v in neg['per_bucket'].values())} | "
-              f"{o['numerator']} | {pct(o['numerator'] / o['denominator'])} |", ""]
+            rc_ = v["reached_classifier"]
+            L.append(f"| {b} | {v['count']} | {rc_} | {v['accepted']} | {pct(v['false_acceptance'])} | "
+                     f"{pct(v['accepted'] / rc_) if rc_ else 'n/a'} |")
+        rc_all = sum(v["reached_classifier"] for v in neg["per_bucket"].values())
+        L += [f"| **all** | {o['denominator']} | {rc_all} | {o['numerator']} | {pct(o['numerator'] / o['denominator'])} | "
+              f"{pct(o['numerator'] / rc_all) if rc_all else 'n/a'} |", "",
+              "Most non-cars are stopped by the detector (it only accepts car/bus/truck boxes). Once an unsupported vehicle "
+              "reaches the classifier, the softmax reject rule stops only part of them, especially newer car models that "
+              "look like supported ones: rejection by a confidence threshold is not an open-set detector.", ""]
         if freeze and (freeze.get("reject") or {}).get("negatives_used"):
             L += ["The reject threshold was chosen on the separate 40-photo tune negative set together with known tune "
                   "images (`artifacts/production_freeze.json`).", ""]
@@ -343,14 +380,14 @@ def main() -> None:
         L += ["* Negative (unsupported-input) false acceptance: pending (negative suite not evaluated for this bundle).", ""]
 
     # Ablations / failures ------------------------------------------------------------------------
-    L += ["## Ablations", ""]
+    L += ["## 7. Ablations", ""]
     if heads:
         import yaml
 
         hcfg = yaml.safe_load((ROOT / "configs/heads.yaml").read_text(encoding="utf-8"))["learned"]
         specs = {**hcfg["heads"], **hcfg["ablations"]}
         L += [f"Component ablations (tune, annotation crops; every variant refit on train with the same C grid and selected "
-              f"by tune top-1; `reports/{heads_f}`, groups from `configs/heads.yaml`). The handcrafted branch is reduced by "
+              f"by tune top-1; `reports/{heads_f}`, classical row from `reports/{cls_f}`, groups from `configs/heads.yaml`). The handcrafted branch is reduced by "
               f"PCA to at most {hcfg['pca_components']} components, so removing a group can leave the input size unchanged.", "",
               "| Variant | Handcrafted groups | Branch balance | Input dim | C | Tune top-1 | Tune top-5 | Tune NLL |",
               "|---|---|---|---|---|---|---|---|"]
@@ -371,11 +408,18 @@ def main() -> None:
         deltas = "; ".join(f"{n}: {100 * (hd[n]['selected']['tune_top1'] - base):+.1f} pt" for n in hd if n != "hybrid")
         ft_gain = (f"; fine-tuning the backbone: {100 * (base - dev['heads']['hybrid']['selected']['tune_top1']):+.1f} pt "
                    f"(hybrid, fine-tuned vs frozen)") if dev else ""
-        L += ["", f"Change in tune top-1 versus the full hybrid head: {deltas}{ft_gain}. Reading: fine-tuning gives the "
-              "largest gain; with the fine-tuned features, removing any single handcrafted group changes tune top-1 by well "
-              "under one point, so the handcrafted branch adds little accuracy here, while equal-variance branch weighting "
-              "clearly hurts.", ""]
-    L += ["## Failure analysis", ""]
+        hc_rm = {n: 100 * (hd[n]["selected"]["tune_top1"] - base) for n in hd if n.startswith("hybrid_no_")}
+        ev = hd.get("hybrid_equal_variance", {}).get("selected")
+        L += ["", f"Change in tune top-1 versus the full hybrid head: {deltas}{ft_gain}. Reading: fine-tuning the backbone "
+              f"gives by far the largest gain. Removing handcrafted feature groups ("
+              + ", ".join(f"{n.replace('hybrid_', '')} {v:+.1f} pt" for n, v in hc_rm.items())
+              + f") moves tune top-1 by at most {max(abs(v) for v in hc_rm.values()):.1f} pt, so with fine-tuned features the "
+              f"handcrafted branch adds little accuracy; the deep-only head is within "
+              f"{abs(100 * (hd['deep']['selected']['tune_top1'] - base)):.1f} pt."
+              + (f" Equal-variance branch weighting changes top-1 by {100 * (ev['tune_top1'] - base):+.1f} pt and raises "
+                 f"tune NLL from {hd['hybrid']['selected']['tune_nll']:.3f} to {ev['tune_nll']:.3f}." if ev else "")
+              + " These are 815-image tune differences without a significance test.", ""]
+    L += ["## 8. Failure analysis", ""]
     fails = (ana or {}).get("failures")
     if fails:
         L += [f"Selected by fixed rules from the test predictions (`reports/{ana_f}`). Image sizes from "
@@ -409,12 +453,16 @@ def main() -> None:
             why.append("not listed as a duplicate in the data audit" if f["image_key"] not in dup_text
                        else "listed in the data audit's duplicate groups")
             if f.get("selected_box") is None and mr and max(int(mr["width"]), int(mr["height"])) < 200:
-                why.append("likely cause: the whole photo is a small thumbnail, so the car has too little detail for "
-                           "YOLO11n to produce a vehicle box above its score floor")
+                why.append("no vehicle box was selected; likely cause: the whole photo is a small thumbnail, so the car "
+                           "carries little detail at the detector's input size")
             elif rt and not f["annotation_crop_correct"]:
                 why.append("likely cause: classifier confusion, not localisation (the box is good and the annotation crop gives "
-                           "the same wrong answer); the very high probability shows over-confidence on visually close "
-                           "classes even after temperature scaling")
+                           "the same wrong answer); the model is very confident and wrong, typical for near-identical "
+                           "sibling classes")
+                for a_, b_ in TWINS:
+                    if (a_ in f["true"] and b_ in rt[0][0]) or (b_ in f["true"] and a_ in rt[0][0]):
+                        why.append(f"{a_} and {b_} are badge-engineered versions of the same vehicle, so the classes are "
+                                   f"visually almost identical")
             L.append("   * Evidence: " + "; ".join(why) + ".")
         L.append("")
     else:

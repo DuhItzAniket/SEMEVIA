@@ -2,20 +2,20 @@
 
 # SEMEVIA comparative evaluation (PS5, T35)
 
-Status: Bundle `ft_ckpt_4f3584f597d5_9662c2e703`: YOLO11n detector + fine-tuned EfficientNet-B0 (effb0_r2, 12 fine-tuning epoch(s), best tune top-1 0.9166); calibration kind `final`. The production pipeline was frozen in project phase P5 (`artifacts/production_freeze.json`: mode `hybrid`, model fingerprint `68e07695555c7579`, bundle `ft_ckpt_4f3584f597d5_c13883508a`) before any test image was evaluated; the final calibration was then added, which changes the bundle id but not the model fingerprint. Final values below come from the official Stanford Cars test split (8,041 images), evaluated once after the freeze. Tune-split numbers are selection-set diagnostics and are optimistic.
+Status: Bundle `ft_ckpt_4f3584f597d5_9662c2e703`: YOLO11n detector + fine-tuned EfficientNet-B0 (effb0_r2, 12 fine-tuning epoch(s), best tune top-1 0.9166); calibration kind `final`. The production pipeline was frozen in project phase P5 (`artifacts/production_freeze.json`: mode `hybrid`, model fingerprint `68e07695555c7579`, bundle `ft_ckpt_4f3584f597d5_c13883508a`) before this bundle's test run; the final calibration was then added, which changes the bundle id but not the model fingerprint. Final values below come from the official Stanford Cars test split (8,041 images), evaluated once for this bundle after its freeze; the same split was evaluated once earlier for the superseded iteration (see Model iterations). Tune-split numbers are selection-set diagnostics and are optimistic.
 
-Fine-tuning: run `effb0_r2` (EfficientNet-B0, ImageNet weights; stages head, full_finetune), 18 completed fine-tuning epochs; the final pretrained blocks features.7, features.8 are verified changed; best tune top-1 91.7%; fine-tuning requirement met: True (`reports/training/effb0_r2_summary.json`).
+Fine-tuning: run `effb0_r2` (EfficientNet-B0, ImageNet weights; stages head, full_finetune), 18 completed fine-tuning epochs (early stopping on tune); the released checkpoint is the best one, from fine-tuning epoch 12 (this is the epoch count in the bundle's backbone label); the final pretrained blocks features.7, features.8 are verified changed; best tune top-1 91.7%; fine-tuning requirement met: True (`reports/training/effb0_r2_summary.json`).
 
 Test protocol: end-to-end on every test image (8041 images, manifest `5eb7f6150857`); a prediction counts only if the runtime-selected box has IoU >= 0.5 with the annotation and the class is right (misses count as failures). Classical mode uses the contour-proposal box; deep and hybrid use the YOLO11n primary target. Source `reports/e2e_test_ft_ckpt_4f3584f597d5_9662c2e703.json`.
 
-### Model iterations (each evaluated once on test after its own freeze)
+## Model iterations (each evaluated once on test after its own freeze)
 
 | Iteration | Backbone | Production mode | Hybrid E2E top-1 | Deep E2E top-1 | Hybrid E2E top-5 | Source |
 |---|---|---|---|---|---|---|
 | r1 (superseded) | fine-tuned EfficientNet-B0 (effb0_r1, 6 fine-tuning epoch(s), best tune top-1 0.7644) | hybrid | 74.4% | 75.1% | 93.2% | `reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json` |
 | current | fine-tuned EfficientNet-B0 (effb0_r2, 12 fine-tuning epoch(s), best tune top-1 0.9166) | hybrid | 89.6% | 89.6% | 97.2% | `reports/e2e_test_ft_ckpt_4f3584f597d5_9662c2e703.json` |
 
-The second iteration changed only the training recipe (full-network instead of last-stage fine-tuning; `configs/train_v2.yaml` states why), chosen from training and tune behaviour. Every later step (heads, calibration, freeze) was redone on tune/calibration data before its single test run. Both test results are reported; all numbers below are for the current iteration.
+How the second iteration came about, in order: the first iteration was frozen and tested once and its test result was known; the second iteration was then designed (full-network instead of last-stage fine-tuning, `configs/train_v2.yaml` says why) and trained on train/tune data. Before its test run, the decision record in `NEXT.md` ("Iteration r2 decision record") fixed that it replaces the first iteration whatever its test result, that hybrid stays the production mode, and that its freeze uses the tune negative suite. So the freeze rule changed too (reject threshold, from the freeze files: r1: threshold 0.3, negatives used False; current: threshold 0.4, negatives used True). Heads, calibration and freeze were redone on tune/calibration data before the single test run of this bundle. Both test results are reported; all numbers below are for the current iteration.
 
 ## 1. Classification performance (Top-1 and Top-5)
 
@@ -27,7 +27,7 @@ Final, official test:
 | deep | 89.6% (7207/8041) | 97.3% (7821/8041) | 90.4% (7207/7971) | 90.3% (7218/7992) |
 | hybrid | 89.6% (7205/8041) | 97.2% (7819/8041) | 90.4% (7205/7971) | 90.3% (7215/7992) |
 
-Comparison: on test the highest end-to-end top-1 is **deep** (89.6%); deep minus hybrid is +0.0 pt top-1 and +0.0 pt top-5. Classical-only is far behind (6.3% top-1): its contour box is often wrong (section 2) and handcrafted features alone separate few of the 196 classes. The production mode `hybrid` was fixed on the tune split, where the leader was `deep`; it was not changed after seeing test results.
+Comparison: on test the highest end-to-end top-1 is **deep** (89.6%); deep minus hybrid is +0.02 pt top-1 and +0.02 pt top-5. Classical-only is far behind (6.3% top-1): its contour box is often wrong (section 2) and handcrafted features alone separate few of the 196 classes. The production mode `hybrid` was fixed before this bundle's test run (decision record in `NEXT.md`): on the tune split deep and hybrid were level (end-to-end top-1 732 vs 731 of 815 images), and the project rule keeps hybrid unless deep is clearly better on tune. It was not changed after seeing test results.
 
 Development, tune split (815 images, same protocol; `reports/e2e_tune_ft_ckpt_4f3584f597d5_c13883508a.json`):
 
@@ -95,13 +95,13 @@ Optimization of the fine-tuned encoder (`reports/optimization_ckpt_4f3584f597d5.
 | ONNX INT8 static (percentile) | 4.9 MB | 5.5 ms | 6.4 ms | 83.6% |
 | ONNX INT8 dynamic | 4.4 MB | 29.2 ms | 37.0 ms | 1.3% |
 
-Selection policy: keep INT8 only if tune top-1 drop <= 1.0 percentage point for the production head (project choice, not a PS rule). Encoder INT8 variants passing it: none. ONNX FP32 keeps the same tune accuracy at lower encoder latency.
+Selection policy: keep INT8 only if tune top-1 drop <= 1.0 percentage point for the production head (project choice, not a PS rule). Encoder INT8 variants passing it: none. ONNX FP32 keeps the same tune accuracy at lower encoder latency but is measured, not deployed: inside a whole request the encoder is only part of the time (detector, features and Passport also run; see `docs/checkpoints/P5_dev.md`), and switching runtime would change the frozen model fingerprint, so it would need a new freeze.
 
 INT8 linear head (`reports/optimization_head_hybrid_ckpt_4f3584f597d5.json`): the hybrid head's final linear layer exported to ONNX, 1.05 MB (FP32) -> 0.26 MB (INT8), tune top-1 90.4% -> 90.3% (passes the policy: True). The head is a tiny part of end-to-end time; no meaningful end-to-end speed gain is claimed from it.
 
 Released and frozen runtime: encoder `torch`, precision `fp32` (the optimized variants above are measured, not deployed).
 
-Deployed end-to-end latency through the public URL (`reports/release_acceptance.json`, 2026-11-06; Cloudflare quick tunnel (trycloudflare.com) to Docker Desktop on the team laptop (Intel i7-14650HX); container limited to 2 CPUs / 4 GB by compose.yaml. The URL lasts only while the laptop, Docker and the tunnel keep running.): 20 fresh uploads, client wall time including the network, p50 502 ms, p95 871 ms, max 881 ms; 4 simultaneous clients all answered in 817 ms; 6 bad-input cases answered with typed errors.
+Deployed end-to-end latency through the public URL (`reports/release_acceptance.json`, 2026-11-06; Cloudflare quick tunnel (trycloudflare.com) to Docker Desktop on the team laptop (Intel i7-14650HX); container limited to 2 CPUs / 4 GB by compose.yaml. The URL lasts only while the laptop, Docker and the tunnel keep running.): 20 fresh uploads, client wall time including the network, p50 502 ms, p95 871 ms, max 881 ms; 4 simultaneous clients all answered in 817 ms; 5 invalid files rejected with typed errors and 1 no-car image answered `no_vehicle`.
 
 ## 5. Robustness under varying conditions
 
@@ -150,35 +150,37 @@ Final, official test, production mode `hybrid`, calibration `final` (temperature
 * Reject threshold 0.4 (max calibrated probability): retention 94.4% (7592/8041), accepted end-to-end accuracy 93.0% (7057/7592).
 * Passport candidate sets (all inputs): coverage 91.7% (7376/8041), mean size 2.23, median size 1, singletons 92.7% (7456/8041) with singleton accuracy 93.3% (6953/7456), empty sets 1.5% (117/8041).
 
-Threshold choice (`artifacts/production_freeze.json`, tune known images, before the test run): rule 'minimise negative false acceptance subject to known retention >= target', target known retention 90.0%, chosen threshold 0.4.
+Threshold choice (`artifacts/production_freeze.json`, tune known images, before the test run): rule 'minimise negative false acceptance subject to known retention >= target', target known retention 90.0%, chosen threshold 0.4 (ties on negative false acceptance go to the threshold with higher known retention).
 
-| Threshold | Tune known retention |
-|---|---|
-| 0.05 | 99.5% |
-| 0.1 | 99.1% |
-| 0.15 | 99.0% |
-| 0.2 | 98.5% |
-| 0.25 | 97.8% |
-| 0.3 | 96.8% |
-| 0.4 | 94.7% |
-| 0.5 | 93.0% |
+| Threshold | Tune known retention | Tune negative false acceptance |
+|---|---|---|
+| 0.05 | 99.5% | 42.5% |
+| 0.1 | 99.1% | 37.5% |
+| 0.15 | 99.0% | 35.0% |
+| 0.2 | 98.5% | 32.5% |
+| 0.25 | 97.8% | 25.0% |
+| 0.3 | 96.8% | 22.5% |
+| 0.4 | 94.7% | 12.5% |
+| 0.5 | 93.0% | 12.5% |
 
 
 Unsupported inputs (held-out negative suite, 40 licensed Wikimedia Commons photos, evaluated after the freeze; `reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json`, sources in `artifacts/negative_manifests/negatives_test.csv`). A photo is falsely accepted when the system returns a confident car identity (calibrated max probability >= 0.4); a detector miss counts as a correct rejection. Whole-system rejection (a detector miss counts as a success); classifier-level open-set ability is only measured on images that reached the classifier. Small stress set, not open-world.
 
-| Bucket | Photos | Reached classifier | Falsely accepted | False acceptance |
-|---|---|---|---|---|
-| non_vehicle | 10 | 0 | 0 | 0.0% |
-| two_wheeler | 10 | 0 | 0 | 0.0% |
-| unsupported_vehicle_type | 10 | 5 | 3 | 30.0% |
-| unlisted_car_model | 10 | 10 | 5 | 50.0% |
-| **all** | 40 | 15 | 8 | 20.0% |
+| Bucket | Photos | Reached classifier | Falsely accepted | Whole-system false acceptance | Among photos that reached the classifier |
+|---|---|---|---|---|---|
+| non_vehicle | 10 | 0 | 0 | 0.0% | n/a |
+| two_wheeler | 10 | 0 | 0 | 0.0% | n/a |
+| unsupported_vehicle_type | 10 | 5 | 3 | 30.0% | 60.0% |
+| unlisted_car_model | 10 | 10 | 5 | 50.0% | 50.0% |
+| **all** | 40 | 15 | 8 | 20.0% | 53.3% |
+
+Most non-cars are stopped by the detector (it only accepts car/bus/truck boxes). Once an unsupported vehicle reaches the classifier, the softmax reject rule stops only part of them, especially newer car models that look like supported ones: rejection by a confidence threshold is not an open-set detector.
 
 The reject threshold was chosen on the separate 40-photo tune negative set together with known tune images (`artifacts/production_freeze.json`).
 
-## Ablations
+## 7. Ablations
 
-Component ablations (tune, annotation crops; every variant refit on train with the same C grid and selected by tune top-1; `reports/heads_tune_ckpt_4f3584f597d5.json`, groups from `configs/heads.yaml`). The handcrafted branch is reduced by PCA to at most 64 components, so removing a group can leave the input size unchanged.
+Component ablations (tune, annotation crops; every variant refit on train with the same C grid and selected by tune top-1; `reports/heads_tune_ckpt_4f3584f597d5.json`, classical row from `reports/classical_tune.json`, groups from `configs/heads.yaml`). The handcrafted branch is reduced by PCA to at most 64 components, so removing a group can leave the input size unchanged.
 
 | Variant | Handcrafted groups | Branch balance | Input dim | C | Tune top-1 | Tune top-5 | Tune NLL |
 |---|---|---|---|---|---|---|---|
@@ -191,22 +193,22 @@ Component ablations (tune, annotation crops; every variant refit on train with t
 | classical only (no learned features) | all | - | - | 0.005 | 18.7% | 38.2% | 3.966 |
 | hybrid on the frozen ImageNet backbone (no fine-tuning; `reports/heads_tune_imagenet_frozen.json`) | as hybrid | per_feature | 1344 | 0.1 | 64.9% | 89.8% | 1.371 |
 
-Change in tune top-1 versus the full hybrid head: deep: +0.0 pt; hybrid_equal_variance: -0.9 pt; hybrid_no_hog: -0.1 pt; hybrid_no_color_texture: +0.0 pt; hybrid_no_geometry: +0.0 pt; fine-tuning the backbone: +25.5 pt (hybrid, fine-tuned vs frozen). Reading: fine-tuning gives the largest gain; with the fine-tuned features, removing any single handcrafted group changes tune top-1 by well under one point, so the handcrafted branch adds little accuracy here, while equal-variance branch weighting clearly hurts.
+Change in tune top-1 versus the full hybrid head: deep: +0.0 pt; hybrid_equal_variance: -0.9 pt; hybrid_no_hog: -0.1 pt; hybrid_no_color_texture: +0.0 pt; hybrid_no_geometry: +0.0 pt; fine-tuning the backbone: +25.5 pt (hybrid, fine-tuned vs frozen). Reading: fine-tuning the backbone gives by far the largest gain. Removing handcrafted feature groups (no_hog -0.1 pt, no_color_texture +0.0 pt, no_geometry +0.0 pt) moves tune top-1 by at most 0.1 pt, so with fine-tuned features the handcrafted branch adds little accuracy; the deep-only head is within 0.0 pt. Equal-variance branch weighting changes top-1 by -0.9 pt and raises tune NLL from 0.470 to 0.611. These are 815-image tune differences without a significance test.
 
-## Failure analysis
+## 8. Failure analysis
 
 Selected by fixed rules from the test predictions (`reports/analysis_test_ft_ckpt_4f3584f597d5_9662c2e703.json`). Image sizes from `artifacts/manifests/test_m1.csv`; duplicate lists from `reports/data_audit.json`.
 
 1. **localisation failure (no box, or lowest IoU below 0.5)**: `test/00076.jpg`, true class *AM General Hummer SUV 2000*; no vehicle box selected.
    * Runtime top-1: none (no crop); annotation-crop top-1: *AM General Hummer SUV 2000* (p = 0.9998), correct.
    * HYPOTHESIS: localisation/crop caused the error (annotation crop is classified correctly)
-   * Evidence: image 96x64 px, annotated car 74x48 px (58% of the image); not listed as a duplicate in the data audit; likely cause: the whole photo is a small thumbnail, so the car has too little detail for YOLO11n to produce a vehicle box above its score floor.
+   * Evidence: image 96x64 px, annotated car 74x48 px (58% of the image); not listed as a duplicate in the data audit; no vehicle box was selected; likely cause: the whole photo is a small thumbnail, so the car carries little detail at the detector's input size.
 2. **close-category error (same make), highest confidence**: `test/00294.jpg`, true class *Audi TTS Coupe 2012*; selected box IoU 0.971, detector score 0.900.
    * Runtime top-1: *Audi TT Hatchback 2011* (p = 0.9999); annotation-crop top-1: *Audi TT Hatchback 2011* (p = 0.9999), still wrong.
    * HYPOTHESIS: classifier confusion persists on the annotation crop
-   * Evidence: image 1024x640 px, annotated car 893x500 px (68% of the image); true class ranked 3 in the runtime top-5; prediction is a sibling model of the same make; not listed as a duplicate in the data audit; likely cause: classifier confusion, not localisation (the box is good and the annotation crop gives the same wrong answer); the very high probability shows over-confidence on visually close classes even after temperature scaling.
+   * Evidence: image 1024x640 px, annotated car 893x500 px (68% of the image); true class ranked 3 in the runtime top-5; prediction is a sibling model of the same make; not listed as a duplicate in the data audit; likely cause: classifier confusion, not localisation (the box is good and the annotation crop gives the same wrong answer); the model is very confident and wrong, typical for near-identical sibling classes.
 3. **confident cross-make error, highest confidence**: `test/06675.jpg`, true class *Chevrolet Express Cargo Van 2007*; selected box IoU 0.980, detector score 0.887.
    * Runtime top-1: *GMC Savana Van 2012* (p = 0.9989); annotation-crop top-1: *GMC Savana Van 2012* (p = 0.9987), still wrong.
    * HYPOTHESIS: classifier confusion persists on the annotation crop
-   * Evidence: image 500x374 px, annotated car 364x207 px (40% of the image); true class ranked 2 in the runtime top-5; prediction is a different make; not listed as a duplicate in the data audit; likely cause: classifier confusion, not localisation (the box is good and the annotation crop gives the same wrong answer); the very high probability shows over-confidence on visually close classes even after temperature scaling.
+   * Evidence: image 500x374 px, annotated car 364x207 px (40% of the image); true class ranked 2 in the runtime top-5; prediction is a different make; not listed as a duplicate in the data audit; likely cause: classifier confusion, not localisation (the box is good and the annotation crop gives the same wrong answer); the model is very confident and wrong, typical for near-identical sibling classes; Chevrolet Express and GMC Savana are badge-engineered versions of the same vehicle, so the classes are visually almost identical.
 

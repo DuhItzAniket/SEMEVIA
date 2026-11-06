@@ -29,8 +29,7 @@ from `reports/*.json`.
 ## Gantt chart
 
 Bars run from one recorded commit to the next. The gap between 21:47 and 01:31 is the hand-over to the
-GPU laptop and its setup (no commits in that window). Iteration r2 has no commit times yet, so it is
-shown only as its starting point.
+GPU laptop and its setup (no commits in that window).
 
 ```mermaid
 gantt
@@ -60,7 +59,10 @@ gantt
     Negative suite and viewpoint check          :done, neg, 2026-11-07 02:43, 2026-11-07 03:09
 
     section Iteration r2
-    r1 release complete, r2 training starts     :milestone, r2s, 2026-11-07 03:09, 0d
+    r2 training effb0_r2 and pre-registration   :done, r2a, 2026-11-07 03:09, 2026-11-07 03:25
+    r2 rebuild, negatives, freeze, final cal    :done, r2b, 2026-11-07 03:25, 2026-11-07 03:30
+    r2 single test run and analysis             :done, r2c, 2026-11-07 03:30, 2026-11-07 03:46
+    r2 redeploy and public checks               :done, r2d, 2026-11-07 03:46, 2026-11-07 03:47
 
     section Deadline
     Target submission                           :milestone, dl1, 2026-11-07 12:00, 0d
@@ -102,7 +104,10 @@ Short SHAs link each phase to the commits that delivered it. "Dev" means the dev
 | 2026-11-07 02:26 | Model files published as GitHub Release `model-v1` | `900f483` |
 | 2026-11-07 02:43 | Live through the Cloudflare tunnel; public checks recorded | `1c9461d` |
 | 2026-11-07 03:09 | 80-image negative suite manifests; blind viewpoint label check | `8e0c84b` |
-| **r2** | **r2 freeze, test, redeploy** | **_In progress — to be filled by the maintainer._** |
+| 2026-11-07 03:25 | r2 training (`effb0_r2`, full fine-tuning) committed with the pre-registration in `NEXT.md`: r2 replaces r1 whatever its test result | `4043f4e` |
+| 2026-11-07 03:30 | r2 rebuilt and frozen (hybrid; reject threshold chosen with the 40 tune negatives); final calibration | `38b1a62` |
+| 2026-11-07 03:46 | r2 single official test run, stress, analysis, 40 held-out negatives; GitHub Release `model-v2` | `cadcdc3` |
+| 2026-11-07 03:47 | r2 container live behind the same URL; container and public-URL checks re-run | `ae9a00b` |
 
 ## Two-machine workflow
 
