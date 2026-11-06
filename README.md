@@ -5,11 +5,16 @@
 > **Status (2026-11-07): model final, deployment pending.** The fine-tuned EfficientNet-B0 bundle was
 > frozen at P5, given its final conformal calibration, and evaluated once on the official 8,041-image
 > test split (P6). All results are in [eval_P5_T35.md](eval_P5_T35.md), generated from `reports/`
-> by `scripts/report.py`. Still open: public hosting, publishing the trained weights, the negative
-> (unsupported-image) suite, and team review of the viewpoint labels.
+> by `scripts/report.py`. Live through a tunnel from the team laptop;
+> trained weights published as GitHub Release `model-v1`. Still open: the negative (unsupported-image)
+> suite and team review of the viewpoint labels.
 
-**Live application URL:** not deployed yet. No public host has been provisioned
-(see [docs/hosting_lock.md](docs/hosting_lock.md)).
+**Live application URL:** <https://readings-agency-respond-bacteria.trycloudflare.com>
+
+Served from the team laptop through a Cloudflare quick tunnel (see [docs/hosting_lock.md](docs/hosting_lock.md)).
+Checked through the public URL on 2026-11-07: page, readiness, 20 fresh uploads, 4 simultaneous clients and
+six bad-input cases ([reports/release_acceptance.json](reports/release_acceptance.json)). The URL works only
+while that laptop, Docker and the tunnel are running.
 
 ## Overview
 
@@ -49,13 +54,11 @@ docker compose up --build
 ```
 
 Then open http://localhost:8000. The build downloads the public weights listed in
-[artifacts/release_manifest.json](artifacts/release_manifest.json) (YOLO11n and the ImageNet
-EfficientNet-B0) and verifies their SHA256; the running container makes no downloads. The trained
-heads are not published yet, so a clean checkout currently builds a **detection-only** app; with the
-heads present in `artifacts/store/release/heads/` (created by `scripts/promote_bundle.py`) all
-modes are served. **Verification status:** the image built successfully
-on 2026-11-06; starting it on our machine was blocked by a full system drive, so the
-container run itself is not yet verified.
+[artifacts/release_manifest.json](artifacts/release_manifest.json) (YOLO11n, plus the
+fine-tuned backbone, heads and reference index from GitHub Release `model-v1`) and verifies their SHA256;
+the running container makes no downloads. **Verification status (2026-11-07):** a fresh clone built this
+way serves all three modes, also with `--network none`
+([reports/container_check.json](reports/container_check.json)).
 
 Without Docker (development; this exact install-from-lock sequence has not yet been tested
 from a clean virtual environment, while `uvicorn` and the tests were run in our pinned venv):

@@ -15,7 +15,9 @@
     const note = $('build-note');
     note.hidden = false;
     note.textContent = d.recognition
-      ? `Model: ${d.backbone}; ${d.calibration_kind} calibration. Predictions are real model outputs, but this is not the final fine-tuned release.`
+      ? `Model: ${d.backbone}; ${d.calibration_kind} calibration.` + (d.calibration_kind === 'final'
+          ? ' Release bundle frozen before the official test evaluation.'
+          : ' Development calibration: this is not the final release.')
       : `Development build: vehicle detection only. ${d.recognition_reason || ''}`;
     if (!d.recognition) $('modes').hidden = true;
   }).catch(() => { $('ready').textContent = 'Service unreachable.'; });

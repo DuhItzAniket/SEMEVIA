@@ -237,7 +237,17 @@ def main() -> None:
     if freeze:
         L += [f"Released and frozen runtime: encoder `{freeze.get('encoder_runtime')}`, precision `{freeze.get('precision')}` "
               f"(the optimized variants above are measured, not deployed).", ""]
-    L += ["Deployed end-to-end latency (p50/p95 over fresh uploads on the public host): pending (project phase P7: no public host yet).", ""]
+    acc = read("reports/release_acceptance.json")
+    if acc and acc.get("passed"):
+        fu, cc = acc["fresh_uploads"], acc["concurrent"]
+        L += [f"Deployed end-to-end latency through the public URL (`reports/release_acceptance.json`, {acc['created_at'][:10]}; "
+              f"{acc['host_note']}): {fu['count']} fresh uploads, client wall time including the network, p50 "
+              f"{fu['p50_ms']:.0f} ms, p95 {fu['p95_ms']:.0f} ms, max {fu['max_ms']:.0f} ms; {cc['clients']} simultaneous "
+              f"clients all answered in {cc['wall_ms']:.0f} ms; {len(acc['bad_inputs'])} bad-input cases answered with "
+              f"typed errors.", ""]
+    else:
+        L += ["Deployed end-to-end latency (p50/p95 over fresh uploads on the public host): pending (no passing "
+              "`reports/release_acceptance.json`).", ""]
 
     # 5 -----------------------------------------------------------------------------------------
     L += ["## 5. Robustness under varying conditions", ""]

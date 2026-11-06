@@ -45,8 +45,20 @@
 * Step 8 commit: b763e75 (pushed).
 * Step 7 done (team approved): GitHub Release `model-v1` holds the backbone, heads and reference index; URLs in
   `artifacts/release_manifest.json` (each download re-checked against its SHA256).
-* **Waiting on the team:** the public host (step 9, Hugging Face Space chosen),
-  the negative suite, viewpoint-label review. Deadline: target 12:00, hard 14:00 on 2026-11-07.
+* Step 7 commit: 900f483; clean-build check and Space builder: 2cebf30 (pushed).
+* Step 9 done: Hugging Face refused Docker Spaces without PRO (402), so the team chose a Cloudflare quick tunnel
+  from this laptop: **https://readings-agency-respond-bacteria.trycloudflare.com** (see `docs/hosting_lock.md`).
+  `scripts/check_release.py` through the public URL passes (`reports/release_acceptance.json`: page, readiness,
+  20 fresh uploads p50/p95, 4 concurrent clients, 6 bad inputs); phone width 375 px checked in a browser (no
+  horizontal scroll, upload flow works). UI fixes: the banner and score type no longer say "development",
+  `/benchmarks` serves the current bundle's test reports, static files carry a cache-busting version.
+  The eval file now includes the deployed latency.
+* **Keep running for judging:** laptop on, plugged in, lid open, sleep off; Docker Desktop with the
+  `semevia-semevia-1` container; the `cloudflared` terminal tab. If cloudflared restarts the URL changes:
+  update README + submission and rerun `scripts/check_release.py --url <new>`.
+* **Still needed from the team:** negative suite (`docs/negative_suite.md`), review of
+  `reports/viewpoint_labels.csv`, thumbnail-rights decision, demo rehearsal and viva prep, PR into `main` if wanted.
+  Deadline: target 12:00, hard 14:00 on 2026-11-07.
 
 Updated 2026-11-06 at the P0/P1 checkpoint and partial P2. Branch `semevia/implementation`.
 Commit SHA and push status: see the bottom of this file (updated after each push).

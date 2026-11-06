@@ -3,8 +3,8 @@
 Detection is always live. Fine-grained recognition, the Passport and the Evidence Challenge
 are served when the optional recognition bundle (backbone, heads, calibration) is present and
 checksum-verified; otherwise responses state that recognition is unavailable and contain no
-category output. The current bundle is a DEVELOPMENT bundle (frozen ImageNet backbone,
-development calibration) and every response says so.
+category output. Every response names the bundle, the backbone and the calibration kind
+(development or final) it was produced with.
 """
 from __future__ import annotations
 
@@ -296,7 +296,8 @@ def _run_pipeline(data: bytes, rid: str, mode: str, t_queue: float) -> dict:
             order = sorted(range(196), key=lambda c: (-p[c], c))
             resp["prediction"] = {
                 "available": True, "unavailable_reason": None,
-                "score_type": "calibrated softmax (development temperature)" if is_prod else "uncalibrated softmax (comparison mode)",
+                "score_type": (f"calibrated softmax ({cal.get('kind', 'unknown')} calibration temperature)" if is_prod
+                               else "uncalibrated softmax (comparison mode)"),
                 "calibrated": is_prod, "temperature": T if is_prod else None,
                 "top5": [_class_entry(c, p[c]) for c in order[:5]],
                 "probabilities": [round(float(v), 6) for v in p], "classifier_score": round(float(p[order[0]]), 6)}
@@ -452,9 +453,17 @@ def request_image(rid: str, name: str):
 
 @app.get("/benchmarks")
 def benchmarks():
-    """Precomputed development diagnostics with their populations; not per-upload accuracy."""
-    out = {"note": "Development diagnostics on the tuning split. No test-set results exist yet.", "reports": {}}
-    for name in ("classical_tune.json", "heads_tune_imagenet_frozen.json", "detector_tune.json"):
+    """Saved evaluation reports for the served bundle, with their populations; not per-upload accuracy."""
+    bundle = STATE.get("bundle") or ""
+    from src.release import recognition_config
+
+    tag = recognition_config().get("backbone_tag") or ""
+    names = [f"e2e_test_{bundle}.json", f"robustness_stress_test_{bundle}.json", f"heads_tune_{tag}.json",
+             "classical_tune.json", "detector_tune.json"]
+    out = {"bundle_id": bundle, "note": "Official test results exist only for the bundle frozen before the test run; "
+                                         "tune files are selection-set diagnostics. Full write-up: eval_P5_T35.md in the repository.",
+           "reports": {}}
+    for name in names:
         p = ROOT / "reports" / name
         if p.exists():
             out["reports"][name] = json.loads(p.read_text(encoding="utf-8"))

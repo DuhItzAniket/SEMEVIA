@@ -1,17 +1,28 @@
 # Hosting lock
 
-Status on 2026-11-06: **no public host provisioned. This is a release blocker.**
+Status on 2026-11-07: **live at <https://readings-agency-respond-bacteria.trycloudflare.com>**, served from the team laptop.
 
-The user chose to decide the host later. Until then the application is built and tested
-locally with `docker compose up --build`; no public URL exists and none is claimed.
+## What runs where
 
-Requirements the chosen host must meet (from the plan and rubric):
+* The release image (`docker compose up -d`, bundle `ft_ckpt_2339418979e1_0920511710`) runs in Docker Desktop
+  on the team laptop (Intel i7-14650HX), limited to 2 CPUs and 4 GB by `compose.yaml`, restart `unless-stopped`.
+* A Cloudflare quick tunnel (`cloudflared tunnel --url http://localhost:8000`, release 2026.10.7, SHA256 and
+  Authenticode signature checked) gives the public HTTPS address. Quick tunnels need no account and show no
+  interstitial page.
+* Checks through the public URL: [reports/release_acceptance.json](../reports/release_acceptance.json)
+  (`scripts/check_release.py`).
 
-* Always on: no idle sleep (Render Free and Hugging Face CPU Basic sleep or are not guaranteed).
-* Runs the Docker image from this repository; starting capacity about 2 vCPU and 4 GB RAM,
-  confirmed by measurement.
-* Public HTTPS URL, no login or tunnel interstitial.
-* Billing cap and judging period confirmed by the account owner.
+## Limits the team must manage
 
-Options offered to the user: Render paid instance, Google Cloud Run with one minimum instance,
-or a VPS with Docker and Caddy for HTTPS. Each needs the user's account and billing approval.
+* The URL works only while the laptop is on, awake, online, and both Docker Desktop and `cloudflared` run.
+  Keep it plugged in, lid open, sleep disabled during judging.
+* A quick-tunnel address changes every time `cloudflared` restarts. If it restarts, update the URL in the
+  README and the submission form, and rerun `scripts/check_release.py --url <new url>`.
+* Cloudflare documents quick tunnels as a testing feature with no uptime guarantee.
+
+## Options considered
+
+* Hugging Face Docker Space: chosen first; on 2026-11-07 Hugging Face answered `402 Payment Required` (Docker
+  Spaces on free CPU need a PRO subscription). Ready to use with `scripts/prepare_hf_space.py` if the team
+  subscribes.
+* Render paid instance, Google Cloud Run with one minimum instance, or a VPS: need billing; not chosen.
