@@ -8,7 +8,6 @@ best scores, config, split hashes, RNG states and AMP scaler state.
 from __future__ import annotations
 
 import json
-import math
 import random
 import time
 from pathlib import Path

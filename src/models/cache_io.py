@@ -22,19 +22,27 @@ def file_sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def cache_meta(features: str, partition: str, crop: str, manifest_index: dict) -> dict:
+def cache_meta(features: str, partition: str, crop: str, manifest_index: dict, backbone: str | None = None) -> dict:
     import yaml
 
     fcfg_path = ROOT / "configs" / "features.yaml"
     fcfg = yaml.safe_load(fcfg_path.read_text(encoding="utf-8"))
-    return {
+    meta = {
         "features": features,
-        "feature_version": fcfg["feature_version"],
-        "features_config_sha256": file_sha(fcfg_path),
         "partition": partition,
         "manifest_sha256": manifest_index["partitions"][partition]["sha256"],
         "crop_policy": f"{crop}_margin{fcfg['crops']['margin']}",
     }
+    if features == "classical":
+        meta.update(feature_version=fcfg["feature_version"], features_config_sha256=file_sha(fcfg_path))
+    else:
+        from src.models.backbone import PREPROCESS_VERSION
+
+        if not backbone:
+            raise ValueError("learned caches need a backbone tag")
+        meta.update(feature_version=f"effb0_pool1280_{backbone}", preprocess_version=PREPROCESS_VERSION,
+                    backbone=backbone)
+    return meta
 
 
 def cache_paths(meta: dict) -> tuple[Path, Path]:

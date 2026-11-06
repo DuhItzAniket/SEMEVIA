@@ -6,3 +6,22 @@ classical:
   C_grid: [0.005, 0.02, 0.1]  # selection by tune top-1 (annotation crops); ties -> smaller C
   max_iter: 500
   seed: 20261106
+learned:                      # matched heads on the same cached learned representation
+  backbone: imagenet_frozen   # DEVELOPMENT ONLY until the fine-tuned checkpoint arrives
+  pca_components: 64          # handcrafted branch in the hybrid head
+  C_grid: [0.005, 0.02, 0.1]  # same grid for deep-only, hybrid and ablations; refit per head
+  max_iter: 1000
+  seed: 20261106
+  # Change log (tuning-data decisions, recorded):
+  #  r1 (first run): hybrid used branch_balance equal_variance -> tune top-1 0.541 vs deep 0.643.
+  #     Equal total variance gives each of the 64 handcrafted dims ~20x the weight of a learned dim.
+  #  r2 (one deliberate change): hybrid and its ablations use per_feature standardization.
+  #     The r1 configuration is kept as the named variant hybrid_equal_variance.
+  heads:
+    deep:   {use_learned: true, hc_groups: [], branch_balance: per_feature}
+    hybrid: {use_learned: true, hc_groups: [hog, lbp, hsv, geometry, flags], branch_balance: per_feature}
+  ablations:
+    hybrid_equal_variance:    {use_learned: true, hc_groups: [hog, lbp, hsv, geometry, flags], branch_balance: equal_variance}
+    hybrid_no_hog:            {use_learned: true, hc_groups: [lbp, hsv, geometry, flags], branch_balance: per_feature}
+    hybrid_no_color_texture:  {use_learned: true, hc_groups: [hog, geometry, flags], branch_balance: per_feature}
+    hybrid_no_geometry:       {use_learned: true, hc_groups: [hog, lbp, hsv, flags], branch_balance: per_feature}

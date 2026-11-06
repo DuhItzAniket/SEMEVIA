@@ -49,3 +49,33 @@ def test_canonical_logits_reorders_by_classes():
 
     z = canonical_logits(Fake(), np.zeros((1, 1)), n_classes=3)
     assert z.tolist() == [[0.0, 10.0, 20.0]]
+
+
+def test_fusion_features_dims_and_branch_balance():
+    from src.models.heads import FusionFeatures
+
+    rng = np.random.RandomState(0)
+    X = np.concatenate([rng.randn(300, 1280), rng.rand(300, 1816) * 5], axis=1)
+    hyb = FusionFeatures(True, ("hog", "lbp", "hsv", "geometry", "flags"), 64).fit(X)
+    Z = hyb.transform(X)
+    assert Z.shape == (300, 1344) and np.isfinite(Z).all()
+    var_learned, var_hc = Z[:, :1280].var(0).sum(), Z[:, 1280:].var(0).sum()
+    assert abs(var_learned - var_hc) / var_learned < 0.01      # equal total branch variance
+    deep = FusionFeatures(True, (), 64).fit(X)
+    assert deep.transform(X).shape == (300, 1280)
+    no_hog = FusionFeatures(True, ("lbp", "hsv", "geometry", "flags"), 64).fit(X)
+    assert no_hog._hc(X).shape[1] == 52                         # 10 + 32 + 8 + 2 columns
+
+
+def test_fusion_per_feature_mode_keeps_unit_variance():
+    from src.models.heads import FusionFeatures
+
+    rng = np.random.RandomState(1)
+    X = np.concatenate([rng.randn(300, 1280), rng.rand(300, 1816) * 5], axis=1)
+    Z = FusionFeatures(True, ("hog", "lbp", "hsv", "geometry", "flags"), 64, "per_feature").fit(X).transform(X)
+    assert np.allclose(Z.var(0), 1.0, atol=1e-6)
+    try:
+        FusionFeatures(True, ("hog",), 8, "bogus").fit(X)
+        raise AssertionError("expected ValueError")
+    except ValueError:
+        pass

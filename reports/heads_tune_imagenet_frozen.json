@@ -1,0 +1,348 @@
+{
+ "backbone": "imagenet_frozen",
+ "backbone_status": "DEVELOPMENT: frozen ImageNet EfficientNet-B0, not fine-tuned; does not satisfy the fine-tuning requirement",
+ "learned_feature_version": "effb0_pool1280_imagenet_frozen",
+ "preprocess_version": "crop_squash224_bilinear_imagenetnorm_v1",
+ "classical_feature_version": "hc_v1",
+ "crop_policy": "annotation_margin0.05",
+ "train": {
+  "count": 6514,
+  "manifest_sha256": "a78aaf50b8171e4452179e8095dc54899ed16a280233a7152c3997b1fd87c179"
+ },
+ "tune": {
+  "count": 815,
+  "manifest_sha256": "0f54c77a26c98e021bf8472511f7db67e84e2cbc0258caa3048298efb0da79e3"
+ },
+ "population_note": "Tune partition, annotation (oracle) crops; development diagnostic, not test or end-to-end accuracy.",
+ "protocol": "Each head (incl. ablations) refit on train rows; C selected from the same fixed grid by tune top-1; PCA and scalers fit on train rows only.",
+ "heads": {
+  "deep": {
+   "spec": {
+    "use_learned": true,
+    "hc_groups": [],
+    "branch_balance": "per_feature"
+   },
+   "grid": [
+    {
+     "C": 0.005,
+     "tune_top1": 0.6220858895705521,
+     "tune_top5": 0.8822085889570552,
+     "tune_nll": 1.9154,
+     "train_top1": 0.987872275099785,
+     "input_dim": 1280,
+     "fit_seconds": 22.8
+    },
+    {
+     "C": 0.02,
+     "tune_top1": 0.6319018404907976,
+     "tune_top5": 0.894478527607362,
+     "tune_nll": 1.5368,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1280,
+     "fit_seconds": 28.0
+    },
+    {
+     "C": 0.1,
+     "tune_top1": 0.6429447852760736,
+     "tune_top5": 0.9006134969325154,
+     "tune_nll": 1.3698,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1280,
+     "fit_seconds": 11.0
+    }
+   ],
+   "selected": {
+    "C": 0.1,
+    "tune_top1": 0.6429447852760736,
+    "tune_top5": 0.9006134969325154,
+    "tune_nll": 1.3698,
+    "train_top1": 0.9992324224746699,
+    "input_dim": 1280,
+    "fit_seconds": 11.0
+   }
+  },
+  "hybrid": {
+   "spec": {
+    "use_learned": true,
+    "hc_groups": [
+     "hog",
+     "lbp",
+     "hsv",
+     "geometry",
+     "flags"
+    ],
+    "branch_balance": "per_feature"
+   },
+   "grid": [
+    {
+     "C": 0.005,
+     "tune_top1": 0.6134969325153374,
+     "tune_top5": 0.8846625766871166,
+     "tune_nll": 1.9137,
+     "train_top1": 0.9926312557568314,
+     "input_dim": 1344,
+     "fit_seconds": 38.8
+    },
+    {
+     "C": 0.02,
+     "tune_top1": 0.6404907975460122,
+     "tune_top5": 0.8957055214723927,
+     "tune_nll": 1.5441,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 36.9
+    },
+    {
+     "C": 0.1,
+     "tune_top1": 0.649079754601227,
+     "tune_top5": 0.898159509202454,
+     "tune_nll": 1.3707,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 21.4
+    }
+   ],
+   "selected": {
+    "C": 0.1,
+    "tune_top1": 0.649079754601227,
+    "tune_top5": 0.898159509202454,
+    "tune_nll": 1.3707,
+    "train_top1": 0.9992324224746699,
+    "input_dim": 1344,
+    "fit_seconds": 21.4
+   }
+  },
+  "hybrid_equal_variance": {
+   "spec": {
+    "use_learned": true,
+    "hc_groups": [
+     "hog",
+     "lbp",
+     "hsv",
+     "geometry",
+     "flags"
+    ],
+    "branch_balance": "equal_variance"
+   },
+   "grid": [
+    {
+     "C": 0.005,
+     "tune_top1": 0.5030674846625767,
+     "tune_top5": 0.8159509202453987,
+     "tune_nll": 2.0975,
+     "train_top1": 0.9966226588885477,
+     "input_dim": 1344,
+     "fit_seconds": 42.9
+    },
+    {
+     "C": 0.02,
+     "tune_top1": 0.5288343558282208,
+     "tune_top5": 0.8282208588957055,
+     "tune_nll": 1.8522,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 37.9
+    },
+    {
+     "C": 0.1,
+     "tune_top1": 0.5411042944785276,
+     "tune_top5": 0.8245398773006135,
+     "tune_nll": 1.7659,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 23.8
+    }
+   ],
+   "selected": {
+    "C": 0.1,
+    "tune_top1": 0.5411042944785276,
+    "tune_top5": 0.8245398773006135,
+    "tune_nll": 1.7659,
+    "train_top1": 0.9992324224746699,
+    "input_dim": 1344,
+    "fit_seconds": 23.8
+   }
+  },
+  "hybrid_no_hog": {
+   "spec": {
+    "use_learned": true,
+    "hc_groups": [
+     "lbp",
+     "hsv",
+     "geometry",
+     "flags"
+    ],
+    "branch_balance": "per_feature"
+   },
+   "grid": [
+    {
+     "C": 0.005,
+     "tune_top1": 0.6196319018404908,
+     "tune_top5": 0.8785276073619632,
+     "tune_nll": 1.9149,
+     "train_top1": 0.9924777402517654,
+     "input_dim": 1329,
+     "fit_seconds": 24.9
+    },
+    {
+     "C": 0.02,
+     "tune_top1": 0.6429447852760736,
+     "tune_top5": 0.8871165644171779,
+     "tune_nll": 1.5467,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1329,
+     "fit_seconds": 22.6
+    },
+    {
+     "C": 0.1,
+     "tune_top1": 0.645398773006135,
+     "tune_top5": 0.8932515337423312,
+     "tune_nll": 1.3788,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1329,
+     "fit_seconds": 12.9
+    }
+   ],
+   "selected": {
+    "C": 0.1,
+    "tune_top1": 0.645398773006135,
+    "tune_top5": 0.8932515337423312,
+    "tune_nll": 1.3788,
+    "train_top1": 0.9992324224746699,
+    "input_dim": 1329,
+    "fit_seconds": 12.9
+   }
+  },
+  "hybrid_no_color_texture": {
+   "spec": {
+    "use_learned": true,
+    "hc_groups": [
+     "hog",
+     "geometry",
+     "flags"
+    ],
+    "branch_balance": "per_feature"
+   },
+   "grid": [
+    {
+     "C": 0.005,
+     "tune_top1": 0.6159509202453988,
+     "tune_top5": 0.8834355828220859,
+     "tune_nll": 1.9141,
+     "train_top1": 0.9926312557568314,
+     "input_dim": 1344,
+     "fit_seconds": 40.2
+    },
+    {
+     "C": 0.02,
+     "tune_top1": 0.6392638036809816,
+     "tune_top5": 0.894478527607362,
+     "tune_nll": 1.5446,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 41.3
+    },
+    {
+     "C": 0.1,
+     "tune_top1": 0.6515337423312884,
+     "tune_top5": 0.8993865030674847,
+     "tune_nll": 1.369,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 25.0
+    }
+   ],
+   "selected": {
+    "C": 0.1,
+    "tune_top1": 0.6515337423312884,
+    "tune_top5": 0.8993865030674847,
+    "tune_nll": 1.369,
+    "train_top1": 0.9992324224746699,
+    "input_dim": 1344,
+    "fit_seconds": 25.0
+   }
+  },
+  "hybrid_no_geometry": {
+   "spec": {
+    "use_learned": true,
+    "hc_groups": [
+     "hog",
+     "lbp",
+     "hsv",
+     "flags"
+    ],
+    "branch_balance": "per_feature"
+   },
+   "grid": [
+    {
+     "C": 0.005,
+     "tune_top1": 0.6147239263803681,
+     "tune_top5": 0.8846625766871166,
+     "tune_nll": 1.9143,
+     "train_top1": 0.9926312557568314,
+     "input_dim": 1344,
+     "fit_seconds": 51.5
+    },
+    {
+     "C": 0.02,
+     "tune_top1": 0.6417177914110429,
+     "tune_top5": 0.8957055214723927,
+     "tune_nll": 1.5448,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 37.6
+    },
+    {
+     "C": 0.1,
+     "tune_top1": 0.6503067484662577,
+     "tune_top5": 0.8993865030674847,
+     "tune_nll": 1.3691,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 22.8
+    }
+   ],
+   "selected": {
+    "C": 0.1,
+    "tune_top1": 0.6503067484662577,
+    "tune_top5": 0.8993865030674847,
+    "tune_nll": 1.3691,
+    "train_top1": 0.9992324224746699,
+    "input_dim": 1344,
+    "fit_seconds": 22.8
+   }
+  }
+ },
+ "artifacts": {
+  "deep": {
+   "path": "heads\\deep_imagenet_frozen_C0.1.joblib",
+   "sha256": "65fb68c6d42106ac69cafa81cc0927213448eacf63da6d657bafe3474eccf4c9",
+   "bytes": 2042361
+  },
+  "hybrid": {
+   "path": "heads\\hybrid_imagenet_frozen_C0.1.joblib",
+   "sha256": "4498322be1f3819376dfc157e8d7745e1c0b428f52e32d9efd4e76f0ea4be78d",
+   "bytes": 3134873
+  },
+  "hybrid_equal_variance": {
+   "path": "heads\\hybrid_equal_variance_imagenet_frozen_C0.1.joblib",
+   "sha256": "46b1d186d8aed93e7ed8cc9c71751c52a057f2a76ea54003c12ae22af1bf647d",
+   "bytes": 3134889
+  },
+  "hybrid_no_hog": {
+   "path": "heads\\hybrid_no_hog_imagenet_frozen_C0.1.joblib",
+   "sha256": "d2c51aa3866b1d39a4e7707d11513457144853fc871afb6f81b7becf4de3fa11",
+   "bytes": 2144777
+  },
+  "hybrid_no_color_texture": {
+   "path": "heads\\hybrid_no_color_texture_imagenet_frozen_C0.1.joblib",
+   "sha256": "bcd7def5edabdde0d34084785c3410d717f86cf421708319aa9c074d1d10df02",
+   "bytes": 3112025
+  },
+  "hybrid_no_geometry": {
+   "path": "heads\\hybrid_no_geometry_imagenet_frozen_C0.1.joblib",
+   "sha256": "c7851f4ddf1440b21168611f09c62827415f419f39f8d42e1314f00e89fea89c",
+   "bytes": 3130521
+  }
+ }
+}
