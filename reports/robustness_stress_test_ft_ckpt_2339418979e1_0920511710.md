@@ -1,0 +1,27 @@
+# Robustness on `stress_test` (392 images, bundle `ft_ckpt_2339418979e1_0920511710`)
+
+Synthetic, fixed conditions applied before detection (design choices, not a standard benchmark). Artificial darkening is not real night imagery; downsampling is not distance.
+
+| Condition | Mode | E2E top-1 | Change vs clean | E2E top-5 | Box recall@0.5 | No box |
+|---|---|---|---|---|---|---|
+| clean | classical | 0.048 | +0.000 | 0.112 | 0.633 | 86 |
+| clean | deep | 0.732 | +0.000 | 0.916 | 0.990 | 2 |
+| clean | hybrid | 0.724 | +0.000 | 0.916 | 0.990 | 2 |
+| bright_0.5 | classical | 0.041 | -0.008 | 0.135 | 0.684 | 27 |
+| bright_0.5 | deep | 0.714 | -0.018 | 0.921 | 0.990 | 2 |
+| bright_0.5 | hybrid | 0.704 | -0.020 | 0.911 | 0.990 | 2 |
+| bright_1.5 | classical | 0.038 | -0.010 | 0.097 | 0.582 | 107 |
+| bright_1.5 | deep | 0.722 | -0.010 | 0.926 | 0.995 | 1 |
+| bright_1.5 | hybrid | 0.714 | -0.010 | 0.929 | 0.995 | 1 |
+| down_0.50 | classical | 0.048 | +0.000 | 0.128 | 0.651 | 61 |
+| down_0.50 | deep | 0.666 | -0.066 | 0.898 | 0.992 | 3 |
+| down_0.50 | hybrid | 0.658 | -0.066 | 0.913 | 0.992 | 3 |
+| down_0.25 | classical | 0.031 | -0.018 | 0.087 | 0.508 | 93 |
+| down_0.25 | deep | 0.472 | -0.260 | 0.735 | 0.972 | 8 |
+| down_0.25 | hybrid | 0.474 | -0.250 | 0.753 | 0.972 | 8 |
+| occl_0.15 | classical | 0.026 | -0.023 | 0.097 | 0.640 | 84 |
+| occl_0.15 | deep | 0.605 | -0.128 | 0.857 | 0.987 | 2 |
+| occl_0.15 | hybrid | 0.602 | -0.122 | 0.855 | 0.987 | 2 |
+| occl_0.30 | classical | 0.020 | -0.028 | 0.074 | 0.633 | 87 |
+| occl_0.30 | deep | 0.449 | -0.283 | 0.694 | 0.952 | 6 |
+| occl_0.30 | hybrid | 0.439 | -0.286 | 0.712 | 0.952 | 6 |

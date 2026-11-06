@@ -2,11 +2,11 @@
 
 **Vehicle identity through evidence.** Every identity needs evidence.
 
-> **Status (2026-11-06): development build, P0-P4 partly done.** Detection, three recognition modes,
-> the Passport and the Evidence Challenge run end to end locally on a **development model** (frozen
-> ImageNet backbone, not yet fine-tuned) with **development calibration**. Fine-grained
-> results from the final fine-tuned model and all test-set evaluation are **not available yet**.
-> No test accuracy exists yet, and none is claimed.
+> **Status (2026-11-07): model final, deployment pending.** The fine-tuned EfficientNet-B0 bundle was
+> frozen at P5, given its final conformal calibration, and evaluated once on the official 8,041-image
+> test split (P6). All results are in [eval_P5_T35.md](eval_P5_T35.md), generated from `reports/`
+> by `scripts/report.py`. Still open: public hosting, publishing the trained weights, the negative
+> (unsupported-image) suite, and team review of the viewpoint labels.
 
 **Live application URL:** not deployed yet. No public host has been provisioned
 (see [docs/hosting_lock.md](docs/hosting_lock.md)).
@@ -27,15 +27,15 @@ categories changes.
 | Vehicle detection (YOLO11n, COCO car/bus/truck) with primary-target rule | Implemented, evaluated on tune split |
 | Verified Stanford Cars manifests and class hierarchy | Implemented, tested |
 | Classical features (edges, contours, HOG, LBP, HSV, geometry), classical ROI proposals | Implemented, tested, shown in the app |
-| Classical, Deep and Hybrid modes with Top-5 and separate scores | Implemented on the development backbone |
-| EfficientNet-B0 fine-tuning | Script ready and smoke-tested; real run pending on the team's GPU PC |
-| Identity Evidence Passport (candidate set, specificity, decision states, JSON export) | Implemented; development calibration only |
+| Classical, Deep and Hybrid modes with Top-5 and separate scores | Implemented on the fine-tuned backbone; evaluated on test |
+| EfficientNet-B0 fine-tuning | Done (run `effb0_r1`, [reports/training/effb0_r1_summary.json](reports/training/effb0_r1_summary.json)) |
+| Identity Evidence Passport (candidate set, specificity, decision states, JSON export) | Implemented; final calibration from the untouched calibration split |
 | Evidence Challenge (six blurred regions, fixed A/B margin) | Implemented, tested |
 | Nearest training references (588-entry training-only index; identifiers, labels, similarity) | Implemented; thumbnails withheld (rights unresolved) |
-| Optimization: ONNX FP32 encoder, INT8 encoder attempts, INT8 linear head | Measured on the development backbone; app runtime unchanged until the freeze |
-| End-to-end evaluator (Top-1/5 with IoU gating, IoU, AP, Passport, calibration) | Implemented; run on tune; test run waits for the freeze (P6) |
-| Robustness: 6 fixed stress conditions on a predeclared 392-image subset; 60 viewpoint-labelled photos | Tooling done; tune-subset run done; test run waits for the freeze |
-| Evaluation file `eval_P5_TeamID.md` | Generated from reports by `scripts/report.py`; final values pending; USNs needed |
+| Optimization: ONNX FP32 encoder, INT8 encoder attempts, INT8 linear head | Measured on the fine-tuned backbone; the release keeps the PyTorch FP32 encoder |
+| End-to-end evaluator (Top-1/5 with IoU gating, IoU, AP, Passport, calibration) | Run on tune, calibration and (once, after the freeze) test |
+| Robustness: 6 fixed stress conditions on a predeclared 392-image subset; 60 viewpoint-labelled photos | Run on the test subset; viewpoint labels await team review |
+| Evaluation file [eval_P5_T35.md](eval_P5_T35.md) | Generated from reports by `scripts/report.py` (final test values) |
 
 Supported vehicle categories: the 196 Stanford Cars classes (49 makes, model years 1991-2012),
 listed in [artifacts/class_metadata.json](artifacts/class_metadata.json).
@@ -133,39 +133,26 @@ Contract: [docs/api_schema.json](docs/api_schema.json).
 
 ## Results
 
-No test-set results yet. Development diagnostics so far (every number from a saved report):
+Final results from the official Stanford Cars test split (8,041 images, evaluated once after the P5
+freeze) are in **[eval_P5_T35.md](eval_P5_T35.md)**, in the PS5 metric order: Top-1/Top-5, IoU, mAP,
+model size and latency, robustness, and confidence/threshold analysis, followed by ablations and
+three rule-selected failure cases. Every number there is printed by `scripts/report.py` from these files:
 
-| What | Population | Top-1 | Top-5 | Source |
-|---|---|---|---|---|
-| Classical head (handcrafted features only) | Tune, 815 images, annotation crops | 0.1865 | 0.3816 | [reports/classical_tune.json](reports/classical_tune.json) |
-| Deep head, development backbone (frozen ImageNet) | same | 0.6429 | 0.9006 | [reports/heads_tune_imagenet_frozen.json](reports/heads_tune_imagenet_frozen.json) |
-| Hybrid head, development backbone | same | 0.6491 | 0.8982 | same file (includes ablations) |
+| What | File |
+|---|---|
+| End-to-end test evaluation (all three modes, Passport, calibration) | [reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json](reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json) |
+| Robustness on the 392-image test stress subset | [reports/robustness_stress_test_ft_ckpt_2339418979e1_0920511710.md](reports/robustness_stress_test_ft_ckpt_2339418979e1_0920511710.md) |
+| Viewpoint subgroups and failure cases | [reports/analysis_test_ft_ckpt_2339418979e1_0920511710.json](reports/analysis_test_ft_ckpt_2339418979e1_0920511710.json) |
+| Head selection and ablations (tune) | [reports/heads_tune_ckpt_2339418979e1.json](reports/heads_tune_ckpt_2339418979e1.json) |
+| Optimization (ONNX FP32 / INT8) | [reports/optimization_ckpt_2339418979e1.json](reports/optimization_ckpt_2339418979e1.json) |
+| Fine-tuning run | [reports/training/effb0_r1_summary.json](reports/training/effb0_r1_summary.json) |
 
-Detector on the same 815 tune images: generic vehicle AP50 0.847, AP50:95 0.771; primary-target
-recall at IoU 0.5 is 0.993 ([reports/detector_tune.json](reports/detector_tune.json)).
+To regenerate the evaluation file: `python scripts/report.py --team-id T35 --usns "1RUA24CSE0051,1RUA24CSE0097"`.
+The full reproduction order is in [docs/runbook_other_pc.md](docs/runbook_other_pc.md).
 
-End-to-end on the same 815 tune images (runtime box rule, misses count as failures;
-[reports/e2e_tune_dev_imagenet_frozen_097c99803f.json](reports/e2e_tune_dev_imagenet_frozen_097c99803f.json)):
-
-| Mode | End-to-end Top-1 | Top-5 | 196-class AP50 |
-|---|---|---|---|
-| Classical (contour proposal ROI) | 0.065 | 0.130 | 0.049 |
-| Deep | 0.645 | 0.888 | 0.598 |
-| Hybrid | 0.640 | 0.899 | 0.593 |
-
-Robustness (392-image tune stress subset, conditions applied before detection;
-[reports/robustness_stress_tune_dev_imagenet_frozen_504165ac73.md](reports/robustness_stress_tune_dev_imagenet_frozen_504165ac73.md)):
-hybrid end-to-end top-1 0.648 clean, 0.630 at half brightness, 0.597 at half resolution, 0.383 at quarter
-resolution, 0.559 with 15% occlusion and 0.344 with 30% occlusion.
-
-Optimization (development backbone, tune split; [docs/checkpoints/P5_dev.md](docs/checkpoints/P5_dev.md)):
-ONNX FP32 encoder gives identical predictions at about 20 ms instead of 52 ms per crop on a 4-core
-laptop CPU (isolated encoder; inside a full request the gain was about 12%, selectable with
-`SEMEVIA_ENCODER_RUNTIME=onnx_fp32`); full-network INT8 failed (accuracy collapsed); an INT8 linear head keeps top-1 within
-0.25 points and is 4x smaller.
-
-These are not end-to-end or test accuracy: they use ground-truth crops on the tuning split that
-was also used to select the heads, and the backbone is not fine-tuned yet.
+Note on mode choice: the production mode (hybrid) was fixed on the tuning split before the test
+split was evaluated; on test the deep mode is marginally ahead on top-1 (see the eval file). We did
+not switch modes after seeing test results.
 
 ## Limitations (known so far)
 
@@ -181,7 +168,12 @@ Copy [.env.example](.env.example) to `.env` for local paths. Inference needs no 
 
 ## Team and submission
 
-Team member names and USNs: to be provided by the team (not invented here).
+Team ID **T35**, problem statement **PS5**.
+
+| Member | USN |
+|---|---|
+| Aniket Kumar | 1RUA24CSE0051 |
+| C Lakshanaa | 1RUA24CSE0097 |
 
 ## Licences
 

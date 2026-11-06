@@ -29,7 +29,14 @@
   (`artifacts/calibration_final.json`, 5 detection failures given the fallback score), bundle re-promoted
   as `ft_ckpt_2339418979e1_0920511710`; verify passes; pytest 91 passed, 1 skipped.
   **Frozen from here:** detector, backbone, heads, crop, features, runtime, thresholds.
-* Next: step 6, official test evaluation and stress test (P6), then the eval file.
+* Step 5 commit: a05ee37 (pushed).
+* Step 6 done: official test run once (8,041 images, `reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json`),
+  7 stress conditions on the 392-image test subset + robustness report, analysis (viewpoints, 3 failures).
+  `scripts/report.py` rewritten (it never printed test values and hard-coded dev files); it now picks reports
+  by bundle id / backbone tag and writes `eval_P5_T35.md` (old `eval_P5_TeamID.md` removed). A 6-agent check
+  recomputed every number from the JSON: no wrong numbers; wording fixes applied. README updated (status,
+  results pointer, team T35). On test, deep is +0.6 pt over hybrid top-1; hybrid stays (fixed on tune).
+* Next: step 8-9 local part (container run, offline check), then team decisions (step 7 publish, hosting).
 
 Updated 2026-11-06 at the P0/P1 checkpoint and partial P2. Branch `semevia/implementation`.
 Commit SHA and push status: see the bottom of this file (updated after each push).

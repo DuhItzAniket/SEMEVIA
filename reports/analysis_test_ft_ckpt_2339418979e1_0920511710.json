@@ -1,0 +1,268 @@
+{
+ "partition": "test",
+ "bundle_id": "ft_ckpt_2339418979e1_0920511710",
+ "predictions_file": "e2e_test_clean_5eb7f61508_ft_ckpt_2339418979e1_0920511710.jsonl",
+ "production_mode": "hybrid",
+ "calibration_kind": "final",
+ "viewpoint_subgroups": {
+  "deep": {
+   "front": {
+    "count": 7,
+    "top1": 6,
+    "top5": 7,
+    "top1_rate": 0.8571428571428571,
+    "top5_rate": 1.0
+   },
+   "indeterminate": {
+    "count": 2,
+    "top1": 1,
+    "top5": 1,
+    "top1_rate": 0.5,
+    "top5_rate": 0.5
+   },
+   "rear": {
+    "count": 1,
+    "top1": 1,
+    "top5": 1,
+    "top1_rate": 1.0,
+    "top5_rate": 1.0
+   },
+   "side": {
+    "count": 8,
+    "top1": 5,
+    "top5": 7,
+    "top1_rate": 0.625,
+    "top5_rate": 0.875
+   },
+   "three_quarter_front": {
+    "count": 36,
+    "top1": 23,
+    "top5": 36,
+    "top1_rate": 0.6388888888888888,
+    "top5_rate": 1.0
+   },
+   "three_quarter_rear": {
+    "count": 6,
+    "top1": 4,
+    "top5": 5,
+    "top1_rate": 0.6666666666666666,
+    "top5_rate": 0.8333333333333334
+   }
+  },
+  "hybrid": {
+   "front": {
+    "count": 7,
+    "top1": 6,
+    "top5": 7,
+    "top1_rate": 0.8571428571428571,
+    "top5_rate": 1.0
+   },
+   "indeterminate": {
+    "count": 2,
+    "top1": 1,
+    "top5": 1,
+    "top1_rate": 0.5,
+    "top5_rate": 0.5
+   },
+   "rear": {
+    "count": 1,
+    "top1": 1,
+    "top5": 1,
+    "top1_rate": 1.0,
+    "top5_rate": 1.0
+   },
+   "side": {
+    "count": 8,
+    "top1": 5,
+    "top5": 7,
+    "top1_rate": 0.625,
+    "top5_rate": 0.875
+   },
+   "three_quarter_front": {
+    "count": 36,
+    "top1": 24,
+    "top5": 36,
+    "top1_rate": 0.6666666666666666,
+    "top5_rate": 1.0
+   },
+   "three_quarter_rear": {
+    "count": 6,
+    "top1": 4,
+    "top5": 5,
+    "top1_rate": 0.6666666666666666,
+    "top5_rate": 0.8333333333333334
+   }
+  }
+ },
+ "viewpoint_note": "Descriptive; small and imbalanced groups (labelled before results).",
+ "failures": [
+  {
+   "rule": "localisation failure (no box, or lowest IoU below 0.5)",
+   "image_key": "test/00076.jpg",
+   "true": "AM General Hummer SUV 2000",
+   "selected_box": null,
+   "annotation_box": [
+    10.0,
+    12.0,
+    84.0,
+    60.0
+   ],
+   "iou": null,
+   "detector_score": null,
+   "annotation_crop_top5": [
+    [
+     "AM General Hummer SUV 2000",
+     0.9999
+    ],
+    [
+     "Geo Metro Convertible 1993",
+     0.0
+    ],
+    [
+     "HUMMER H2 SUT Crew Cab 2009",
+     0.0
+    ],
+    [
+     "Lamborghini Diablo Coupe 2001",
+     0.0
+    ],
+    [
+     "Dodge Durango SUV 2007",
+     0.0
+    ]
+   ],
+   "annotation_crop_correct": true,
+   "hypothesis": "HYPOTHESIS: localisation/crop caused the error (annotation crop is classified correctly)"
+  },
+  {
+   "rule": "close-category error (same make), highest confidence",
+   "image_key": "test/05757.jpg",
+   "true": "Aston Martin V8 Vantage Coupe 2012",
+   "selected_box": [
+    2.9607579708099365,
+    46.20567321777344,
+    299.19207763671875,
+    168.73995971679688
+   ],
+   "annotation_box": [
+    4.0,
+    44.0,
+    300.0,
+    176.0
+   ],
+   "iou": 0.9227489046405712,
+   "detector_score": 0.8955549001693726,
+   "runtime_top5": [
+    [
+     "Aston Martin Virage Coupe 2012",
+     0.9995
+    ],
+    [
+     "Aston Martin V8 Vantage Coupe 2012",
+     0.0002
+    ],
+    [
+     "McLaren MP4-12C Coupe 2012",
+     0.0001
+    ],
+    [
+     "Hyundai Veloster Hatchback 2012",
+     0.0001
+    ],
+    [
+     "Infiniti G Coupe IPL 2012",
+     0.0
+    ]
+   ],
+   "annotation_crop_top5": [
+    [
+     "Aston Martin Virage Coupe 2012",
+     0.9992
+    ],
+    [
+     "Aston Martin V8 Vantage Coupe 2012",
+     0.0004
+    ],
+    [
+     "McLaren MP4-12C Coupe 2012",
+     0.0002
+    ],
+    [
+     "Hyundai Veloster Hatchback 2012",
+     0.0001
+    ],
+    [
+     "Infiniti G Coupe IPL 2012",
+     0.0
+    ]
+   ],
+   "annotation_crop_correct": false,
+   "hypothesis": "HYPOTHESIS: classifier confusion persists on the annotation crop"
+  },
+  {
+   "rule": "confident cross-make error, highest confidence",
+   "image_key": "test/02309.jpg",
+   "true": "BMW M3 Coupe 2012",
+   "selected_box": [
+    171.13845825195312,
+    87.2782211303711,
+    903.7722778320312,
+    516.1417846679688
+   ],
+   "annotation_box": [
+    162.0,
+    83.0,
+    913.0,
+    529.0
+   ],
+   "iou": 0.9380615103129272,
+   "detector_score": 0.8697617650032043,
+   "runtime_top5": [
+    [
+     "Lamborghini Aventador Coupe 2012",
+     0.9929
+    ],
+    [
+     "BMW M3 Coupe 2012",
+     0.0012
+    ],
+    [
+     "Spyker C8 Convertible 2009",
+     0.001
+    ],
+    [
+     "Hyundai Veloster Hatchback 2012",
+     0.0009
+    ],
+    [
+     "BMW 1 Series Coupe 2012",
+     0.0009
+    ]
+   ],
+   "annotation_crop_top5": [
+    [
+     "Lamborghini Aventador Coupe 2012",
+     0.9928
+    ],
+    [
+     "BMW M3 Coupe 2012",
+     0.0012
+    ],
+    [
+     "Hyundai Veloster Hatchback 2012",
+     0.0011
+    ],
+    [
+     "BMW 1 Series Coupe 2012",
+     0.0009
+    ],
+    [
+     "Aston Martin Virage Coupe 2012",
+     0.0008
+    ]
+   ],
+   "annotation_crop_correct": false,
+   "hypothesis": "HYPOTHESIS: classifier confusion persists on the annotation crop"
+  }
+ ]
+}
