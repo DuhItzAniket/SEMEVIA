@@ -101,7 +101,7 @@ INT8 linear head (`reports/optimization_head_hybrid_ckpt_4f3584f597d5.json`): th
 
 Released and frozen runtime: encoder `torch`, precision `fp32` (the optimized variants above are measured, not deployed).
 
-Deployed end-to-end latency through the public URL (`reports/release_acceptance.json`, 2026-11-06; Cloudflare quick tunnel (trycloudflare.com) to Docker Desktop on the team laptop (Intel i7-14650HX); container limited to 2 CPUs / 4 GB by compose.yaml. The URL lasts only while the laptop, Docker and the tunnel keep running.): 20 fresh uploads, client wall time including the network, p50 515 ms, p95 788 ms, max 927 ms; 4 simultaneous clients all answered in 758 ms; 6 bad-input cases answered with typed errors.
+Deployed end-to-end latency through the public URL (`reports/release_acceptance.json`, 2026-11-06; Cloudflare quick tunnel (trycloudflare.com) to Docker Desktop on the team laptop (Intel i7-14650HX); container limited to 2 CPUs / 4 GB by compose.yaml. The URL lasts only while the laptop, Docker and the tunnel keep running.): 20 fresh uploads, client wall time including the network, p50 502 ms, p95 871 ms, max 881 ms; 4 simultaneous clients all answered in 817 ms; 6 bad-input cases answered with typed errors.
 
 ## 5. Robustness under varying conditions
 
