@@ -27,11 +27,21 @@ git clone https://github.com/DuhItzAniket/SEMEVIA; cd SEMEVIA; git checkout seme
 git clone --depth 1 https://github.com/jhpohovey/StanfordCars.git E:\semevia\StanfordCars
 python -m venv E:\semevia\venv
 E:\semevia\venv\Scripts\python -m pip install --upgrade pip
-E:\semevia\venv\Scripts\python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
 Get-Content requirements.lock | Select-String -NotMatch '^(torch|torchvision)==|^#' | Set-Content -Encoding ascii E:\semevia\req_no_torch.txt
 E:\semevia\venv\Scripts\python -m pip install -r E:\semevia\req_no_torch.txt
+# Install the CUDA build LAST: the lock's other packages otherwise pull the CPU torch from PyPI.
+E:\semevia\venv\Scripts\python -m pip install torch==2.14.1+cu126 torchvision==0.29.1+cu126 --index-url https://download.pytorch.org/whl/cu126 --extra-index-url https://pypi.org/simple
+E:\semevia\venv\Scripts\python -m pip check
 E:\semevia\venv\Scripts\python -c "import torch; print(torch.__version__, torch.cuda.is_available(), torch.cuda.get_device_name(0))"
 ```
+
+Why cu126 and not cu124: the newest cu124 build (torch 2.6) pins `sympy==1.13.1`, which conflicts with
+`sympy==1.14.0` in `requirements.lock`, so pip silently replaces it with the CPU-only torch 2.15 from PyPI
+(seen on 2026-11-07). cu126 needs an NVIDIA driver that reports CUDA 12.6 or newer in `nvidia-smi`.
+
+`prepare_data.py` writes `manifest_index.json` with Windows line endings, so `git status` can list it
+as modified even when its content is identical. `git diff artifacts\manifests` must be empty (the CSVs,
+which are hashed, are written byte-exact).
 
 Set these in every new PowerShell window (or a `.env` you do not commit):
 

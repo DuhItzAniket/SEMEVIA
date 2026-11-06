@@ -1,5 +1,15 @@
 # NEXT: SEMEVIA handoff
 
+## GPU PC run (2026-11-07, host LEGION) — in progress; this PC is the only one committing
+* Machine: RTX 4050 Laptop GPU (6 GB), i7-14650HX, 15.7 GB RAM, **C: only (no E: drive)**, so the
+  runbook's `E:\semevia` is `C:\semevia` here (data, venv, store, torch cache, tmp). Env: `C:\semevia\env.ps1`.
+* Step 1 done: venv Python 3.11.9 with `requirements.lock` + **torch 2.14.1+cu126 / torchvision 0.29.1+cu126**
+  (cu124's torch 2.6 conflicts with the locked sympy; runbook updated). Data: jhpohovey/StanfordCars at
+  c742195 (8,144 train / 8,041 test). `prepare_data.py` reproduces the manifests (CSV bytes identical;
+  `manifest_index.json` identical apart from CRLF line endings); `declare_subsets.py` leaves the tree clean.
+  `pytest`: passes (data/bundle-dependent tests skipped before step 3).
+* Next: step 2, fine-tuning (`scripts/train.py`), running.
+
 Updated 2026-11-06 at the P0/P1 checkpoint and partial P2. Branch `semevia/implementation`.
 Commit SHA and push status: see the bottom of this file (updated after each push).
 

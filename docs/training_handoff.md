@@ -38,8 +38,9 @@ The data clone is about 3.8 GB and must contain `stanford_cars\cars_train` (8,14
 ```powershell
 python -m venv C:\semevia\venv
 C:\semevia\venv\Scripts\python -m pip install --upgrade pip
-# PyTorch with CUDA (pick the CUDA build that matches the driver; cu124 shown as an example)
-C:\semevia\venv\Scripts\python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+# PyTorch with CUDA. cu124 (torch 2.6) conflicts with sympy==1.14.0 in requirements.lock; the
+# combination verified on 2026-11-07 is below (needs an nvidia-smi CUDA version of 12.6 or newer).
+C:\semevia\venv\Scripts\python -m pip install torch==2.14.1+cu126 torchvision==0.29.1+cu126 --index-url https://download.pytorch.org/whl/cu126 --extra-index-url https://pypi.org/simple
 # Pinned to the development machine's versions (requirements.lock) so the split check is exact
 C:\semevia\venv\Scripts\python -m pip install numpy==2.4.6 pillow==13.0.0 scipy==1.17.1 scikit-learn==1.9.1 scikit-image==0.26.0 opencv-python-headless==5.0.0.93 PyYAML==6.0.3 ImageHash==4.3.2
 C:\semevia\venv\Scripts\python -c "import torch; print(torch.__version__, torch.cuda.is_available(), torch.cuda.get_device_name(0))"
