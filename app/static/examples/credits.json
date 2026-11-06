@@ -1,0 +1,38 @@
+[
+ {
+  "key": "audi_r8",
+  "label": "Supported car",
+  "file": "audi_r8.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Audi_R8_Coup%C3%A9_5.2_FSI_quattro_(2012)_(52338542581).jpg",
+  "license": "CC BY 2.0",
+  "author": "Charles from Port Chester, New York",
+  "modified": "resized"
+ },
+ {
+  "key": "aventador",
+  "label": "Supported car",
+  "file": "aventador.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Lamborghini_Aventador_LP700-4_-_Flickr_-_Supermac1961.jpg",
+  "license": "CC BY 2.0",
+  "author": "Supermac1961 from Chafford Hundred, England",
+  "modified": "resized"
+ },
+ {
+  "key": "bus",
+  "label": "Unsupported: bus",
+  "file": "bus.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:AMU_public_bus_-_Ariano_Irpino.jpg",
+  "license": "CC BY 4.0",
+  "author": "ALC",
+  "modified": "resized"
+ },
+ {
+  "key": "motorcycle",
+  "label": "Unsupported: motorcycle",
+  "file": "motorcycle.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Ducati_955_Panigale_V2_(IMG_9845).jpg",
+  "license": "CC BY-SA 4.0",
+  "author": "Terragio67",
+  "modified": "resized"
+ }
+]

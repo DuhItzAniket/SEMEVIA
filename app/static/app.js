@@ -176,6 +176,17 @@
     $('ch-result').hidden = true; setStatus($('ch-status'), ''); $('run-challenge').disabled = false;
   };
 
+  document.querySelectorAll('button.ex').forEach(b => b.addEventListener('click', async () => {
+    try {
+      const r = await fetch(`/static/examples/${b.dataset.ex}.jpg`);
+      if (!r.ok) throw new Error('example not found');
+      const f = new File([await r.blob()], `${b.dataset.ex}.jpg`, { type: 'image/jpeg' });
+      const dt = new DataTransfer(); dt.items.add(f); file.files = dt.files;
+      file.dispatchEvent(new Event('change', { bubbles: true }));
+      form.requestSubmit();
+    } catch (e) { setStatus(status, 'Could not load the example photo. Choose your own photo instead.', 'error'); }
+  }));
+
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     if (!file.files.length) return;

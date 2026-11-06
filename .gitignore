@@ -27,6 +27,7 @@ venv/
 *.jpeg
 *.png
 !app/static/**/*.png
+!app/static/examples/*.jpg
 !reports/figures/**/*.png
 !docs/**/*.png
 

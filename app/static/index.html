@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SEMEVIA</title>
-  <link rel="stylesheet" href="/static/style.css?v=3">
+  <link rel="stylesheet" href="/static/style.css?v=4">
 </head>
 <body>
   <header class="top">
@@ -36,6 +36,16 @@
         </div>
       </form>
       <p id="status" class="status" role="status" aria-live="polite"></p>
+      <div class="examples" aria-labelledby="ex-h">
+        <p id="ex-h" class="ex-h">No photo at hand? Try an example:</p>
+        <div class="ex-row">
+          <button type="button" class="ex" data-ex="audi_r8"><img src="/static/examples/audi_r8_thumb.jpg" alt="" width="120" height="80"><span>Audi R8 (supported)</span></button>
+          <button type="button" class="ex" data-ex="aventador"><img src="/static/examples/aventador_thumb.jpg" alt="" width="120" height="80"><span>Lamborghini Aventador (supported)</span></button>
+          <button type="button" class="ex" data-ex="bus"><img src="/static/examples/bus_thumb.jpg" alt="" width="120" height="80"><span>Unsupported: bus</span></button>
+          <button type="button" class="ex" data-ex="motorcycle"><img src="/static/examples/motorcycle_thumb.jpg" alt="" width="120" height="80"><span>Unsupported: motorcycle</span></button>
+        </div>
+        <p class="credits">Example photos from Wikimedia Commons, resized: <a href="https://commons.wikimedia.org/wiki/File:Audi_R8_Coup%C3%A9_5.2_FSI_quattro_(2012)_(52338542581).jpg" target="_blank" rel="noopener">Audi R8</a> by Charles from Port Chester, New York (CC BY 2.0); <a href="https://commons.wikimedia.org/wiki/File:Lamborghini_Aventador_LP700-4_-_Flickr_-_Supermac1961.jpg" target="_blank" rel="noopener">Aventador</a> by Supermac1961 from Chafford Hundred, England (CC BY 2.0); <a href="https://commons.wikimedia.org/wiki/File:AMU_public_bus_-_Ariano_Irpino.jpg" target="_blank" rel="noopener">bus</a> by ALC (CC BY 4.0); <a href="https://commons.wikimedia.org/wiki/File:Ducati_955_Panigale_V2_(IMG_9845).jpg" target="_blank" rel="noopener">motorcycle</a> by Terragio67 (CC BY-SA 4.0).</p>
+      </div>
     </section>
 
     <section id="result" class="card" hidden aria-labelledby="result-h">
@@ -129,6 +139,6 @@
     </section>
   </main>
   <footer class="wrap foot"><span id="ready">Checking service...</span></footer>
-  <script src="/static/app.js?v=3"></script>
+  <script src="/static/app.js?v=4"></script>
 </body>
 </html>

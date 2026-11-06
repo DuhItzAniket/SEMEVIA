@@ -78,3 +78,12 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .8rem; max-heig
 .ch-table th, .ch-table td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); }
 .ch-table caption { text-align: left; }
 a { color: var(--accent); }
+.examples { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+.ex-h { margin: 0 0 8px; color: var(--muted); }
+.ex-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+button.ex { display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 0; padding: 8px;
+  background: transparent; color: var(--text); border: 1px solid var(--line); border-radius: 10px; font-size: .9rem; }
+button.ex:hover { border-color: var(--accent); }
+button.ex img { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 6px; }
+.credits { color: var(--muted); font-size: .8rem; margin: 10px 0 0; }
+.credits a { color: var(--muted); }
