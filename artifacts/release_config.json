@@ -1,8 +1,8 @@
 {
- "bundle_id": "ft_ckpt_2339418979e1_0920511710",
- "backbone": "artifacts/store/release/backbone_ckpt_2339418979e1.pth",
- "backbone_tag": "ckpt_2339418979e1",
- "backbone_status": "fine-tuned EfficientNet-B0 (effb0_r1, 6 fine-tuning epoch(s), best tune top-1 0.7644)",
+ "bundle_id": "ft_ckpt_4f3584f597d5_9662c2e703",
+ "backbone": "artifacts/store/release/backbone_ckpt_4f3584f597d5.pth",
+ "backbone_tag": "ckpt_4f3584f597d5",
+ "backbone_status": "fine-tuned EfficientNet-B0 (effb0_r2, 12 fine-tuning epoch(s), best tune top-1 0.9166)",
  "calibration": "artifacts/calibration_final.json",
  "calibration_kind": "final",
  "precision": "fp32"

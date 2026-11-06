@@ -103,6 +103,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--team-id", default="TeamID")
     ap.add_argument("--usns", default=None, help="comma-separated USNs of all members (required for submission)")
+    ap.add_argument("--readme", action="store_true", help="also refresh the README results block")
     args = ap.parse_args()
 
     manifest, rel_cfg = read("artifacts/release_manifest.json"), read("artifacts/release_config.json") or {}
@@ -118,7 +119,11 @@ def main() -> None:
     det, det_f = find("detector_tune.json")
     opt, opt_f = find(f"optimization_{tag}.json")
     opth, opth_f = find(f"optimization_head_hybrid_{tag}.json")
-    train_sum = read("reports/training/effb0_r1_summary.json")
+    train_sum, train_f = None, None
+    for f in sorted(glob.glob(str(ROOT / "reports/training/*_summary.json"))):
+        s = json.loads(Path(f).read_text(encoding="utf-8"))
+        if f"({s['run_name']}," in rel_cfg.get("backbone_status", ""):
+            train_sum, train_f = s, Path(f).name
     final = test is not None
 
     L = [args.usns if args.usns else "USNS_PENDING_TEAM_TO_PROVIDE (first line must list all member USNs, comma-separated)", ""]
@@ -136,15 +141,39 @@ def main() -> None:
     L += ["Status: " + " ".join(status), ""]
     if train_sum:
         unfrozen = sorted({k for h in train_sum["history"] for k, v in (h.get("pretrained_changed") or {}).items() if v})
-        L += [f"Fine-tuning: run `{train_sum['run_name']}` (EfficientNet-B0, ImageNet weights), "
-              f"{train_sum['finetune_epochs_completed']} completed epochs with pretrained blocks {', '.join(unfrozen)} "
-              f"unfrozen and changed, fine-tuning requirement met: {train_sum['fine_tuning_requirement_met']} "
-              f"(`reports/training/effb0_r1_summary.json`).", ""]
+        stages = sorted({h["stage"] for h in train_sum["history"]}, key=lambda s: [h["stage"] for h in train_sum["history"]].index(s))
+        L += [f"Fine-tuning: run `{train_sum['run_name']}` (EfficientNet-B0, ImageNet weights; stages {', '.join(stages)}), "
+              f"{train_sum['finetune_epochs_completed']} completed fine-tuning epochs; the final pretrained blocks "
+              f"{', '.join(unfrozen)} are verified changed; best tune top-1 {pct(train_sum['best_tune_top1_finetuned'])}; "
+              f"fine-tuning requirement met: {train_sum['fine_tuning_requirement_met']} (`reports/training/{train_f}`).", ""]
     if final:
         L += [f"Test protocol: end-to-end on every test image ({test['population']['count']} images, manifest "
               f"`{test['population']['manifest_sha256'][:12]}`); a prediction counts only if the runtime-selected box has "
               f"IoU >= 0.5 with the annotation and the class is right (misses count as failures). Classical mode uses the "
               f"contour-proposal box; deep and hybrid use the YOLO11n primary target. Source `reports/{test_f}`.", ""]
+
+    hist = []
+    for f in sorted(glob.glob(str(ROOT / "artifacts/history/*/release_config.json"))):
+        rc_old = json.loads(Path(f).read_text(encoding="utf-8"))
+        old, old_f = find(f"e2e_test_{rc_old['bundle_id']}.json")
+        if old and rc_old["bundle_id"] != bundle:
+            hist.append((Path(f).parent.name, rc_old, old, old_f))
+    if final and hist:
+        L += ["### Model iterations (each evaluated once on test after its own freeze)", "",
+              "| Iteration | Backbone | Production mode | Hybrid E2E top-1 | Deep E2E top-1 | Hybrid E2E top-5 | Source |",
+              "|---|---|---|---|---|---|---|"]
+        for name, rc_old, old, old_f in hist:
+            fz_old = read(f"artifacts/history/{name}/production_freeze.json") or {}
+            L.append(f"| {name} (superseded) | {rc_old['backbone_status']} | {fz_old.get('production_mode', '?')} | "
+                     f"{pct(old['modes']['hybrid']['end_to_end_top1']['value'])} | {pct(old['modes']['deep']['end_to_end_top1']['value'])} | "
+                     f"{pct(old['modes']['hybrid']['end_to_end_top5']['value'])} | `reports/{old_f}` |")
+        L.append(f"| current | {rel_cfg.get('backbone_status')} | {(freeze or {}).get('production_mode', '?')} | "
+                 f"{pct(test['modes']['hybrid']['end_to_end_top1']['value'])} | {pct(test['modes']['deep']['end_to_end_top1']['value'])} | "
+                 f"{pct(test['modes']['hybrid']['end_to_end_top5']['value'])} | `reports/{test_f}` |")
+        L += ["", "The second iteration changed only the training recipe (full-network instead of last-stage fine-tuning; "
+              "`configs/train_v2.yaml` states why), chosen from training and tune behaviour. Every later step (heads, "
+              "calibration, freeze) was redone on tune/calibration data before its single test run. Both test results are "
+              "reported; all numbers below are for the current iteration.", ""]
 
     # 1 -----------------------------------------------------------------------------------------
     L += ["## 1. Classification performance (Top-1 and Top-5)", ""]
@@ -295,8 +324,23 @@ def main() -> None:
             L.append("")
     else:
         L += [f"Final: {PENDING}"]
-    L += ["* Negative (unsupported-input) false acceptance: pending (negative suite not collected; the reject threshold "
-          "was chosen on known tune images only).", ""]
+    neg, neg_f = find(f"negatives_test_{bundle}.json")
+    if neg:
+        o = neg["overall_false_acceptance"]
+        L += ["", f"Unsupported inputs (held-out negative suite, {neg['count']} licensed Wikimedia Commons photos, evaluated "
+              f"after the freeze; `reports/{neg_f}`, sources in `artifacts/negative_manifests/negatives_test.csv`). A photo is "
+              f"falsely accepted when the system returns a confident car identity (calibrated max probability >= "
+              f"{neg['reject_threshold']}); a detector miss counts as a correct rejection. {neg.get('note', '')}", "",
+              "| Bucket | Photos | Reached classifier | Falsely accepted | False acceptance |", "|---|---|---|---|---|"]
+        for b, v in neg["per_bucket"].items():
+            L.append(f"| {b} | {v['count']} | {v['reached_classifier']} | {v['accepted']} | {pct(v['false_acceptance'])} |")
+        L += [f"| **all** | {o['denominator']} | {sum(v['reached_classifier'] for v in neg['per_bucket'].values())} | "
+              f"{o['numerator']} | {pct(o['numerator'] / o['denominator'])} |", ""]
+        if freeze and (freeze.get("reject") or {}).get("negatives_used"):
+            L += ["The reject threshold was chosen on the separate 40-photo tune negative set together with known tune "
+                  "images (`artifacts/production_freeze.json`).", ""]
+    else:
+        L += ["* Negative (unsupported-input) false acceptance: pending (negative suite not evaluated for this bundle).", ""]
 
     # Ablations / failures ------------------------------------------------------------------------
     L += ["## Ablations", ""]
@@ -379,6 +423,39 @@ def main() -> None:
     out = ROOT / f"eval_P5_{args.team_id}.md"
     out.write_text("\n".join(L) + "\n", encoding="utf-8", newline="\n")
     print(f"wrote {out.name} ({len(L)} lines; final={'yes' if final else 'no'})")
+    if args.readme and final:
+        write_readme_block(test, test_f, neg, neg_f, acc, out.name, bundle)
+
+
+def write_readme_block(test, test_f, neg, neg_f, acc, eval_name, bundle) -> None:
+    """Replace the README block between the RESULTS markers with a table generated from the reports."""
+    readme = ROOT / "README.md"
+    t = readme.read_text(encoding="utf-8")
+    a, b = "<!-- RESULTS:START -->", "<!-- RESULTS:END -->"
+    if a not in t or b not in t:
+        print("README has no RESULTS markers; skipped")
+        return
+    B = [a, f"Generated by `scripts/report.py` from `reports/{test_f}` (official test split, "
+            f"{test['population']['count']} images, bundle `{bundle}`). Full results: [{eval_name}]({eval_name}).", "",
+         "| Mode | End-to-end top-1 | End-to-end top-5 | Box recall @ IoU 0.5 | 196-class AP50 |", "|---|---|---|---|---|"]
+    for m in MODES:
+        v = test["modes"][m]
+        B.append(f"| {m} | {pct(v['end_to_end_top1']['value'])} | {pct(v['end_to_end_top5']['value'])} | "
+                 f"{pct(v['localization']['primary_recall_at_iou']['value'])} | {v['fine_grained_ap']['AP50']:.3f} |")
+    extra = []
+    if neg:
+        o = neg["overall_false_acceptance"]
+        extra.append(f"unsupported-input false acceptance {pct(o['numerator'] / o['denominator'])} "
+                     f"({o['numerator']}/{o['denominator']} held-out negatives, `reports/{neg_f}`)")
+    if acc and acc.get("passed"):
+        extra.append(f"public-URL latency p50 {acc['fresh_uploads']['p50_ms']:.0f} ms / p95 "
+                     f"{acc['fresh_uploads']['p95_ms']:.0f} ms (`reports/release_acceptance.json`)")
+    if extra:
+        B += ["", "Also: " + "; ".join(extra) + "."]
+    B.append(b)
+    t = t[: t.index(a)] + "\n".join(B) + t[t.index(b) + len(b):]
+    readme.write_text(t, encoding="utf-8", newline="\n")
+    print("README results block updated")
 
 
 if __name__ == "__main__":

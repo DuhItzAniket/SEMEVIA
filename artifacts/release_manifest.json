@@ -1,6 +1,6 @@
 {
- "bundle_id": "ft_ckpt_2339418979e1_0920511710",
- "note": "Fine-tuned bundle: YOLO11n detector + fine-tuned EfficientNet-B0 (effb0_r1, 6 fine-tuning epoch(s), best tune top-1 0.7644) + classical/deep/hybrid heads + final calibration.",
+ "bundle_id": "ft_ckpt_4f3584f597d5_9662c2e703",
+ "note": "Fine-tuned bundle: YOLO11n detector + fine-tuned EfficientNet-B0 (effb0_r2, 12 fine-tuning epoch(s), best tune top-1 0.9166) + classical/deep/hybrid heads + final calibration.",
  "assets": [
   {
    "name": "yolo11n.pt",
@@ -11,72 +11,70 @@
    "license": "AGPL-3.0 (Ultralytics); COCO-pretrained weights used unmodified"
   },
   {
-   "name": "backbone_ckpt_2339418979e1.pth",
-   "path": "artifacts/store/release/backbone_ckpt_2339418979e1.pth",
-   "sha256": "00fb4ced43e95a9515f840ecefc6bf3f781eaf2d2d798be23ac472b2b68ec170",
+   "name": "backbone_ckpt_4f3584f597d5.pth",
+   "path": "artifacts/store/release/backbone_ckpt_4f3584f597d5.pth",
+   "sha256": "773489be8c1fd329416906e03003e0cbbf34cd303681622d66fa482227fc0dbd",
    "bytes": 17335257,
    "optional": true,
-   "url": "https://github.com/DuhItzAniket/SEMEVIA/releases/download/model-v1/backbone_ckpt_2339418979e1.pth",
-   "status": "fine-tuned EfficientNet-B0 (effb0_r1, 6 fine-tuning epoch(s), best tune top-1 0.7644)",
+   "url": null,
+   "status": "fine-tuned EfficientNet-B0 (effb0_r2, 12 fine-tuning epoch(s), best tune top-1 0.9166)",
    "source_checkpoint": "best_finetuned.pt",
-   "source_checkpoint_sha256": "2339418979e14d8dfa7f3515df7d8f61d83c5528e461c986dbe26f341c3c855c",
-   "public_storage": "GitHub Release model-v1"
+   "source_checkpoint_sha256": "4f3584f597d5d114eb765d24cf2af29734b3edff074b60cb8027a802ca7ccd9f",
+   "public_storage": "not yet published"
   },
   {
    "name": "head_classical.joblib",
    "path": "artifacts/store/release/heads/classical.joblib",
    "sha256": "77fa1f92e6dc6941d4c3c66e75133c79cb794b68d358cfe2b0cb6903cbed2b01",
    "bytes": 1471049,
-   "url": "https://github.com/DuhItzAniket/SEMEVIA/releases/download/model-v1/head_classical.joblib",
+   "url": null,
    "optional": true,
-   "source": "heads/classical_hc_v1_C0.005.joblib (fit_heads.py, backbone ckpt_2339418979e1)",
-   "public_storage": "GitHub Release model-v1"
+   "source": "heads/classical_hc_v1_C0.005.joblib (fit_heads.py, backbone ckpt_4f3584f597d5)",
+   "public_storage": "not yet published; clean builds run detection-only until a public URL is added"
   },
   {
    "name": "head_deep.joblib",
    "path": "artifacts/store/release/heads/deep.joblib",
-   "sha256": "1968002a6c1697d972a0da4e823295805434cef34d3ae6335b649dc1d83e0564",
+   "sha256": "fb12578b42768be1b96e2fc47f652aaf328e1ceac22305be92e0278e704f0e3a",
    "bytes": 2042361,
-   "url": "https://github.com/DuhItzAniket/SEMEVIA/releases/download/model-v1/head_deep.joblib",
+   "url": null,
    "optional": true,
-   "source": "heads/deep_ckpt_2339418979e1_C0.1.joblib (fit_heads.py, backbone ckpt_2339418979e1)",
-   "public_storage": "GitHub Release model-v1"
+   "source": "heads/deep_ckpt_4f3584f597d5_C0.1.joblib (fit_heads.py, backbone ckpt_4f3584f597d5)",
+   "public_storage": "not yet published; clean builds run detection-only until a public URL is added"
   },
   {
    "name": "head_hybrid.joblib",
    "path": "artifacts/store/release/heads/hybrid.joblib",
-   "sha256": "0c86cd93a6ed802bc2eadc130a5206a1257e1360bd39d87110e768abc78e68a8",
+   "sha256": "9ea8817e2e1874c124eeff38c08c393cdcbcb19f93dc5b307d348cd443a750f3",
    "bytes": 3134873,
-   "url": "https://github.com/DuhItzAniket/SEMEVIA/releases/download/model-v1/head_hybrid.joblib",
+   "url": null,
    "optional": true,
-   "source": "heads/hybrid_ckpt_2339418979e1_C0.02.joblib (fit_heads.py, backbone ckpt_2339418979e1)",
-   "public_storage": "GitHub Release model-v1"
+   "source": "heads/hybrid_ckpt_4f3584f597d5_C0.1.joblib (fit_heads.py, backbone ckpt_4f3584f597d5)",
+   "public_storage": "not yet published; clean builds run detection-only until a public URL is added"
   },
   {
    "name": "reference_index.npz",
    "path": "artifacts/store/release/reference_index.npz",
-   "sha256": "718ab0a07f1cb0da33baefcb862abc88cef4a6b3446fbf8f1b2f79e7a74fb301",
+   "sha256": "08ac6f2d38a46d271e48e850bd609b21222f4c1f2df22baf8212896cf803cdb4",
    "bytes": 1542480,
-   "url": "https://github.com/DuhItzAniket/SEMEVIA/releases/download/model-v1/reference_index.npz",
+   "url": null,
    "optional": true,
-   "source": "scripts/build_references.py (training split only)",
-   "public_storage": "GitHub Release model-v1"
+   "source": "scripts/build_references.py (training split only)"
   },
   {
    "name": "reference_index.json",
    "path": "artifacts/store/release/reference_index.json",
-   "sha256": "1fe1ec5f5e603d69ba50fcc1dcff51ae36039903f7a257f2f0dfeba1c65502ea",
+   "sha256": "144bdeafe899399259117db3503b580011d3cd72c99cd5d5f372777b6af4ead7",
    "bytes": 176,
-   "url": "https://github.com/DuhItzAniket/SEMEVIA/releases/download/model-v1/reference_index.json",
+   "url": null,
    "optional": true,
-   "source": "scripts/build_references.py (training split only)",
-   "public_storage": "GitHub Release model-v1"
+   "source": "scripts/build_references.py (training split only)"
   },
   {
    "name": "calibration_final.json",
    "path": "artifacts/calibration_final.json",
-   "sha256": "7b38742a7804da2dbee919669e4d8992728906f60fff6f3ec361f6da9b709cb0",
-   "bytes": 1611,
+   "sha256": "2c250cad2c1b1ed52601ae34bbd178bf9e703eaa202567d13a4e3eea891cc8b3",
+   "bytes": 1605,
    "url": null,
    "optional": true,
    "in_git": true,

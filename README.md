@@ -1,51 +1,122 @@
 # SEMEVIA
 
-**Vehicle identity through evidence.** Every identity needs evidence.
+**Vehicle identity through evidence.** SEMEVIA recognises the make, model and year of a car in a photo
+(196 Stanford Cars categories) and shows how much of that answer the evidence actually supports.
 
-> **Status (2026-11-07): model final, deployment pending.** The fine-tuned EfficientNet-B0 bundle was
-> frozen at P5, given its final conformal calibration, and evaluated once on the official 8,041-image
-> test split (P6). All results are in [eval_P5_T35.md](eval_P5_T35.md), generated from `reports/`
-> by `scripts/report.py`. Live through a tunnel from the team laptop;
-> trained weights published as GitHub Release `model-v1`. Still open: the negative (unsupported-image)
-> suite and team review of the viewpoint labels.
+**Status (2026-11-07):** release iteration **r1** is frozen, evaluated once on the official test split and
+live (bundle `ft_ckpt_2339418979e1_0920511710`). Iteration **r2** (full-network fine-tuning,
+[configs/train_v2.yaml](configs/train_v2.yaml), run `effb0_r2`) is training now. After training, the whole
+pipeline (heads, calibration, freeze with the 80-image negative suite, one test run) is redone for r2, and r2
+then replaces r1 as the release. The evaluation file is regenerated at that point; r1's test results stay in
+it as the superseded iteration.
+
+## Live application
 
 **Live application URL:** <https://readings-agency-respond-bacteria.trycloudflare.com>
 
 Served from the team laptop through a Cloudflare quick tunnel (see [docs/hosting_lock.md](docs/hosting_lock.md)).
 Checked through the public URL on 2026-11-07: page, readiness, 20 fresh uploads, 4 simultaneous clients and
 six bad-input cases ([reports/release_acceptance.json](reports/release_acceptance.json)). The URL works only
-while that laptop, Docker and the tunnel are running.
+while that laptop, Docker and the tunnel are running. If `cloudflared` restarts, the address changes; this
+README and the submission are then updated and the check is rerun.
 
-## Overview
+## What it does
 
-SEMEVIA is our solution to PS5, *Intelligent Fine-Grained Vehicle Recognition and Analysis*, on
-the Stanford Cars dataset (196 categories, 16,185 images). The planned system detects a vehicle,
-classifies its make, model and category year, and adds an **Identity Evidence Passport**: a
-calibrated candidate set summarised at the most specific level the evidence supports (exact
-category, family, make, or insufficient evidence), plus a six-region **Evidence Challenge** that
-blurs one part of the crop at a time and shows how the margin between the two leading
-categories changes.
+SEMEVIA is our solution to PS5, *Intelligent Fine-Grained Vehicle Recognition and Analysis*, on the Stanford
+Cars dataset (196 categories, 16,185 images: 8,144 train and 8,041 test). For one uploaded photo it:
+
+1. **Detects** the vehicle with YOLO11n (COCO car, bus and truck mapped to "vehicle") and selects the primary
+   target: the largest box with detector score >= 0.25. In Classical mode the region comes from a classical
+   contour proposal instead of YOLO.
+2. **Classifies** the crop in one of three modes: **Classical** (1816 handcrafted features: HOG, LBP, HSV,
+   geometry, flags), **Deep** (the 1280-d fine-tuned EfficientNet-B0 embedding) or **Hybrid** (the embedding
+   plus the handcrafted features reduced by PCA to 64; the production mode). It shows the best guess and Top-5
+   with a classification score kept separate from the detector score.
+3. Issues an **Identity Evidence Passport**: decision state (one candidate, several remain, rejected,
+   insufficient evidence, no vehicle), a calibrated conformal candidate set, and the most specific level the
+   set supports (exact category, family, make). Only the production mode (Hybrid) uses the final
+   calibration; Deep and Classical are shown as "comparison mode".
+4. Runs the **Evidence Challenge** on request: blurs each of six crop regions in turn and shows how the margin
+   between the two leading categories (a fixed A/B pair) changes, with the modified crop and **Restore original**.
+5. Lists **nearest training references** from a training-only index (identifiers, labels and similarity; no
+   thumbnails, see [Ethics and licences](#ethics-and-licences)).
+6. Shows intermediate processing (crop, grayscale, Canny edges, contours, geometric measurements) and offers
+   **Download Passport JSON** (hashes, boxes, scores and versions; no image pixels).
+
+Bad inputs (not an image, over 10 MB, over 25 megapixels, empty file) get a typed error with a recovery
+action. Without the recognition bundle the app serves detection only and says so.
+
+```mermaid
+flowchart LR
+    U["POST /predict<br/>app/main.py"] --> D["decode_image<br/>src/vision/decode.py"]
+    D --> Y["VehicleDetector + select_target<br/>src/models/detector.py"]
+    D -. Classical mode .-> P["propose<br/>src/vision/proposals.py"]
+    Y --> C["expand_box + crop_bounds<br/>src/vision/coordinates.py"]
+    P -.-> C
+    C --> PR["Predictor: learned + classical<br/>score_features<br/>src/models/inference.py"]
+    PR --> PP["make_passport<br/>src/passport/decision.py"]
+    PR --> RF["references.query<br/>src/passport/references.py"]
+    PP --> R["JSON response"]
+    RF --> R
+    R --> CH["POST /challenge<br/>run_challenge<br/>src/passport/challenge.py"]
+```
+
+Full diagrams (runtime, training and evaluation, partitions): [docs/architecture.md](docs/architecture.md).
+
+## Features
 
 | Feature | State |
 |---|---|
 | Upload, validation, typed errors | Implemented, tested |
-| Vehicle detection (YOLO11n, COCO car/bus/truck) with primary-target rule | Implemented, evaluated on tune split |
+| Vehicle detection (YOLO11n, COCO car/bus/truck) with primary-target rule | Implemented, evaluated |
 | Verified Stanford Cars manifests and class hierarchy | Implemented, tested |
 | Classical features (edges, contours, HOG, LBP, HSV, geometry), classical ROI proposals | Implemented, tested, shown in the app |
 | Classical, Deep and Hybrid modes with Top-5 and separate scores | Implemented on the fine-tuned backbone; evaluated on test |
-| EfficientNet-B0 fine-tuning | Done (run `effb0_r1`, [reports/training/effb0_r1_summary.json](reports/training/effb0_r1_summary.json)) |
+| EfficientNet-B0 fine-tuning | r1 done (`effb0_r1`, last stage, [summary](reports/training/effb0_r1_summary.json)); r2 (`effb0_r2`, full network) training |
 | Identity Evidence Passport (candidate set, specificity, decision states, JSON export) | Implemented; final calibration from the untouched calibration split |
 | Evidence Challenge (six blurred regions, fixed A/B margin) | Implemented, tested |
-| Nearest training references (588-entry training-only index; identifiers, labels, similarity) | Implemented; thumbnails withheld (rights unresolved) |
-| Optimization: ONNX FP32 encoder, INT8 encoder attempts, INT8 linear head | Measured on the fine-tuned backbone; the release keeps the PyTorch FP32 encoder |
-| End-to-end evaluator (Top-1/5 with IoU gating, IoU, AP, Passport, calibration) | Run on tune, calibration and (once, after the freeze) test |
-| Robustness: 6 fixed stress conditions on a predeclared 392-image subset; 60 viewpoint-labelled photos | Run on the test subset; viewpoint labels await team review |
-| Evaluation file [eval_P5_T35.md](eval_P5_T35.md) | Generated from reports by `scripts/report.py` (final test values) |
+| Nearest training references (588-entry training-only index: 3 per class) | Implemented; identifiers, labels and similarity only (no thumbnails, licence decision) |
+| Optimization: ONNX FP32 encoder, INT8 encoder attempts, INT8 linear head | Measured; every INT8 encoder failed our accuracy policy; the release keeps the PyTorch FP32 encoder |
+| End-to-end evaluator (Top-1/5 with IoU gating, IoU, AP, Passport, calibration) | Run on tune, calibration and (once per iteration, after its freeze) test |
+| Robustness: 6 fixed stress conditions on a predeclared 392-image test subset | Run for r1; rerun for r2 |
+| Viewpoint subgroups: 60 viewpoint-labelled test photos | Labelled by an agent before any test result; blind second pass by agents ([reports/viewpoint_label_check.json](reports/viewpoint_label_check.json)); not human-reviewed |
+| Negative (unsupported-input) suite: 80 images, 40 tune + 40 test, 10 per bucket | Collected ([artifacts/negative_manifests/](artifacts/negative_manifests/)); used in the r2 freeze and test run |
+| Evaluation file [eval_P5_T35.md](eval_P5_T35.md) | Generated from reports by `scripts/report.py` |
+| Docker image, offline start, public deployment | Done for r1 ([reports/container_check.json](reports/container_check.json), [reports/release_acceptance.json](reports/release_acceptance.json)) |
 
-Supported vehicle categories: the 196 Stanford Cars classes (49 makes, model years 1991-2012),
-listed in [artifacts/class_metadata.json](artifacts/class_metadata.json).
+Supported vehicle categories: the 196 Stanford Cars classes (49 makes, model years 1991-2012), listed in
+[artifacts/class_metadata.json](artifacts/class_metadata.json).
 
-## Quick start (inference)
+## Results
+
+All results are in **[eval_P5_T35.md](eval_P5_T35.md)**, in the PS5 metric order: Top-1/Top-5, IoU, mAP,
+model size and latency, robustness, and confidence/threshold analysis, followed by ablations and three
+rule-selected failure cases. The file is generated by `scripts/report.py` from the report files below; no
+number in it or in this README is typed by hand. It will be regenerated for r2.
+
+<!-- RESULTS:START -->
+Generated by scripts/report.py.
+<!-- RESULTS:END -->
+
+Report files. File names carry the bundle id or backbone tag, so the r2 files will have new names; the
+evaluation file always names the files it was generated from. The links below are the current r1 release.
+
+| What | File pattern | r1 file |
+|---|---|---|
+| End-to-end test evaluation (all three modes, Passport, calibration) | `reports/e2e_test_<bundle>.json` | [e2e_test_ft_ckpt_2339418979e1_0920511710.json](reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json) |
+| Robustness on the 392-image test stress subset | `reports/robustness_stress_test_<bundle>.md` | [robustness_stress_test_ft_ckpt_2339418979e1_0920511710.md](reports/robustness_stress_test_ft_ckpt_2339418979e1_0920511710.md) |
+| Viewpoint subgroups and failure cases | `reports/analysis_test_<bundle>.json` | [analysis_test_ft_ckpt_2339418979e1_0920511710.json](reports/analysis_test_ft_ckpt_2339418979e1_0920511710.json) |
+| Head selection and ablations (tune) | `reports/heads_tune_<tag>.json` | [heads_tune_ckpt_2339418979e1.json](reports/heads_tune_ckpt_2339418979e1.json) |
+| Optimization (ONNX FP32 / INT8) | `reports/optimization_<tag>.json` | [optimization_ckpt_2339418979e1.json](reports/optimization_ckpt_2339418979e1.json) |
+| Fine-tuning run | `reports/training/<run>_summary.json` | [effb0_r1_summary.json](reports/training/effb0_r1_summary.json) |
+| Negative suite (unsupported inputs) | `reports/negatives_<partition>_<bundle>.json` | none for r1 (suite collected after the r1 freeze) |
+| Public-URL release checks | `reports/release_acceptance.json` | [release_acceptance.json](reports/release_acceptance.json) |
+
+Note on mode choice: the production mode (Hybrid) was fixed on the tuning split before the test split was
+evaluated. On r1's test run the Deep mode is marginally ahead on top-1 (see the eval file). We did not switch
+modes after seeing test results.
+
+## Quick start (Docker)
 
 Prerequisites: Docker with about 4 GB of free disk for the image.
 
@@ -53,15 +124,16 @@ Prerequisites: Docker with about 4 GB of free disk for the image.
 docker compose up --build
 ```
 
-Then open http://localhost:8000. The build downloads the public weights listed in
-[artifacts/release_manifest.json](artifacts/release_manifest.json) (YOLO11n, plus the
-fine-tuned backbone, heads and reference index from GitHub Release `model-v1`) and verifies their SHA256;
-the running container makes no downloads. **Verification status (2026-11-07):** a fresh clone built this
-way serves all three modes, also with `--network none`
-([reports/container_check.json](reports/container_check.json)).
+Then open <http://localhost:8000>. The build downloads the public weights listed in
+[artifacts/release_manifest.json](artifacts/release_manifest.json) (YOLO11n from Ultralytics, plus the
+fine-tuned backbone, heads and reference index from GitHub Release `model-v1`) and verifies their SHA256
+(`python -m src.release fetch` and `verify` in the [Dockerfile](Dockerfile)); the running container makes
+no downloads. A fresh clone built this way serves all three modes, also with `--network none`
+([reports/container_check.json](reports/container_check.json)). `compose.yaml` limits the container to
+2 CPUs and 4 GB. Readiness: `GET /readyz`.
 
-Without Docker (development; this exact install-from-lock sequence has not yet been tested
-from a clean virtual environment, while `uvicorn` and the tests were run in our pinned venv):
+Without Docker (development; this exact install-from-lock sequence has not been tested from a clean virtual
+environment, while `uvicorn` and the tests were run in our pinned venv):
 
 ```bash
 python -m venv venv && venv/Scripts/pip install -r requirements.lock --extra-index-url https://download.pytorch.org/whl/cpu
@@ -69,116 +141,135 @@ python -m src.release fetch
 python -m uvicorn app.main:app --port 8000
 ```
 
-## Usage (current build)
-
-Choose or take a photo, pick a model (Hybrid by default) and press **Analyze**. The page shows:
-
-1. The image with detected boxes; the selected vehicle (largest car/bus/truck with detector score
-   >= 0.25) is drawn thick. In Classical mode the region comes from the contour proposal instead.
-2. The best guess and Top-5 (make, model, year) with the classification score, separate from the
-   detector score.
-3. The **Passport**: decision state (one candidate, several remain, rejected, insufficient
-   evidence, no vehicle), the supported specificity (category, family, make) and the full
-   candidate set. Only the Hybrid production mode has (development) calibration; Deep and
-   Classical show "comparison mode".
-4. **Run six-region challenge**: blurs each of six crop regions in turn and shows the change in the
-   margin between the two leading categories, with the modified crop for any selected region and
-   **Restore original**.
-5. Intermediate processing: crop, grayscale, Canny edges, contours and geometric measurements.
-6. **Download Passport JSON** (hashes, boxes, scores and versions; no image pixels).
-
-Errors (not an image, over 10 MB, over 25 megapixels, empty file) show a message with a recovery
-action. The recognition parts need the recognition bundle (see below); without it the app serves
-detection only and says so.
-
-## Reproduction (data)
-
-Training and evaluation need the Stanford Cars data; inference does not.
-
-```bash
-git clone --depth 1 https://github.com/jhpohovey/StanfordCars.git   # original layout mirror
-export SEMEVIA_DATA_ROOT=<path>/StanfordCars/stanford_cars
-python scripts/prepare_data.py --config configs/data.yaml
-python -m pytest
-```
-
-Classical baseline (CPU, about one minute in total on a 4-core laptop):
-
-```bash
-export SEMEVIA_ARTIFACT_STORE=<store dir>
-python scripts/cache_features.py --features classical --partitions train tune
-python scripts/fit_heads.py --head classical
-```
-
-Development deep/hybrid heads, calibration and bundle (CPU, about 20 minutes):
-
-```bash
-python scripts/cache_features.py --features learned --backbone imagenet_frozen --partitions train tune
-python scripts/fit_heads.py --head learned
-python scripts/calibrate.py --development --mode hybrid
-python scripts/promote_bundle.py --backbone imagenet_frozen
-python scripts/evaluate_detector.py --partition tune
-```
-
-Deep model training (GPU recommended): see [docs/training_handoff.md](docs/training_handoff.md).
-
-`prepare_data.py` checks the labeled test annotations against the TFDS published SHA256,
-decodes all 16,185 images, validates boxes, finds duplicates and writes the split manifests
-(reproduced byte-for-byte in our runs). Findings, including 37 duplicate image groups with
-conflicting labels, are in [reports/data_audit.json](reports/data_audit.json) and
-[docs/checkpoints/P1.md](docs/checkpoints/P1.md).
-
-## Architecture and design
-
-See [docs/architecture.md](docs/architecture.md) (diagrams matching the code) and
-[docs/design.md](docs/design.md) (decisions, Passport semantics, limitations, ethics).
-Contract: [docs/api_schema.json](docs/api_schema.json).
-
-## Results
-
-Final results from the official Stanford Cars test split (8,041 images, evaluated once after the P5
-freeze) are in **[eval_P5_T35.md](eval_P5_T35.md)**, in the PS5 metric order: Top-1/Top-5, IoU, mAP,
-model size and latency, robustness, and confidence/threshold analysis, followed by ablations and
-three rule-selected failure cases. Every number there is printed by `scripts/report.py` from these files:
-
-| What | File |
-|---|---|
-| End-to-end test evaluation (all three modes, Passport, calibration) | [reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json](reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json) |
-| Robustness on the 392-image test stress subset | [reports/robustness_stress_test_ft_ckpt_2339418979e1_0920511710.md](reports/robustness_stress_test_ft_ckpt_2339418979e1_0920511710.md) |
-| Viewpoint subgroups and failure cases | [reports/analysis_test_ft_ckpt_2339418979e1_0920511710.json](reports/analysis_test_ft_ckpt_2339418979e1_0920511710.json) |
-| Head selection and ablations (tune) | [reports/heads_tune_ckpt_2339418979e1.json](reports/heads_tune_ckpt_2339418979e1.json) |
-| Optimization (ONNX FP32 / INT8) | [reports/optimization_ckpt_2339418979e1.json](reports/optimization_ckpt_2339418979e1.json) |
-| Fine-tuning run | [reports/training/effb0_r1_summary.json](reports/training/effb0_r1_summary.json) |
-
-To regenerate the evaluation file: `python scripts/report.py --team-id T35 --usns "1RUA24CSE0051,1RUA24CSE0097"`.
-The full reproduction order is in [docs/runbook_other_pc.md](docs/runbook_other_pc.md).
-
-Note on mode choice: the production mode (hybrid) was fixed on the tuning split before the test
-split was evaluated; on test the deep mode is marginally ahead on top-1 (see the eval file). We did
-not switch modes after seeing test results.
-
-## Limitations (known so far)
-
-* Stanford Cars covers 196 car categories up to model year 2012; newer or other vehicles are
-  outside its scope.
-* The dataset contains duplicate images with conflicting labels (often adjacent model years), so
-  some year distinctions are inherently ambiguous.
-* The detector is a generic COCO model; it finds cars, buses and trucks, not specific models.
-
-## Configuration
-
 Copy [.env.example](.env.example) to `.env` for local paths. Inference needs no secrets.
+
+## Reproduce the results
+
+Training and evaluation need the Stanford Cars data; inference does not. The exact commands (Windows
+PowerShell, with environment setup and the checks to run after each step) are in
+**[docs/runbook_other_pc.md](docs/runbook_other_pc.md)**. GPU fine-tuning details:
+[docs/training_handoff.md](docs/training_handoff.md). The order is:
+
+1. **Data.** Get the original layout (`git clone --depth 1 https://github.com/jhpohovey/StanfordCars.git`),
+   set `SEMEVIA_DATA_ROOT` and `SEMEVIA_ARTIFACT_STORE`, then run `scripts/prepare_data.py --config
+   configs/data.yaml` and `scripts/declare_subsets.py`. It checks the test annotations against the TFDS
+   published SHA256, decodes all 16,185 images, validates boxes, finds duplicates and must reproduce
+   [artifacts/manifests/](artifacts/manifests/) byte for byte (train 6,514 / tune 815 / calibration 815 /
+   test 8,041). Findings, including 37 duplicate image groups with conflicting labels:
+   [reports/data_audit.json](reports/data_audit.json), [docs/checkpoints/P1.md](docs/checkpoints/P1.md).
+   Then `python -m pytest`.
+2. **Fine-tune.** `scripts/train.py --config configs/train.yaml --resume auto` (r1) or
+   `--config configs/train_v2.yaml` (r2). Rerunning the same command resumes.
+3. **Features and heads.** `scripts/cache_features.py --features classical --partitions train tune`, then
+   `scripts/cache_features.py --features learned --backbone <checkpoint> --partitions train tune` (prints the
+   backbone tag `ckpt_<sha12>`), `scripts/fit_heads.py --head classical`, `scripts/fit_heads.py --head
+   learned --backbone <tag>`.
+4. **Development calibration, references, bundle.** `scripts/calibrate.py --development --mode hybrid
+   --backbone <tag>`, `scripts/build_references.py --backbone <tag>`, `scripts/promote_bundle.py --backbone
+   <checkpoint>`; optimization evidence with `scripts/optimize.py --backbone <tag>` and
+   `scripts/optimize_head.py --mode hybrid --backbone <tag>`; detector check with
+   `scripts/evaluate_detector.py --partition tune`.
+5. **Negative suite (tune).** `scripts/evaluate_negatives.py --partition tune` with `SEMEVIA_NEG_ROOT` set
+   (see [docs/negative_suite.md](docs/negative_suite.md)).
+6. **Freeze and final calibration.** `scripts/evaluate.py --partition tune`, `scripts/freeze.py --mode hybrid
+   --negatives reports/negatives_tune_<bundle>.json`, `scripts/evaluate.py --partition calibration`,
+   `scripts/calibrate.py --final`, `scripts/promote_bundle.py --backbone <checkpoint> --calibration
+   artifacts/calibration_final.json`.
+   After the freeze nothing in the model, crop, features, runtime or thresholds changes.
+7. **Single test run.** `scripts/evaluate.py --partition test --confirm-frozen`, the seven stress runs
+   (`--subset stress_test --condition clean|bright_0.5|bright_1.5|down_0.50|down_0.25|occl_0.15|occl_0.30`),
+   `scripts/report_robustness.py --subset stress_test`, `scripts/analyze_results.py --partition test`,
+   `scripts/evaluate_negatives.py --partition test`.
+8. **Report.** `python scripts/report.py --team-id T35 --usns "1RUA24CSE0051,1RUA24CSE0097" --readme` writes
+   [eval_P5_T35.md](eval_P5_T35.md) and refreshes the results block in this README.
+9. **Release.** Upload the files that `promote_bundle.py` lists with `"url": null` (backbone, heads, reference
+   index) to a GitHub Release and put each download URL into
+   [artifacts/release_manifest.json](artifacts/release_manifest.json) (SHA256 values unchanged; without the
+   URLs a clean build serves detection only). Then `docker compose build`, deploy, and run
+   `scripts/check_container.py` and `scripts/check_release.py --url <public url>`.
+
+## Repository layout
+
+| Path | Contents |
+|---|---|
+| [app/main.py](app/main.py) | FastAPI service: `/predict`, `/challenge`, `/request-image`, `/benchmarks`, `/healthz`, `/readyz`; in-memory request store |
+| [app/static/](app/static/) | Web UI (`index.html`, `app.js`, `style.css`) |
+| [src/data/](src/data/) | Manifests, class metadata and hierarchy input, crops |
+| [src/vision/](src/vision/) | Image decoding and limits, box coordinates, classical features, contour proposals |
+| [src/models/](src/models/) | YOLO11n detector wrapper, EfficientNet-B0 backbone, training, heads, feature caches, ONNX export, `Predictor` |
+| [src/passport/](src/passport/) | Calibration, conformal sets, decision states, class hierarchy, Evidence Challenge, reference index |
+| [src/evaluation/](src/evaluation/) | Metrics, stress conditions and subsets, subgroup and failure analysis, hardware description |
+| [src/release.py](src/release.py) | Release manifest: fetch and SHA256-verify model assets |
+| [scripts/](scripts/) | Pipeline steps, in the order listed under [Reproduce the results](#reproduce-the-results) |
+| [configs/](configs/) | Data, features, heads, calibration, evaluation, runtime and training (`train.yaml` r1, `train_v2.yaml` r2) |
+| [artifacts/](artifacts/) | Frozen manifests, negative-suite manifests, class metadata, release manifest and config, calibration, freeze record, archived earlier releases (`artifacts/history/r1/`) (model weights live in `artifacts/store/`, outside Git) |
+| [reports/](reports/) | Every generated result file (JSON/Markdown) and data figures |
+| [tests/](tests/) | Pytest suite (contracts, metrics, Passport, features, upload limits, bundle parity) |
+| [docs/](docs/) | Documentation (see below) |
+| [Dockerfile](Dockerfile), [compose.yaml](compose.yaml) | Inference image and local deployment |
+| `requirements-infer.txt`, `requirements.lock` | Pinned dependencies (inference image, full environment) |
+| [NEXT.md](NEXT.md) | Hand-off log: what was done, commits, next step |
+
+## Documentation
+
+| Document | What it covers |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | Diagrams of the runtime request flow and the training/evaluation flow, matching the code |
+| [docs/design.md](docs/design.md) | Design document: goals, data, architecture, interfaces, decisions, Passport semantics, evaluation plan, limitations, ethics |
+| [docs/timeline.md](docs/timeline.md) | What was built when during the 24 hours, including the r1 and r2 iterations |
+| [docs/demo.md](docs/demo.md) | Three-minute demo script |
+| [docs/viva_prep.md](docs/viva_prep.md) | Viva preparation: questions both members should be able to answer |
+| [docs/runbook_other_pc.md](docs/runbook_other_pc.md) | Step-by-step reproduction on a GPU machine |
+| [docs/hosting_lock.md](docs/hosting_lock.md) | Hosting choice, what runs where, tunnel limits |
+| [docs/negative_suite.md](docs/negative_suite.md) | Unsupported-input suite: buckets, rules, how images are recorded |
+| [docs/api_schema.json](docs/api_schema.json) | Response contract (`semevia.v1`) |
+| [docs/training_handoff.md](docs/training_handoff.md) | Fine-tuning hand-off |
+| [docs/checkpoints/](docs/checkpoints/) | Checkpoint notes P0-P5 |
+
+## Limitations
+
+* **Dataset scope.** Stanford Cars covers 196 car categories up to model year 2012, mostly clean,
+  catalogue-style photos. Newer models, other vehicles and real street photos are outside its scope.
+* **Label noise.** The dataset contains duplicate images with conflicting labels (37 groups, often adjacent
+  model years), so some year distinctions are inherently ambiguous.
+* **Generic detector.** YOLO11n is a COCO model; it finds cars, buses and trucks, not specific models. Stanford
+  Cars annotates one car per image, so real background cars count as false positives in detection AP.
+* **Rejection is fallible.** The reject rule is softmax-based. The negative suite (80 images) is a small stress
+  set, not an open-world guarantee. r1 was frozen before the suite existed, so its reject threshold came from
+  known tune images only.
+* **Viewpoint labels are not human-reviewed.** The 60 viewpoint labels and the blind second pass were made by
+  agents, not by people ([reports/viewpoint_label_check.json](reports/viewpoint_label_check.json)).
+* **INT8 encoder.** Every INT8 version of the encoder failed our predeclared accuracy policy
+  ([reports/optimization_ckpt_2339418979e1.json](reports/optimization_ckpt_2339418979e1.json)), so the release
+  runs the FP32 encoder. An INT8 linear head was measured separately; it shrinks only a tiny part of the model.
+* **No reference thumbnails.** References show identifiers, labels and similarity only (see below), which makes
+  them less intuitive to check.
+* **Hosting.** The live URL is a quick tunnel to the team laptop. It has no uptime guarantee and stops working
+  when the laptop, Docker or `cloudflared` stops; a restart changes the address.
+* **Evidence Challenge.** It measures how blurring a region changes the A/B margin; it does not name car parts.
+
+## Ethics and licences
+
+* **Stanford Cars** is licensed for non-commercial research use only. Its images are not redistributed by this
+  repository or the container. For the same reason the app shows no reference thumbnails: references show
+  identifiers, labels and similarity only.
+* **YOLO11n and Ultralytics** are AGPL-3.0.
+* **Negative-suite images** come under Creative Commons (CC BY, CC BY-SA, CC0) or public-domain licences. The
+  source URL, author and licence of every image are recorded in
+  [artifacts/negative_manifests/](artifacts/negative_manifests/); the images themselves are kept outside Git.
+* **No user images are stored.** Uploads and derived images live only in an in-memory, request-scoped store
+  that expires (`request_ttl_seconds` in [configs/runtime.yaml](configs/runtime.yaml)); they are never written
+  to disk or logged. The JSON export contains hashes and coordinates, not pixels.
+* The app identifies vehicle models, not people or number plates, and makes no ownership, insurance or legal
+  claims. A Passport is not a certificate.
+* Code in this repository: licence to be chosen by the team.
 
 ## Team and submission
 
-Team ID **T35**, problem statement **PS5**.
+Team ID **T35**, problem statement **PS5** (Computer Vision Hackathon 2026).
+Repository: <https://github.com/DuhItzAniket/SEMEVIA> (branch `semevia/implementation`).
 
 | Member | USN |
 |---|---|
 | Aniket Kumar | 1RUA24CSE0051 |
 | C Lakshanaa | 1RUA24CSE0097 |
-
-## Licences
-
-Code in this repository: to be chosen by the team. YOLO11n and Ultralytics: AGPL-3.0. Stanford
-Cars images are not redistributed by this repository or the container.

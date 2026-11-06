@@ -137,7 +137,7 @@
       if (r.agrees_with_best_guess && !r.agrees_with_best_guess[i]) li.appendChild(el('div', 'Differs from the best guess.', 'muted small'));
       ol.appendChild(li);
     });
-    $('ref-note').textContent = 'Thumbnails are not shown: public reuse rights for dataset images are unresolved. Index ' + r.index_id + '.';
+    $('ref-note').textContent = 'Thumbnails are not shown: Stanford Cars images are licensed for non-commercial research only, so this public page shows identifiers, labels and similarity. Index ' + r.index_id + '.';
   };
 
   const render = (resp) => {

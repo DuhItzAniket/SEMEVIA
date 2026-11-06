@@ -102,6 +102,18 @@ encoder; the measured in-app gain was about 12%.
 Commit: `reports/*.json`, `artifacts/release_manifest.json`, `artifacts/release_config.json`,
 `artifacts/development_calibration.json` (message e.g. `feat(model): promote fine-tuned backbone`).
 
+## 3b. Iteration r2 (what was actually released)
+
+The released model is iteration r2: the same steps 2-6 with `configs/train_v2.yaml` (full-network fine-tuning).
+Before rebuilding, archive the r1 freeze (`artifacts/history/r1/`), then:
+
+```powershell
+& $PY scripts\train.py --config configs\train_v2.yaml --resume auto
+$CK = "E:\semevia\store\runs\effb0_r2\best_finetuned.pt"     # then steps 3-6 with this $CK and its printed tag
+```
+
+Step 4 below then uses the collected negative suite, and step 7 publishes a new release (`model-v2`).
+
 ## 4. Negative suite (if the team has collected it)
 
 See `docs/negative_suite.md`. With `$env:SEMEVIA_NEG_ROOT` set:

@@ -286,7 +286,7 @@ def _run_pipeline(data: bytes, rid: str, mode: str, t_queue: float) -> dict:
                 refs = query(STATE["references"], L[0], STATE["encoder_version"])
                 for it in refs["items"]:
                     it.update(name=STATE["classes"][it["class_id"]]["name"], thumbnail=None,
-                              thumbnail_reason="image rights unresolved; identifier and label only")
+                              thumbnail_reason="Stanford Cars images are licensed for non-commercial research only; identifier and label only")
                 refs["agrees_with_best_guess"] = [it["class_id"] == int(np.argmax(z)) for it in refs["items"]]
                 resp["references"] = refs
             cal = STATE["calibration"]

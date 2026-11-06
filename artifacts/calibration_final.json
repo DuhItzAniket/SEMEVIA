@@ -2,33 +2,33 @@
  "kind": "final",
  "warning": null,
  "production_mode": "hybrid",
- "backbone": "ckpt_2339418979e1",
- "head_sha256": "0c86cd93a6ed802bc2eadc130a5206a1257e1360bd39d87110e768abc78e68a8",
- "model_fingerprint": "155e19183d98652538acc6fabb3f3f524f83c1d53ae67d4120948aaa2c1244dc",
+ "backbone": "ckpt_4f3584f597d5",
+ "head_sha256": "9ea8817e2e1874c124eeff38c08c393cdcbcb19f93dc5b307d348cd443a750f3",
+ "model_fingerprint": "68e07695555c757978396249d76b92ae076343d0f5e370af229c6a14e044418a",
  "label_order": "class_id 0..195 (original_class_id - 1)",
- "temperature": 0.626860538184705,
+ "temperature": 0.801577072272621,
  "alpha": 0.1,
  "n": 815,
  "k": 735,
  "quantile_mode": "order_statistic",
- "q": 0.9570997367744485,
+ "q": 0.7756877508814165,
  "set_convention": "lac_1_minus_p_le_q_inclusive_empty_kept_v1",
  "score_convention": "1 - p_true with p = softmax(z / T); no-detection inputs use the uniform fallback 1 - 1/196",
  "reject": {
   "rule": "max calibrated probability < threshold",
-  "threshold": 0.3,
-  "selection": "no negative tuning set: largest threshold meeting the known-retention target",
-  "negatives_used": false
+  "threshold": 0.4,
+  "selection": "minimise negative false acceptance subject to known retention >= target",
+  "negatives_used": true
  },
  "calibration_population": {
   "partition": "calibration",
   "count": 815,
   "manifest_sha256": "f3b19f8386f10c491c62964fe8aa16c57779376fca6d3a4c69f5559dbbf34495",
   "detection_failures_with_fallback_score": 5,
-  "predictions_file": "e2e_calibration_clean_f3b19f8386_ft_ckpt_2339418979e1_7aa5332188.jsonl",
-  "predictions_sha256": "e1027c309023ebbc63f2bd3a62eeefde72f8bf6993f1f3b9684128d41242c3e0"
+  "predictions_file": "e2e_calibration_clean_f3b19f8386_ft_ckpt_4f3584f597d5_c13883508a.jsonl",
+  "predictions_sha256": "f76639943de758610042dbf47a46603c05512de532afc518df204b6831208307"
  },
- "freeze_sha256": "508c5b8cf674d1663b8476a74cf3ce3d0e086a8030e77f8b254b938dd3180c69",
+ "freeze_sha256": "c5fcb7c4dd068e1b2d4170b27e2aa9abb8031b8642d0c1d374cca76d380f5984",
  "interpretation": "Nominal marginal coverage 1 - alpha for supported-category inputs under exchangeability with the calibration partition. Not a per-image probability; does not cover unsupported vehicles or perturbed inputs.",
- "bundle_id": "cal_1065e2ad5d45"
+ "bundle_id": "cal_f314c9558043"
 }

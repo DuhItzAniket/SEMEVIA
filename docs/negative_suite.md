@@ -1,7 +1,16 @@
 # Negative (unsupported-input) suite
 
 Purpose: tune and test the reject rule on inputs outside the 196 Stanford Cars categories. It is a
-small stress set, not an open-world guarantee. **Status: not collected yet.**
+small stress set, not an open-world guarantee.
+
+**Status (2026-11-07): collected.** 80 photos, 40 tune + 40 test, 10 per bucket per partition, all from
+Wikimedia Commons under CC0, public domain, CC BY or CC BY-SA. Each row of
+`artifacts/negative_manifests/negatives_<partition>.csv` records the file page, licence and author (attribution).
+Collection was done by four AI agents (one per bucket) that checked licences through the Commons API, looked at
+every image, and confirmed the `unlisted_car_model` cars are not among the 196 classes; tune and test use
+different photos and mostly different subjects. Images are stored outside Git (`SEMEVIA_NEG_ROOT`, on the team
+laptop `C:\semevia\negatives`). The tune half feeds `scripts/freeze.py --negatives` for iteration r2; the
+test half is evaluated once after the freeze, and its false-acceptance table is in `eval_P5_T35.md`.
 
 ## Target (plan)
 

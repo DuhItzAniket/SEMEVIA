@@ -40,6 +40,12 @@ def main() -> None:
     manifest = load_manifest()
     if verify(manifest):
         raise SystemExit("release assets do not verify")
+    if args.partition == "test":
+        from src.passport.calibration import model_fingerprint
+
+        fz = json.loads((ROOT / "artifacts/production_freeze.json").read_text(encoding="utf-8"))
+        if model_fingerprint(manifest, fz["production_mode"], fz["encoder_runtime"]) != fz["model_fingerprint"]:
+            raise SystemExit("current model files differ from the frozen pipeline; refusing to touch held-out negatives")
     rc = recognition_config()
     rt = yaml.safe_load((ROOT / "configs/runtime.yaml").read_text(encoding="utf-8"))
     cal = json.loads((ROOT / rc["calibration"]).read_text(encoding="utf-8"))
