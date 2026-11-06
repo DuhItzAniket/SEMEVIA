@@ -2,10 +2,11 @@
 
 **Vehicle identity through evidence.** Every identity needs evidence.
 
-> **Status (2026-11-06): early development, phases P0-P2 (partial).** Vehicle *detection* works and a
-> classical-feature baseline is trained; fine-grained
-> make/model/year recognition in the app, the Identity Evidence Passport and all test-set
-> evaluation results are **not implemented yet**. No test accuracy exists yet, and none is claimed.
+> **Status (2026-11-06): development build, P0-P4 partly done.** Detection, three recognition modes,
+> the Passport and the Evidence Challenge run end to end locally on a **development model** (frozen
+> ImageNet backbone, not yet fine-tuned) with **development calibration**. Fine-grained
+> results from the final fine-tuned model and all test-set evaluation are **not available yet**.
+> No test accuracy exists yet, and none is claimed.
 
 **Live application URL:** not deployed yet. No public host has been provisioned
 (see [docs/hosting_lock.md](docs/hosting_lock.md)).
@@ -23,15 +24,16 @@ categories changes.
 | Feature | State |
 |---|---|
 | Upload, validation, typed errors | Implemented, tested |
-| Vehicle detection (YOLO11n, COCO car/bus/truck) with primary-target rule | Implemented, tested locally |
+| Vehicle detection (YOLO11n, COCO car/bus/truck) with primary-target rule | Implemented, evaluated on tune split |
 | Verified Stanford Cars manifests and class hierarchy | Implemented, tested |
-| Classical features (edges, contours, HOG, LBP, HSV, geometry), classical ROI proposals | Implemented, tested |
-| Classical (handcrafted-only) 196-class head | Trained; tuning diagnostic only, not in the app yet |
-| EfficientNet-B0 196-class classifier, fine-tuned | Training script ready and smoke-tested; real run pending on the team's GPU PC |
-| Hybrid classical + deep head; three comparison modes | Planned (P3) |
-| Passport, Evidence Challenge, references | Planned (P4) |
+| Classical features (edges, contours, HOG, LBP, HSV, geometry), classical ROI proposals | Implemented, tested, shown in the app |
+| Classical, Deep and Hybrid modes with Top-5 and separate scores | Implemented on the development backbone |
+| EfficientNet-B0 fine-tuning | Script ready and smoke-tested; real run pending on the team's GPU PC |
+| Identity Evidence Passport (candidate set, specificity, decision states, JSON export) | Implemented; development calibration only |
+| Evidence Challenge (six blurred regions, fixed A/B margin) | Implemented, tested |
+| Nearest training references | Planned |
 | INT8 / ONNX optimization | Planned (P5) |
-| Evaluation (Top-1/5, IoU, mAP, efficiency, robustness, confidence) | Planned (P6) |
+| Test-set evaluation (Top-1/5, IoU, mAP, efficiency, robustness, confidence) | Metric code tested; runs planned (P6) |
 
 Supported vehicle categories: the 196 Stanford Cars classes (49 makes, model years 1991-2012),
 listed in [artifacts/class_metadata.json](artifacts/class_metadata.json).
@@ -44,9 +46,12 @@ Prerequisites: Docker with about 4 GB of free disk for the image.
 docker compose up --build
 ```
 
-Then open http://localhost:8000. The build downloads the public YOLO11n weights listed in
-[artifacts/release_manifest.json](artifacts/release_manifest.json) and verifies their SHA256;
-the running container makes no downloads. **Verification status:** the image built successfully
+Then open http://localhost:8000. The build downloads the public weights listed in
+[artifacts/release_manifest.json](artifacts/release_manifest.json) (YOLO11n and the ImageNet
+EfficientNet-B0) and verifies their SHA256; the running container makes no downloads. The trained
+heads are not published yet, so a clean checkout currently builds a **detection-only** app; with the
+heads present in `artifacts/store/release/heads/` (created by `scripts/promote_bundle.py`) all
+modes are served. **Verification status:** the image built successfully
 on 2026-11-06; starting it on our machine was blocked by a full system drive, so the
 container run itself is not yet verified.
 
@@ -61,11 +66,25 @@ python -m uvicorn app.main:app --port 8000
 
 ## Usage (current build)
 
-Choose or take a photo and press **Analyze**. The page shows the image with every detected
-vehicle box, the selected primary vehicle (largest car/bus/truck with detector score >= 0.25),
-its crop, and timings. Errors (not an image, over 10 MB, over 25 megapixels, empty file) show a
-message with a recovery action. "No supported vehicle target found" is shown when nothing is
-detected.
+Choose or take a photo, pick a model (Hybrid by default) and press **Analyze**. The page shows:
+
+1. The image with detected boxes; the selected vehicle (largest car/bus/truck with detector score
+   >= 0.25) is drawn thick. In Classical mode the region comes from the contour proposal instead.
+2. The best guess and Top-5 (make, model, year) with the classification score, separate from the
+   detector score.
+3. The **Passport**: decision state (one candidate, several remain, rejected, insufficient
+   evidence, no vehicle), the supported specificity (category, family, make) and the full
+   candidate set. Only the Hybrid production mode has (development) calibration; Deep and
+   Classical show "comparison mode".
+4. **Run six-region challenge**: blurs each of six crop regions in turn and shows the change in the
+   margin between the two leading categories, with the modified crop for any selected region and
+   **Restore original**.
+5. Intermediate processing: crop, grayscale, Canny edges, contours and geometric measurements.
+6. **Download Passport JSON** (hashes, boxes, scores and versions; no image pixels).
+
+Errors (not an image, over 10 MB, over 25 megapixels, empty file) show a message with a recovery
+action. The recognition parts need the recognition bundle (see below); without it the app serves
+detection only and says so.
 
 ## Reproduction (data)
 
@@ -86,6 +105,16 @@ python scripts/cache_features.py --features classical --partitions train tune
 python scripts/fit_heads.py --head classical
 ```
 
+Development deep/hybrid heads, calibration and bundle (CPU, about 20 minutes):
+
+```bash
+python scripts/cache_features.py --features learned --backbone imagenet_frozen --partitions train tune
+python scripts/fit_heads.py --head learned
+python scripts/calibrate.py --development --mode hybrid
+python scripts/promote_bundle.py --backbone imagenet_frozen
+python scripts/evaluate_detector.py --partition tune
+```
+
 Deep model training (GPU recommended): see [docs/training_handoff.md](docs/training_handoff.md).
 
 `prepare_data.py` checks the labeled test annotations against the TFDS published SHA256,
@@ -96,10 +125,9 @@ conflicting labels, are in [reports/data_audit.json](reports/data_audit.json) an
 
 ## Architecture and design
 
-Planned runtime flow: upload -> validate/decode -> YOLO11n detector -> primary box -> crop ->
-classical features + EfficientNet-B0 features -> selected head -> calibrated scores, rejection
-and Passport; Evidence Challenge on demand. Contracts: [docs/api_schema.json](docs/api_schema.json).
-Architecture and design documents are written as components are built.
+See [docs/architecture.md](docs/architecture.md) (diagrams matching the code) and
+[docs/design.md](docs/design.md) (decisions, Passport semantics, limitations, ethics).
+Contract: [docs/api_schema.json](docs/api_schema.json).
 
 ## Results
 
@@ -107,10 +135,15 @@ No test-set results yet. Development diagnostics so far (every number from a sav
 
 | What | Population | Top-1 | Top-5 | Source |
 |---|---|---|---|---|
-| Classical head (handcrafted features only, logistic regression) | Tune partition, 815 images, annotation (oracle) crops | 0.1865 | 0.3816 | [reports/classical_tune.json](reports/classical_tune.json) |
+| Classical head (handcrafted features only) | Tune, 815 images, annotation crops | 0.1865 | 0.3816 | [reports/classical_tune.json](reports/classical_tune.json) |
+| Deep head, development backbone (frozen ImageNet) | same | 0.6429 | 0.9006 | [reports/heads_tune_imagenet_frozen.json](reports/heads_tune_imagenet_frozen.json) |
+| Hybrid head, development backbone | same | 0.6491 | 0.8982 | same file (includes ablations) |
 
-This is not end-to-end accuracy and not test accuracy; it uses ground-truth crops on the
-development tuning split.
+Detector on the same 815 tune images: generic vehicle AP50 0.847, AP50:95 0.771; primary-target
+recall at IoU 0.5 is 0.993 ([reports/detector_tune.json](reports/detector_tune.json)).
+
+These are not end-to-end or test accuracy: they use ground-truth crops on the tuning split that
+was also used to select the heads, and the backbone is not fine-tuned yet.
 
 ## Limitations (known so far)
 

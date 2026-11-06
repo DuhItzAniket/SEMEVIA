@@ -4,26 +4,35 @@ Updated 2026-11-06 at the P0/P1 checkpoint and partial P2. Branch `semevia/imple
 Commit SHA and push status: see the bottom of this file (updated after each push).
 
 ## What works (verified)
-* Data: verified manifests `artifacts/manifests/*_m1.csv` (train 6,514 / tune 815 /
-  calibration 815 / test 8,041), class metadata with make/family hierarchy, audit report.
-* Detection: real YOLO11n vehicle detection with bounded uploads and typed errors, through
-  the FastAPI app and the browser UI (local uvicorn). 24/24 tests pass.
-* Classical features (1816-dim) + classical proposals + versioned caches + classical head
-  (tune top-1 0.1865 / top-5 0.3816 on annotation crops; development diagnostic). See
-  `docs/checkpoints/P2.md`.
-* `scripts/train.py` ready and smoke-tested; real fine-tuning run is waiting for the training PC
-  (`docs/training_handoff.md`).
-* Not implemented yet: deep/hybrid heads, the 196-class prediction in the app, Passport,
-  challenge, references, optimization, evaluation. The UI says so explicitly.
+* Data: verified manifests (train 6,514 / tune 815 / calibration 815 / test 8,041), hierarchy, audit.
+* Detection: YOLO11n, evaluated on tune (`reports/detector_tune.json`).
+* Classical features + proposals + caches; classical, deep, hybrid and ablation heads on the
+  **development backbone (frozen ImageNet)** (`reports/heads_tune_imagenet_frozen.json`).
+* Passport (conformal set, hierarchy, decision states), Evidence Challenge, metrics: fixture-tested.
+* App: three modes, Passport with **development calibration** (`artifacts/development_calibration.json`),
+  challenge, processing views, JSON export. Verified in the browser locally. 77/77 tests pass.
+* Details: `docs/checkpoints/P3_P4_dev.md`. Design: `docs/design.md`. Diagrams: `docs/architecture.md`.
 
 ## Open blockers
-1. **C: drive full** (Docker Desktop disk image on C:). User is moving it to D:. Then:
-   `docker compose up --build` and check `/readyz` + one upload (P1 container check).
-2. **No public host** (`docs/hosting_lock.md`). Release blocker; user to decide.
-3. **Mandatory fine-tuning epoch not run.** User plans another machine. CPU pilot suggests
-   ~6 min/epoch of compute for last-stage fine-tuning here (extrapolated); needs user approval.
-4. `gh` CLI not installed (needed later for the pull request, or use the GitHub web UI).
-5. Team member names and USNs unknown (needed for README and `eval_P5_TeamID.md`).
+1. **Fine-tuning run** on the training PC (`docs/training_handoff.md`). Required for compliance.
+2. **Docker container run** blocked until Docker Desktop's disk image is moved to D:.
+3. **No public host** (`docs/hosting_lock.md`).
+4. **Heads have no public storage**: clean builds are detection-only until they get a URL.
+5. Negative (unsupported-image) suite not collected; reject threshold is development-only.
+6. Reference panel not built; thumbnail rights undecided.
+7. `gh` CLI missing (PR later); team names/USNs unknown.
+
+## When best_finetuned.pt arrives (copy to D:/semevia_work/store/runs/effb0_r1/)
+```bash
+CK=D:/semevia_work/store/runs/effb0_r1/best_finetuned.pt
+python -c "import json;print(json.load(open('D:/semevia_work/store/runs/effb0_r1/summary.json'))['fine_tuning_requirement_met'])"
+python scripts/cache_features.py --features learned --backbone $CK --partitions train tune
+# set learned.backbone and calibration.yaml backbone to the printed ckpt_<sha12> tag, then:
+python scripts/fit_heads.py --head learned
+python scripts/calibrate.py --development --mode hybrid      # or deep, if it is clearly better
+# extend promote_bundle.py for checkpoint backbones (export state_dict), then promote and run pytest
+```
+Every cache, head, calibration and the bundle must be regenerated (cache invalidation matrix).
 
 ## Environment (outside Git)
 * Training venv: `D:/semevia_work/venv` (Python 3.11.9), lock in `requirements.lock`.
@@ -41,12 +50,10 @@ docker compose up --build    # after Docker storage is on D:
 ```
 
 ## Single next bounded task
-Development deep/hybrid wiring that does not need fine-tuning: cache frozen ImageNet
-EfficientNet-B0 embeddings (labelled development, non-compliant backbone), fit matched
-deep-only and hybrid heads, and wire classical/deep/hybrid modes into the app with
-"development model" labelling. Swap in `best_finetuned.pt` when the training PC run returns
-and regenerate all caches/heads (cache invalidation matrix). Also: rebuild Docker after the
-disk-image move and close the P1 container check.
+While waiting for the GPU run: end-to-end tune evaluation of the full pipeline (detector crops,
+all three modes, end-to-end Top-k with IoU gating), then the training-only reference index
+(P4B) with identifier/distance fallback. After that, the P5 ONNX/INT8 optimization experiment on the
+development backbone so the code is ready when the fine-tuned model lands.
 
 ## File ownership
 See `docs/ownership.md`.
