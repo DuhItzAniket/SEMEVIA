@@ -16,59 +16,61 @@
    "sha256": "773489be8c1fd329416906e03003e0cbbf34cd303681622d66fa482227fc0dbd",
    "bytes": 17335257,
    "optional": true,
-   "url": null,
+   "url": "https://github.com/DuhItzAniket/SEMEVIA/releases/download/model-v2/backbone_ckpt_4f3584f597d5.pth",
    "status": "fine-tuned EfficientNet-B0 (effb0_r2, 12 fine-tuning epoch(s), best tune top-1 0.9166)",
    "source_checkpoint": "best_finetuned.pt",
    "source_checkpoint_sha256": "4f3584f597d5d114eb765d24cf2af29734b3edff074b60cb8027a802ca7ccd9f",
-   "public_storage": "not yet published"
+   "public_storage": "GitHub Release model-v2"
   },
   {
    "name": "head_classical.joblib",
    "path": "artifacts/store/release/heads/classical.joblib",
    "sha256": "77fa1f92e6dc6941d4c3c66e75133c79cb794b68d358cfe2b0cb6903cbed2b01",
    "bytes": 1471049,
-   "url": null,
+   "url": "https://github.com/DuhItzAniket/SEMEVIA/releases/download/model-v2/head_classical.joblib",
    "optional": true,
    "source": "heads/classical_hc_v1_C0.005.joblib (fit_heads.py, backbone ckpt_4f3584f597d5)",
-   "public_storage": "not yet published; clean builds run detection-only until a public URL is added"
+   "public_storage": "GitHub Release model-v2"
   },
   {
    "name": "head_deep.joblib",
    "path": "artifacts/store/release/heads/deep.joblib",
    "sha256": "fb12578b42768be1b96e2fc47f652aaf328e1ceac22305be92e0278e704f0e3a",
    "bytes": 2042361,
-   "url": null,
+   "url": "https://github.com/DuhItzAniket/SEMEVIA/releases/download/model-v2/head_deep.joblib",
    "optional": true,
    "source": "heads/deep_ckpt_4f3584f597d5_C0.1.joblib (fit_heads.py, backbone ckpt_4f3584f597d5)",
-   "public_storage": "not yet published; clean builds run detection-only until a public URL is added"
+   "public_storage": "GitHub Release model-v2"
   },
   {
    "name": "head_hybrid.joblib",
    "path": "artifacts/store/release/heads/hybrid.joblib",
    "sha256": "9ea8817e2e1874c124eeff38c08c393cdcbcb19f93dc5b307d348cd443a750f3",
    "bytes": 3134873,
-   "url": null,
+   "url": "https://github.com/DuhItzAniket/SEMEVIA/releases/download/model-v2/head_hybrid.joblib",
    "optional": true,
    "source": "heads/hybrid_ckpt_4f3584f597d5_C0.1.joblib (fit_heads.py, backbone ckpt_4f3584f597d5)",
-   "public_storage": "not yet published; clean builds run detection-only until a public URL is added"
+   "public_storage": "GitHub Release model-v2"
   },
   {
    "name": "reference_index.npz",
    "path": "artifacts/store/release/reference_index.npz",
    "sha256": "08ac6f2d38a46d271e48e850bd609b21222f4c1f2df22baf8212896cf803cdb4",
    "bytes": 1542480,
-   "url": null,
+   "url": "https://github.com/DuhItzAniket/SEMEVIA/releases/download/model-v2/reference_index.npz",
    "optional": true,
-   "source": "scripts/build_references.py (training split only)"
+   "source": "scripts/build_references.py (training split only)",
+   "public_storage": "GitHub Release model-v2"
   },
   {
    "name": "reference_index.json",
    "path": "artifacts/store/release/reference_index.json",
    "sha256": "144bdeafe899399259117db3503b580011d3cd72c99cd5d5f372777b6af4ead7",
    "bytes": 176,
-   "url": null,
+   "url": "https://github.com/DuhItzAniket/SEMEVIA/releases/download/model-v2/reference_index.json",
    "optional": true,
-   "source": "scripts/build_references.py (training split only)"
+   "source": "scripts/build_references.py (training split only)",
+   "public_storage": "GitHub Release model-v2"
   },
   {
    "name": "calibration_final.json",

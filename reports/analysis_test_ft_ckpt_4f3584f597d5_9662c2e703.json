@@ -1,0 +1,268 @@
+{
+ "partition": "test",
+ "bundle_id": "ft_ckpt_4f3584f597d5_9662c2e703",
+ "predictions_file": "e2e_test_clean_5eb7f61508_ft_ckpt_4f3584f597d5_9662c2e703.jsonl",
+ "production_mode": "hybrid",
+ "calibration_kind": "final",
+ "viewpoint_subgroups": {
+  "deep": {
+   "front": {
+    "count": 7,
+    "top1": 7,
+    "top5": 7,
+    "top1_rate": 1.0,
+    "top5_rate": 1.0
+   },
+   "indeterminate": {
+    "count": 2,
+    "top1": 1,
+    "top5": 1,
+    "top1_rate": 0.5,
+    "top5_rate": 0.5
+   },
+   "rear": {
+    "count": 1,
+    "top1": 1,
+    "top5": 1,
+    "top1_rate": 1.0,
+    "top5_rate": 1.0
+   },
+   "side": {
+    "count": 8,
+    "top1": 7,
+    "top5": 7,
+    "top1_rate": 0.875,
+    "top5_rate": 0.875
+   },
+   "three_quarter_front": {
+    "count": 36,
+    "top1": 35,
+    "top5": 36,
+    "top1_rate": 0.9722222222222222,
+    "top5_rate": 1.0
+   },
+   "three_quarter_rear": {
+    "count": 6,
+    "top1": 5,
+    "top5": 6,
+    "top1_rate": 0.8333333333333334,
+    "top5_rate": 1.0
+   }
+  },
+  "hybrid": {
+   "front": {
+    "count": 7,
+    "top1": 7,
+    "top5": 7,
+    "top1_rate": 1.0,
+    "top5_rate": 1.0
+   },
+   "indeterminate": {
+    "count": 2,
+    "top1": 1,
+    "top5": 1,
+    "top1_rate": 0.5,
+    "top5_rate": 0.5
+   },
+   "rear": {
+    "count": 1,
+    "top1": 1,
+    "top5": 1,
+    "top1_rate": 1.0,
+    "top5_rate": 1.0
+   },
+   "side": {
+    "count": 8,
+    "top1": 7,
+    "top5": 7,
+    "top1_rate": 0.875,
+    "top5_rate": 0.875
+   },
+   "three_quarter_front": {
+    "count": 36,
+    "top1": 35,
+    "top5": 36,
+    "top1_rate": 0.9722222222222222,
+    "top5_rate": 1.0
+   },
+   "three_quarter_rear": {
+    "count": 6,
+    "top1": 5,
+    "top5": 6,
+    "top1_rate": 0.8333333333333334,
+    "top5_rate": 1.0
+   }
+  }
+ },
+ "viewpoint_note": "Descriptive; small and imbalanced groups (labelled before results).",
+ "failures": [
+  {
+   "rule": "localisation failure (no box, or lowest IoU below 0.5)",
+   "image_key": "test/00076.jpg",
+   "true": "AM General Hummer SUV 2000",
+   "selected_box": null,
+   "annotation_box": [
+    10.0,
+    12.0,
+    84.0,
+    60.0
+   ],
+   "iou": null,
+   "detector_score": null,
+   "annotation_crop_top5": [
+    [
+     "AM General Hummer SUV 2000",
+     0.9998
+    ],
+    [
+     "Ford E-Series Wagon Van 2012",
+     0.0
+    ],
+    [
+     "Jeep Wrangler SUV 2012",
+     0.0
+    ],
+    [
+     "Ford F-150 Regular Cab 2012",
+     0.0
+    ],
+    [
+     "Geo Metro Convertible 1993",
+     0.0
+    ]
+   ],
+   "annotation_crop_correct": true,
+   "hypothesis": "HYPOTHESIS: localisation/crop caused the error (annotation crop is classified correctly)"
+  },
+  {
+   "rule": "close-category error (same make), highest confidence",
+   "image_key": "test/00294.jpg",
+   "true": "Audi TTS Coupe 2012",
+   "selected_box": [
+    53.92412185668945,
+    118.46455383300781,
+    962.5362548828125,
+    612.3973388671875
+   ],
+   "annotation_box": [
+    66.0,
+    117.0,
+    959.0,
+    617.0
+   ],
+   "iou": 0.9710941448868888,
+   "detector_score": 0.9004157185554504,
+   "runtime_top5": [
+    [
+     "Audi TT Hatchback 2011",
+     0.9999
+    ],
+    [
+     "Audi TT RS Coupe 2012",
+     0.0
+    ],
+    [
+     "Audi TTS Coupe 2012",
+     0.0
+    ],
+    [
+     "Bugatti Veyron 16.4 Coupe 2009",
+     0.0
+    ],
+    [
+     "Audi RS 4 Convertible 2008",
+     0.0
+    ]
+   ],
+   "annotation_crop_top5": [
+    [
+     "Audi TT Hatchback 2011",
+     0.9999
+    ],
+    [
+     "Audi TT RS Coupe 2012",
+     0.0
+    ],
+    [
+     "Audi TTS Coupe 2012",
+     0.0
+    ],
+    [
+     "Audi RS 4 Convertible 2008",
+     0.0
+    ],
+    [
+     "Audi R8 Coupe 2012",
+     0.0
+    ]
+   ],
+   "annotation_crop_correct": false,
+   "hypothesis": "HYPOTHESIS: classifier confusion persists on the annotation crop"
+  },
+  {
+   "rule": "confident cross-make error, highest confidence",
+   "image_key": "test/06675.jpg",
+   "true": "Chevrolet Express Cargo Van 2007",
+   "selected_box": [
+    70.86444091796875,
+    88.2073974609375,
+    433.3282165527344,
+    293.72344970703125
+   ],
+   "annotation_box": [
+    69.0,
+    86.0,
+    433.0,
+    293.0
+   ],
+   "iou": 0.9799840348024579,
+   "detector_score": 0.8873976469039917,
+   "runtime_top5": [
+    [
+     "GMC Savana Van 2012",
+     0.9989
+    ],
+    [
+     "Chevrolet Express Cargo Van 2007",
+     0.0006
+    ],
+    [
+     "Chevrolet Express Van 2007",
+     0.0001
+    ],
+    [
+     "GMC Canyon Extended Cab 2012",
+     0.0
+    ],
+    [
+     "Ford E-Series Wagon Van 2012",
+     0.0
+    ]
+   ],
+   "annotation_crop_top5": [
+    [
+     "GMC Savana Van 2012",
+     0.9987
+    ],
+    [
+     "Chevrolet Express Cargo Van 2007",
+     0.0007
+    ],
+    [
+     "Chevrolet Express Van 2007",
+     0.0001
+    ],
+    [
+     "Ford E-Series Wagon Van 2012",
+     0.0
+    ],
+    [
+     "GMC Canyon Extended Cab 2012",
+     0.0
+    ]
+   ],
+   "annotation_crop_correct": false,
+   "hypothesis": "HYPOTHESIS: classifier confusion persists on the annotation crop"
+  }
+ ]
+}
