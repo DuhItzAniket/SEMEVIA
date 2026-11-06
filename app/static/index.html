@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SEMEVIA</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <h1>SEMEVIA</h1>
+      <p class="sub">Vehicle identity through evidence</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <p id="build-note" class="note">Development build: vehicle detection is live; fine-grained make/model/year recognition is not available yet.</p>
+
+    <section class="card" aria-labelledby="upload-h">
+      <h2 id="upload-h">Analyze a vehicle photo</h2>
+      <form id="form">
+        <label class="file">
+          <span>Choose or take a photo (JPEG, PNG, WEBP, BMP; up to 10 MB)</span>
+          <input id="file" name="file" type="file" accept="image/*" required>
+        </label>
+        <div class="row">
+          <button id="analyze" type="submit" disabled>Analyze</button>
+          <button id="reset" type="button" class="secondary">Reset</button>
+        </div>
+      </form>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="result" class="card" hidden aria-labelledby="result-h">
+      <h2 id="result-h">Result</h2>
+      <p id="summary" class="summary"></p>
+      <div class="figure">
+        <div id="stage" class="stage">
+          <img id="display" alt="Uploaded image with detected vehicle boxes">
+        </div>
+        <p class="caption">One primary vehicle is analyzed: the largest detected car, bus or truck above the detector threshold (thick box). Other candidates are drawn thin.</p>
+      </div>
+      <dl id="facts" class="facts"></dl>
+      <div id="crop-wrap" hidden>
+        <h3>Selected vehicle crop</h3>
+        <img id="crop" class="crop" alt="Crop of the selected vehicle">
+      </div>
+      <div class="pending">
+        <h3>Fine-grained recognition</h3>
+        <p id="classifier-note">Not available in this development build. No make, model or year is shown because no trained 196-class model is loaded.</p>
+      </div>
+      <details>
+        <summary>Response details (JSON)</summary>
+        <pre id="json"></pre>
+      </details>
+    </section>
+  </main>
+  <footer class="wrap foot"><span id="ready">Checking service...</span></footer>
+  <script src="/static/app.js"></script>
+</body>
+</html>

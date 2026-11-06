@@ -1,0 +1,24 @@
+# Inference runtime settings (P1). Engineering starting values; verified and documented in reports.
+upload:
+  max_bytes: 10485760          # 10 MB
+  max_pixels: 25000000         # decoded pixel limit (checked before full decode)
+  max_long_edge: 1600          # resize before expensive processing
+  allowed_formats: [JPEG, PNG, WEBP, BMP, MPO]
+detector:
+  family: ultralytics_yolo11n
+  weights: artifacts/store/release/yolo11n.pt
+  imgsz: 640
+  conf_floor: 0.05             # retained detections (evaluation floor)
+  nms_iou: 0.7
+  max_det: 50
+  vehicle_coco_classes: {2: car, 5: bus, 7: truck}   # mapped to generic "vehicle"
+target_policy:
+  rule: largest_area_above_threshold
+  threshold: 0.25              # development value; tuning-selected in P3
+crop:
+  margin: 0.05                 # development value; 0 vs 0.05 compared on tuning data in P3
+server:
+  torch_threads: 2
+  max_active_jobs: 1
+  max_queue: 4
+  request_ttl_seconds: 900
