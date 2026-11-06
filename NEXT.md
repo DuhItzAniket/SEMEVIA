@@ -1,6 +1,6 @@
-# NEXT: SEMEVIA handoff
+﻿# NEXT: SEMEVIA handoff
 
-## GPU PC run (2026-11-07, host LEGION) — in progress; this PC is the only one committing
+## GPU PC run (2026-11-07, host LEGION) â€” in progress; this PC is the only one committing
 * Machine: RTX 4050 Laptop GPU (6 GB), i7-14650HX, 15.7 GB RAM, **C: only (no E: drive)**, so the
   runbook's `E:\semevia` is `C:\semevia` here (data, venv, store, torch cache, tmp). Env: `C:\semevia\env.ps1`.
 * Step 1 done: venv Python 3.11.9 with `requirements.lock` + **torch 2.14.1+cu126 / torchvision 0.29.1+cu126**
@@ -42,7 +42,10 @@
   Recorded by `scripts/check_container.py` in `reports/container_check.json`. Fix: `promote_bundle.py` stored the
   Windows path `artifacts\calibration_final.json`, which the Linux container could not open (recognition was
   silently off); paths are now POSIX, bundle id unchanged.
-* **Waiting on the team:** step 7 (publish weights as a GitHub Release: public), the public host (step 9),
+* Step 8 commit: b763e75 (pushed).
+* Step 7 done (team approved): GitHub Release `model-v1` holds the backbone, heads and reference index; URLs in
+  `artifacts/release_manifest.json` (each download re-checked against its SHA256).
+* **Waiting on the team:** the public host (step 9, Hugging Face Space chosen),
   the negative suite, viewpoint-label review. Deadline: target 12:00, hard 14:00 on 2026-11-07.
 
 Updated 2026-11-06 at the P0/P1 checkpoint and partial P2. Branch `semevia/implementation`.
