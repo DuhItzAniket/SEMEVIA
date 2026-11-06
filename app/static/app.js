@@ -82,7 +82,9 @@
     if (card.hidden) return;
     const ms = resp.model_status || {};
     $('pp-dev').textContent = ms.calibration_kind === 'development'
-      ? 'Development calibration (tuning data). The 90% target is a population-level setting, not the probability that this result is correct, and no coverage claim applies yet.' : '';
+      ? 'Development calibration (tuning data). The 90% target is a population-level setting, not the probability that this result is correct, and no coverage claim applies yet.'
+      : (ms.calibration_kind === 'final'
+        ? 'Calibrated on 815 held-out images. The 90% target is a population-level property for supported categories, not the probability that this result is correct; it does not cover unsupported vehicles.' : '');
     $('pp-dev').hidden = !$('pp-dev').textContent;
     let text = STATE_TEXT[pp.decision_state] || pp.decision_state;
     const spec = pp.specificity;

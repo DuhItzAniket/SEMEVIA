@@ -37,7 +37,7 @@ MODES = ("classical", "deep", "hybrid")
 
 STATE: dict = {"ready": False, "reasons": ["starting"], "detector": None, "bundle": None, "warmup_ms": None,
                "predictor": None, "calibration": None, "cq": None, "hierarchy": None, "classes": None,
-               "recognition_reason": "not loaded", "asset_sha": {},
+               "recognition_reason": "not loaded", "asset_sha": {}, "rc": {},
                "references": None, "references_reason": "not loaded", "encoder_version": None}
 
 
@@ -86,7 +86,10 @@ def _load_recognition(manifest: dict, status: dict) -> None:
     from src.passport.conformal import ConformalQuantile
     from src.passport.hierarchy import Hierarchy
 
-    rc = CFG["recognition"]
+    from src.release import recognition_config
+
+    rc = recognition_config()
+    STATE["rc"] = rc
     by_path = {a["path"]: a for a in manifest["assets"]}
     needed = [rc["backbone"], *rc["heads"].values(), rc["calibration"]]
     missing = [p for p in needed if p not in by_path or status.get(by_path[p]["name"]) != "ok"]
@@ -194,7 +197,7 @@ def _envelope(rid: str, status: str, mode: str, error: dict | None = None) -> di
         "references": {"state": "unavailable", "reason": STATE["references_reason"], "items": []},
         "cnn_diagnostic": {"state": "unavailable", "reason": "optional; not implemented"},
         "processing": {},
-        "model_status": {"recognition": recog, "backbone": CFG["recognition"]["backbone_status"] if recog else None,
+        "model_status": {"recognition": recog, "backbone": STATE["rc"]["backbone_status"] if recog else None,
                          "calibration_kind": cal["kind"] if cal else None,
                          "calibration_warning": cal.get("warning") if cal else None},
         "provenance": {"bundle_id": STATE["bundle"], "app_version": VERSION,
@@ -389,7 +392,7 @@ def readyz():
                 "modes": STATE["predictor"].modes if STATE["predictor"] else [],
                 "production_mode": cal["production_mode"] if cal else None,
                 "calibration_kind": cal["kind"] if cal else None,
-                "backbone": CFG["recognition"]["backbone_status"] if STATE["predictor"] else None,
+                "backbone": STATE["rc"]["backbone_status"] if STATE["predictor"] else None,
                 "references": STATE["references"] is not None, "references_reason": STATE["references_reason"],
                 "encoder_runtime": STATE["predictor"].encoder_runtime if STATE["predictor"] else None}
     return JSONResponse(status_code=503, content={"ready": False, "reasons": STATE["reasons"]})

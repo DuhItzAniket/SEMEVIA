@@ -59,7 +59,9 @@ def main() -> None:
     from src.models.inference import _load_backbone
 
     t_start = time.time()
-    rc = yaml.safe_load((ROOT / "configs/runtime.yaml").read_text(encoding="utf-8"))["recognition"]
+    from src.release import recognition_config
+
+    rc = recognition_config()
     margin = yaml.safe_load((ROOT / "configs/features.yaml").read_text(encoding="utf-8"))["crops"]["margin"]
     idx = json.loads((ROOT / "artifacts/manifests/manifest_index.json").read_text(encoding="utf-8"))
     data_root = Path(args.data_root)

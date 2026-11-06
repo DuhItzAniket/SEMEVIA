@@ -19,7 +19,6 @@ sys.path.insert(0, str(ROOT))
 
 import joblib  # noqa: E402
 import numpy as np  # noqa: E402
-import yaml  # noqa: E402
 
 from src.models.cache_io import cache_meta, load_cache, store_dir  # noqa: E402
 from src.models.heads import canonical_logits, softmax, topk_accuracy  # noqa: E402
@@ -46,7 +45,9 @@ def main() -> None:
     from onnx import TensorProto, helper, numpy_helper
     from onnxruntime.quantization import QuantType, quantize_dynamic
 
-    rc = yaml.safe_load((ROOT / "configs/runtime.yaml").read_text(encoding="utf-8"))["recognition"]
+    from src.release import recognition_config
+
+    rc = recognition_config()
     idx = json.loads((ROOT / "artifacts/manifests/manifest_index.json").read_text(encoding="utf-8"))
     pipe = joblib.load(ROOT / rc["heads"][args.mode])
     fuse, clf = pipe[0], pipe[-1]

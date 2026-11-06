@@ -10,7 +10,9 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_ROOT = Path(os.environ.get("SEMEVIA_DATA_ROOT", "D:/semevia_work/raw/StanfordCars/stanford_cars"))
-RCFG = yaml.safe_load((ROOT / "configs/runtime.yaml").read_text(encoding="utf-8"))["recognition"]
+from src.release import recognition_config  # noqa: E402
+
+RCFG = recognition_config()
 
 
 def _have_bundle():

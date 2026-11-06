@@ -130,6 +130,8 @@ def main() -> None:
         save_cache(meta, [r.image_key for r in recs], np.array([r.class_id for r in recs]), X)
         print(f"{part}: {X.shape} in {meta['elapsed_s']} s -> {npz}")
     print("store:", store_dir())
+    if args.features == "learned":
+        print("backbone tag:", backbone_tag(args.backbone))
 
 
 if __name__ == "__main__":

@@ -16,6 +16,22 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "artifacts" / "release_manifest.json"
 
 
+RELEASE_CONFIG = ROOT / "artifacts" / "release_config.json"
+OVERRIDABLE = ("backbone", "backbone_tag", "backbone_status", "calibration", "precision", "encoder_runtime")
+
+
+def recognition_config() -> dict:
+    """configs/runtime.yaml recognition settings, overridden by artifacts/release_config.json (written by
+    scripts/promote_bundle.py) for the backbone, its tag/status and the calibration file in this release."""
+    import yaml
+
+    rc = dict(yaml.safe_load((ROOT / "configs" / "runtime.yaml").read_text(encoding="utf-8"))["recognition"])
+    if RELEASE_CONFIG.exists():
+        rel = json.loads(RELEASE_CONFIG.read_text(encoding="utf-8"))
+        rc.update({k: rel[k] for k in OVERRIDABLE if k in rel})
+    return rc
+
+
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as f:

@@ -143,8 +143,11 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--head", choices=["classical", "learned"], default="classical")
     ap.add_argument("--config", default="configs/heads.yaml")
+    ap.add_argument("--backbone", default=None, help="override learned.backbone (e.g. ckpt_<sha12> from cache_features)")
     args = ap.parse_args()
     cfg = yaml.safe_load((ROOT / args.config).read_text(encoding="utf-8"))
+    if args.backbone:
+        cfg["learned"]["backbone"] = args.backbone
     idx = json.loads((ROOT / "artifacts/manifests/manifest_index.json").read_text(encoding="utf-8"))
     if args.head == "classical":
         fit_classical(cfg, idx)
