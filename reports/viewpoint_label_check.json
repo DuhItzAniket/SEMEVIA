@@ -1,0 +1,58 @@
+{
+ "purpose": "Blind second labelling pass of the 60 predeclared viewpoint test photos. The second pass was made by six separate agents that were not given the first labels; it is a consistency check, not a human review.",
+ "first_pass": "reports/viewpoint_labels.csv (agent, labelled before any test result)",
+ "count": 60,
+ "missing_in_second_pass": [],
+ "viewpoint_exact_agreement": {
+  "numerator": 55,
+  "denominator": 60,
+  "value": 0.9166666666666666
+ },
+ "viewpoint_adjacent_disagreement": 3,
+ "viewpoint_other_disagreement": 2,
+ "occlusion_none_vs_some_agreement": {
+  "numerator": 53,
+  "denominator": 60,
+  "value": 0.8833333333333333
+ },
+ "confusion": {
+  "indeterminate -> three_quarter_rear": 1,
+  "indeterminate -> front": 1,
+  "front -> three_quarter_front": 1,
+  "three_quarter_front -> side": 1,
+  "side -> three_quarter_rear": 1
+ },
+ "disagreements": [
+  {
+   "image_key": "test/00468.jpg",
+   "first": "indeterminate",
+   "second": "three_quarter_rear",
+   "second_note": "tiny low-res composite, two cars; main car rear-left, cut at frame"
+  },
+  {
+   "image_key": "test/02269.jpg",
+   "first": "indeterminate",
+   "second": "front",
+   "second_note": "top-down overhead from front; unusual elevation"
+  },
+  {
+   "image_key": "test/06016.jpg",
+   "first": "front",
+   "second": "three_quarter_front",
+   "second_note": "near-front; woman over hood, right edge cropped; borderline front"
+  },
+  {
+   "image_key": "test/07378.jpg",
+   "first": "three_quarter_front",
+   "second": "side",
+   "second_note": "sedan profile, slight front angle"
+  },
+  {
+   "image_key": "test/07422.jpg",
+   "first": "side",
+   "second": "three_quarter_rear",
+   "second_note": "pickup/SUV rear-left studio shot"
+  }
+ ],
+ "policy": "The first-pass labels used in the analysis are not changed after results exist; disagreements are listed here so readers can judge the subgroup table's reliability."
+}
