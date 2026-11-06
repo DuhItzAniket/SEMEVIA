@@ -8,7 +8,12 @@
   c742195 (8,144 train / 8,041 test). `prepare_data.py` reproduces the manifests (CSV bytes identical;
   `manifest_index.json` identical apart from CRLF line endings); `declare_subsets.py` leaves the tree clean.
   `pytest`: passes (data/bundle-dependent tests skipped before step 3).
-* Next: step 2, fine-tuning (`scripts/train.py`), running.
+* Step 1 commit: 1cdf976 (pushed).
+* Step 2 done: `scripts/train.py` on CUDA, 361 s wall, `fine_tuning_requirement_met: true`, 6 last-stage
+  epochs with `pretrained_changed` true for features.7/features.8. Evidence copied from the store:
+  `reports/training/effb0_r1_summary.json` and `effb0_r1_train_log.jsonl`. Checkpoint (not in Git):
+  `C:\semevia\store\runs\effb0_r1\best_finetuned.pt`, tag `ckpt_2339418979e1`.
+* Next: step 3, rebuild caches/heads/calibration/references/bundle on that checkpoint.
 
 Updated 2026-11-06 at the P0/P1 checkpoint and partial P2. Branch `semevia/implementation`.
 Commit SHA and push status: see the bottom of this file (updated after each push).
