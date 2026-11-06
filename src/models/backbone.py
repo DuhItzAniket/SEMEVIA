@@ -14,7 +14,32 @@ from PIL import Image
 
 MEAN = (0.485, 0.456, 0.406)
 STD = (0.229, 0.224, 0.225)
-PREPROCESS_VERSION = "crop_squash224_bilinear_imagenetnorm_v1"
+PREPROCESS_VERSION = "crop_squash224_bilinear_imagenetnorm_v1"   # the 224 px version (r1, r2)
+
+
+def preprocess_version(size: int = 224) -> str:
+    """Version string of crop_to_tensor at a given square input size (224 gives PREPROCESS_VERSION)."""
+    return f"crop_squash{int(size)}_bilinear_imagenetnorm_v1"
+
+
+_SIZE_CACHE: dict = {}
+
+
+def backbone_input_size(spec) -> int:
+    """Input size a backbone was trained at: 'input_size' in a released backbone file, config['input_size'] in a
+    training checkpoint, else 224 (torchvision ImageNet weights and every bundle before r3)."""
+    spec = str(spec)
+    if spec == "imagenet_frozen":
+        return 224
+    if spec not in _SIZE_CACHE:
+        import torch
+
+        ck = torch.load(spec, map_location="cpu", weights_only=False)
+        size = 224
+        if isinstance(ck, dict):
+            size = ck.get("input_size") or (ck.get("config") or {}).get("input_size") or 224
+        _SIZE_CACHE[spec] = int(size)
+    return _SIZE_CACHE[spec]
 
 
 def build_model(num_classes: int = 196, pretrained: bool = True) -> torch.nn.Module:

@@ -120,11 +120,12 @@ def _load_recognition(manifest: dict, status: dict) -> None:
     STATE["asset_sha"] = {a["name"]: a["sha256"][:12] for a in manifest["assets"]}
     STATE["recognition_reason"] = None
     # Reference index: optional; disabled unless present, verified and version-matched to the encoder
-    from src.models.backbone import PREPROCESS_VERSION
+    from src.models.backbone import preprocess_version
     from src.passport.references import load_index
 
     suffix = "" if pred.encoder_runtime == "torch" else f"|{pred.encoder_runtime}"
-    STATE["encoder_version"] = f"effb0_pool1280_{rc['backbone_tag']}|{PREPROCESS_VERSION}|{rc['precision']}" + suffix
+    STATE["encoder_version"] = (f"effb0_pool1280_{rc['backbone_tag']}|{preprocess_version(pred.input_size)}|"
+                                f"{rc['precision']}" + suffix)
     ref = rc.get("reference_index")
     if ref and ref in by_path and status.get(by_path[ref]["name"]) == "ok":
         idx = load_index(ROOT / ref)

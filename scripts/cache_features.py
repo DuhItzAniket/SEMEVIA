@@ -52,13 +52,19 @@ def _learned_cache(recs, data_root: Path, margin: float, backbone: str, batch: i
     from src.data.crops import annotation_crop, load_rgb
     from src.models.backbone import crop_to_tensor, embed_and_logits
 
+    from src.models.backbone import backbone_input_size
+    from src.models.cache_io import register_backbone_size
+
     torch.set_num_threads(4)
     model = load_backbone(backbone)
+    size = backbone_input_size(backbone)
+    register_backbone_size(backbone_tag(backbone), size)
+    print(f"  encoder input size {size}", flush=True)
 
     def prep(r):
         rgb = load_rgb(data_root / r.rel_path)
         crop, _ = annotation_crop(rgb, r.box, margin)
-        return crop_to_tensor(crop)
+        return crop_to_tensor(crop, size)
 
     out = []
     with ThreadPoolExecutor(4) as pool:

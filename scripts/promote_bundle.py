@@ -68,7 +68,10 @@ def main() -> None:
         status = (f"fine-tuned EfficientNet-B0 ({ck['config']['run_name']}, {state['finetune_epochs_completed']} fine-tuning "
                   f"epoch(s), best tune top-1 {state['best_ft_top1']:.4f})")
         bb_dst = release / f"backbone_{tag}.pth"
-        torch.save({"model": ck["model"], "source_checkpoint_sha256": sha(ck_path), "run_name": ck["config"]["run_name"]}, bb_dst)
+        payload = {"model": ck["model"], "source_checkpoint_sha256": sha(ck_path), "run_name": ck["config"]["run_name"]}
+        if ck["config"].get("input_size", 224) != 224:   # 224 bundles stay byte-identical to earlier releases
+            payload["input_size"] = int(ck["config"]["input_size"])
+        torch.save(payload, bb_dst)
         bb_entry = {"url": None, "status": status, "source_checkpoint": ck_path.name, "source_checkpoint_sha256": sha(ck_path),
                     "public_storage": "not yet published"}
         prefix = "ft"

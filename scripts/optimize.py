@@ -28,10 +28,11 @@ from src.models.cache_io import cache_meta, load_cache, store_dir  # noqa: E402
 from src.models.heads import canonical_logits, softmax, topk_accuracy  # noqa: E402
 
 
-def crops_tensor(recs, data_root, margin):
+def crops_tensor(recs, data_root, margin, size=224):
     from src.models.backbone import crop_to_tensor
 
-    return np.stack([crop_to_tensor(annotation_crop(load_rgb(data_root / r.rel_path), r.box, margin)[0]).numpy() for r in recs]).astype(np.float32)
+    return np.stack([crop_to_tensor(annotation_crop(load_rgb(data_root / r.rel_path), r.box, margin)[0], size).numpy()
+                     for r in recs]).astype(np.float32)
 
 
 def latency(fn, x1, runs=40):
@@ -85,11 +86,14 @@ def main() -> None:
     out = store_dir() / "optimized"
     out.mkdir(parents=True, exist_ok=True)
     fp32_path, pre_path = out / f"encoder_{args.backbone}_fp32.onnx", out / f"encoder_{args.backbone}_pre.onnx"
-    torch.onnx.export(enc, torch.zeros(1, 3, 224, 224), str(fp32_path), input_names=["input"], output_names=["embedding"],
+    from src.models.backbone import backbone_input_size
+
+    size = backbone_input_size(ROOT / rc["backbone"])
+    torch.onnx.export(enc, torch.zeros(1, 3, size, size), str(fp32_path), input_names=["input"], output_names=["embedding"],
                       dynamic_axes={"input": {0: "batch"}, "embedding": {0: "batch"}}, opset_version=17, dynamo=False)
 
     print("loading tune crops...", flush=True)
-    Xt = crops_tensor(tune, data_root, margin)
+    Xt = crops_tensor(tune, data_root, margin, size)
     torch.set_num_threads(4)
     with torch.inference_mode():
         E_torch = np.concatenate([enc(torch.from_numpy(Xt[i:i + 64])).numpy() for i in range(0, len(Xt), 64)])
@@ -99,7 +103,7 @@ def main() -> None:
     s32 = ort.InferenceSession(str(fp32_path), so, providers=["CPUExecutionProvider"])
     E32 = np.concatenate([s32.run(None, {"input": Xt[i:i + 64]})[0] for i in range(0, len(Xt), 64)])
 
-    calib_x = crops_tensor(calib, data_root, margin)
+    calib_x = crops_tensor(calib, data_root, margin, size)
 
     class Reader(CalibrationDataReader):
         def __init__(self):

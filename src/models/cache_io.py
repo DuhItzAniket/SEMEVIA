@@ -36,13 +36,25 @@ def cache_meta(features: str, partition: str, crop: str, manifest_index: dict, b
     if features == "classical":
         meta.update(feature_version=fcfg["feature_version"], features_config_sha256=file_sha(fcfg_path))
     else:
-        from src.models.backbone import PREPROCESS_VERSION
+        from src.models.backbone import preprocess_version
 
         if not backbone:
             raise ValueError("learned caches need a backbone tag")
-        meta.update(feature_version=f"effb0_pool1280_{backbone}", preprocess_version=PREPROCESS_VERSION,
+        meta.update(feature_version=f"effb0_pool1280_{backbone}", preprocess_version=preprocess_version(backbone_size(backbone)),
                     backbone=backbone)
     return meta
+
+
+def register_backbone_size(tag: str, size: int) -> None:
+    """Record the input size of a backbone tag (written by cache_features.py) so cache metadata is exact."""
+    d = store_dir() / "backbones"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / f"{tag}.json").write_text(json.dumps({"tag": tag, "input_size": int(size)}), encoding="utf-8")
+
+
+def backbone_size(tag: str) -> int:
+    p = store_dir() / "backbones" / f"{tag}.json"
+    return int(json.loads(p.read_text(encoding="utf-8"))["input_size"]) if p.exists() else 224
 
 
 def cache_paths(meta: dict) -> tuple[Path, Path]:

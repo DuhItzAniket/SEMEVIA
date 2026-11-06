@@ -39,9 +39,13 @@ class Predictor:
             raise ValueError("encoder_runtime must be torch or onnx_fp32")
         self.backbone_spec = str(backbone)
         self.encoder_runtime = encoder_runtime
+        self.input_size = 224
         self.model = None
         self.session = None
         if any(m in self.heads for m in ("deep", "hybrid")):
+            from src.models.backbone import backbone_input_size
+
+            self.input_size = backbone_input_size(backbone)
             if encoder_runtime == "onnx_fp32":
                 import onnxruntime as ort
 
@@ -64,7 +68,7 @@ class Predictor:
 
         from src.models.backbone import crop_to_tensor, embed_and_logits
 
-        x = torch.stack([crop_to_tensor(c.crop) for c in crops])
+        x = torch.stack([crop_to_tensor(c.crop, self.input_size) for c in crops])
         if self.session is not None:
             return self.session.run(None, {"input": x.numpy()})[0].astype(np.float64)
         f, _ = embed_and_logits(self.model, x)

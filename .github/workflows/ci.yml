@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: ["semevia/implementation", "main"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests (CPU, release assets fetched and verified)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.lock
+      - name: Install the pinned environment (CPU PyTorch)
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends libgl1 libglib2.0-0
+          python -m pip install --upgrade pip
+          pip install -r requirements.lock --extra-index-url https://download.pytorch.org/whl/cpu
+      - name: Fetch the release bundle and verify every SHA256
+        run: |
+          python -m src.release fetch
+          python -m src.release verify
+      - name: Run the test suite
+        # Tests that need the Stanford Cars images skip themselves (the dataset is not redistributed).
+        run: python -m pytest -p no:warnings -o addopts="" -rs
+
+  container:
+    name: Docker image from a clean checkout, ready offline
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the inference image
+        run: docker build -t semevia:ci .
+      - name: Start with no network and wait for readiness
+        run: |
+          docker run -d --name semevia_ci --network none semevia:ci
+          for i in $(seq 1 60); do
+            out=$(docker exec semevia_ci curl -fsS http://localhost:8000/readyz || true)
+            if echo "$out" | grep -q '"ready":true'; then echo "$out"; break; fi
+            sleep 3
+          done
+          echo "$out" | grep -q '"recognition":true'
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs semevia_ci || true

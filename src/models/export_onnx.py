@@ -33,9 +33,12 @@ def export(backbone: Path, out: Path, threads: int = 2) -> dict:
 
     enc = Enc(m).eval()
     out.parent.mkdir(parents=True, exist_ok=True)
-    torch.onnx.export(enc, torch.zeros(1, 3, 224, 224), str(out), input_names=["input"], output_names=["embedding"],
+    from src.models.backbone import backbone_input_size
+
+    size = backbone_input_size(backbone)
+    torch.onnx.export(enc, torch.zeros(1, 3, size, size), str(out), input_names=["input"], output_names=["embedding"],
                       dynamic_axes={"input": {0: "batch"}, "embedding": {0: "batch"}}, opset_version=17, dynamo=False)
-    x = np.random.RandomState(20261106).randn(4, 3, 224, 224).astype(np.float32)
+    x = np.random.RandomState(20261106).randn(4, 3, size, size).astype(np.float32)
     with torch.inference_mode():
         ref = enc(torch.from_numpy(x)).numpy()
     so = ort.SessionOptions()
