@@ -1,0 +1,189 @@
+{
+ "backbone": "imagenet_frozen",
+ "population": {
+  "partition": "tune",
+  "count": 815,
+  "crops": "annotation"
+ },
+ "calibration_data": {
+  "partition": "train",
+  "count": 128,
+  "seed": 20261106,
+  "selection": "seeded random"
+ },
+ "quantization": {
+  "variants": {
+   "onnx_int8": {
+    "method": "static QDQ per-channel QInt8 weights / QUInt8 activations, MinMax",
+    "seconds": 26.8,
+    "error": null,
+    "size_bytes": 4886053
+   },
+   "onnx_int8_percentile": {
+    "method": "static QDQ per-channel QInt8 weights / QUInt8 activations, Percentile",
+    "seconds": 101.1,
+    "error": null,
+    "size_bytes": 4886067
+   },
+   "onnx_int8_dynamic": {
+    "method": "dynamic weight-only QUInt8",
+    "seconds": 85.4,
+    "error": null,
+    "size_bytes": 4357477
+   }
+  },
+  "opset": 17,
+  "seconds_total": 213.3
+ },
+ "accuracy": {
+  "torch_fp32": {
+   "deep": {
+    "tune_top1": 0.6429447852760736,
+    "tune_top5": 0.9006134969325154
+   },
+   "hybrid": {
+    "tune_top1": 0.649079754601227,
+    "tune_top5": 0.898159509202454
+   }
+  },
+  "onnx_fp32": {
+   "deep": {
+    "tune_top1": 0.6429447852760736,
+    "tune_top5": 0.9006134969325154
+   },
+   "hybrid": {
+    "tune_top1": 0.649079754601227,
+    "tune_top5": 0.898159509202454
+   }
+  },
+  "onnx_int8": {
+   "deep": {
+    "tune_top1": 0.15828220858895706,
+    "tune_top5": 0.3815950920245399
+   },
+   "hybrid": {
+    "tune_top1": 0.17423312883435582,
+    "tune_top5": 0.4012269938650307
+   }
+  },
+  "onnx_int8_percentile": {
+   "deep": {
+    "tune_top1": 0.4466257668711656,
+    "tune_top5": 0.7349693251533742
+   },
+   "hybrid": {
+    "tune_top1": 0.46134969325153374,
+    "tune_top5": 0.7423312883435583
+   }
+  },
+  "onnx_int8_dynamic": {
+   "deep": {
+    "tune_top1": 0.006134969325153374,
+    "tune_top5": 0.022085889570552148
+   },
+   "hybrid": {
+    "tune_top1": 0.007361963190184049,
+    "tune_top5": 0.023312883435582823
+   }
+  }
+ },
+ "parity": {
+  "deep": {
+   "onnx_fp32_vs_torch": {
+    "max_abs_centered_logit_diff": 0.0001061844963325953,
+    "max_abs_prob_diff": 1.2874926672318265e-05,
+    "top1_agreement": 1.0,
+    "passes_atol_1e-4_logits": true,
+    "passes_atol_1e-5_probs": true
+   },
+   "onnx_int8_vs_torch": {
+    "top1_agreement": 0.1668711656441718,
+    "max_abs_centered_logit_diff": 18.30510612578506
+   },
+   "onnx_int8_percentile_vs_torch": {
+    "top1_agreement": 0.498159509202454,
+    "max_abs_centered_logit_diff": 9.205748689835382
+   },
+   "onnx_int8_dynamic_vs_torch": {
+    "top1_agreement": 0.007361963190184049,
+    "max_abs_centered_logit_diff": 26.85459823762333
+   }
+  },
+  "hybrid": {
+   "onnx_fp32_vs_torch": {
+    "max_abs_centered_logit_diff": 0.0001008725377067421,
+    "max_abs_prob_diff": 1.4660476584632542e-05,
+    "top1_agreement": 1.0,
+    "passes_atol_1e-4_logits": true,
+    "passes_atol_1e-5_probs": true
+   },
+   "onnx_int8_vs_torch": {
+    "top1_agreement": 0.18527607361963191,
+    "max_abs_centered_logit_diff": 17.36914217769023
+   },
+   "onnx_int8_percentile_vs_torch": {
+    "top1_agreement": 0.5128834355828221,
+    "max_abs_centered_logit_diff": 8.757662880308677
+   },
+   "onnx_int8_dynamic_vs_torch": {
+    "top1_agreement": 0.008588957055214725,
+    "max_abs_centered_logit_diff": 25.718371893301644
+   }
+  }
+ },
+ "embedding_max_abs_diff": {
+  "onnx_fp32": 3.212690353393555e-05,
+  "onnx_int8": 4.113245010375977,
+  "onnx_int8_percentile": 2.917847156524658,
+  "onnx_int8_dynamic": 7.2559380531311035
+ },
+ "size_bytes": {
+  "torch_state_dict_pth": 21444401,
+  "onnx_fp32": 16020231,
+  "onnx_int8": 4886053,
+  "onnx_int8_percentile": 4886067,
+  "onnx_int8_dynamic": 4357477
+ },
+ "latency_single_crop_encoder_only": {
+  "threads": 2,
+  "torch_fp32": {
+   "p50_ms": 51.8246500287205,
+   "p95_ms": 68.97143499518279,
+   "runs": 40
+  },
+  "onnx_fp32": {
+   "p50_ms": 19.98379998258315,
+   "p95_ms": 27.731984952697527,
+   "runs": 40
+  },
+  "onnx_int8": {
+   "p50_ms": 17.540350003400818,
+   "p95_ms": 25.680695008486506,
+   "runs": 40
+  },
+  "onnx_int8_percentile": {
+   "p50_ms": 20.18485000007786,
+   "p95_ms": 24.992140012909655,
+   "runs": 40
+  },
+  "onnx_int8_dynamic": {
+   "p50_ms": 105.24315002840012,
+   "p95_ms": 119.57293497980572,
+   "runs": 40
+  },
+  "hardware": "Intel i5-1135G7 CPU",
+  "note": "encoder forward only, batch 1, warm"
+ },
+ "selection_policy": "keep INT8 only if tune top-1 drop <= 1.0 percentage point for the production head (project choice, not a PS rule)",
+ "wall_seconds": 288.4,
+ "int8_hybrid_top1_drop_pp": {
+  "onnx_int8": 47.48,
+  "onnx_int8_percentile": 18.77,
+  "onnx_int8_dynamic": 64.17
+ },
+ "int8_passes_policy": {
+  "onnx_int8": false,
+  "onnx_int8_percentile": false,
+  "onnx_int8_dynamic": false
+ }
+}

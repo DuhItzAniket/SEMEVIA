@@ -1,0 +1,63 @@
+{
+ "mode": "hybrid",
+ "backbone": "imagenet_frozen",
+ "population": {
+  "partition": "tune",
+  "count": 815,
+  "crops": "annotation"
+ },
+ "method": "logistic coefficients copied to ONNX MatMul+Add after the unchanged FP32 fusion transform; onnxruntime quantize_dynamic, INT8 weights (MatMulInteger)",
+ "int8_graph_ops": [
+  "Add",
+  "Cast",
+  "DynamicQuantizeLinear",
+  "MatMulInteger",
+  "Mul"
+ ],
+ "fp32_parity_vs_sklearn": {
+  "max_abs_centered_logit_diff": 5.407621213038283e-06,
+  "max_abs_prob_diff": 1.1381657623044106e-06,
+  "passes_atol_1e-4": true,
+  "top1_agreement": 1.0
+ },
+ "accuracy": {
+  "sklearn_fp32": {
+   "tune_top1": 0.649079754601227,
+   "tune_top5": 0.898159509202454
+  },
+  "onnx_fp32": {
+   "tune_top1": 0.649079754601227,
+   "tune_top5": 0.898159509202454
+  },
+  "onnx_int8": {
+   "tune_top1": 0.6466257668711657,
+   "tune_top5": 0.8969325153374234
+  }
+ },
+ "int8_vs_fp32": {
+  "top1_agreement": 0.9914110429447853,
+  "max_abs_centered_logit_diff": 0.20246645864588864
+ },
+ "size_bytes": {
+  "onnx_fp32": 1054647,
+  "onnx_int8": 264976,
+  "sklearn_joblib_whole_head_incl_pca": 3134873
+ },
+ "latency_single_row_head_only": {
+  "onnx_fp32": {
+   "p50_ms": 0.0586500100325793,
+   "p95_ms": 0.12616502644959832,
+   "runs": 200
+  },
+  "onnx_int8": {
+   "p50_ms": 0.062000006437301636,
+   "p95_ms": 0.0767350022215396,
+   "runs": 200
+  },
+  "threads": 2,
+  "hardware": "Intel i5-1135G7 CPU"
+ },
+ "note": "The head is a tiny part of end-to-end time; no meaningful end-to-end speed gain is claimed from it.",
+ "int8_top1_drop_pp": 0.25,
+ "int8_passes_policy": true
+}
