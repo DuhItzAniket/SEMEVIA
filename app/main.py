@@ -98,8 +98,12 @@ def _load_recognition(manifest: dict, status: dict) -> None:
     if cal["head_sha256"] != head_sha:
         STATE["recognition_reason"] = "calibration does not match the production head; recognition disabled"
         return
+    runtime = os.environ.get("SEMEVIA_ENCODER_RUNTIME", rc.get("encoder_runtime", "torch"))
+    if runtime == "onnx_fp32" and (rc["onnx_encoder"] not in by_path or status.get(by_path[rc["onnx_encoder"]]["name"]) != "ok"):
+        runtime = "torch"   # optimized encoder not in this build; fall back to the verified PyTorch encoder
     pred = Predictor({m: ROOT / p for m, p in rc["heads"].items()}, ROOT / rc["backbone"],
-                     int(os.environ.get("SEMEVIA_TORCH_THREADS", CFG["server"]["torch_threads"])))
+                     int(os.environ.get("SEMEVIA_TORCH_THREADS", CFG["server"]["torch_threads"])),
+                     encoder_runtime=runtime, onnx_encoder=ROOT / rc["onnx_encoder"])
     from src.models.inference import CropInput
 
     dummy = np.full((160, 240, 3), 110, np.uint8)
@@ -116,7 +120,8 @@ def _load_recognition(manifest: dict, status: dict) -> None:
     from src.models.backbone import PREPROCESS_VERSION
     from src.passport.references import load_index
 
-    STATE["encoder_version"] = f"effb0_pool1280_{rc['backbone_tag']}|{PREPROCESS_VERSION}|{rc['precision']}"
+    suffix = "" if pred.encoder_runtime == "torch" else f"|{pred.encoder_runtime}"
+    STATE["encoder_version"] = f"effb0_pool1280_{rc['backbone_tag']}|{PREPROCESS_VERSION}|{rc['precision']}" + suffix
     ref = rc.get("reference_index")
     if ref and ref in by_path and status.get(by_path[ref]["name"]) == "ok":
         idx = load_index(ROOT / ref)
@@ -268,7 +273,7 @@ def _run_pipeline(data: bytes, rid: str, mode: str, t_queue: float) -> dict:
             t3 = time.perf_counter()
             cin = CropInput(crop, [float(l), float(t), float(r), float(b)], (img.width, img.height))
             pr = STATE["predictor"]
-            L = pr.learned([cin]) if pr.model is not None else None   # one embedding: head + references
+            L = pr.learned([cin]) if pr.has_encoder else None   # one embedding: head + references
             hcX, hc = pr.classical([cin], want_views=True)
             z = pr.score_features(mode, L, hcX)[0]
             timings["features_and_classifier_ms"] = round((time.perf_counter() - t3) * 1000, 1)
@@ -385,7 +390,8 @@ def readyz():
                 "production_mode": cal["production_mode"] if cal else None,
                 "calibration_kind": cal["kind"] if cal else None,
                 "backbone": CFG["recognition"]["backbone_status"] if STATE["predictor"] else None,
-                "references": STATE["references"] is not None, "references_reason": STATE["references_reason"]}
+                "references": STATE["references"] is not None, "references_reason": STATE["references_reason"],
+                "encoder_runtime": STATE["predictor"].encoder_runtime if STATE["predictor"] else None}
     return JSONResponse(status_code=503, content={"ready": False, "reasons": STATE["reasons"]})
 
 

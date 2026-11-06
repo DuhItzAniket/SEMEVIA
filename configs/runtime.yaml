@@ -29,6 +29,8 @@ recognition:
   default_mode: hybrid
   backbone_tag: imagenet_frozen          # must match the reference index embedding version
   precision: fp32
+  encoder_runtime: torch                 # torch | onnx_fp32 (measured ~2.6x faster encoder; switch at the P5 freeze)
+  onnx_encoder: artifacts/store/release/encoder_fp32.onnx
   reference_index: artifacts/store/release/reference_index.npz
   reference_thumbnails: false            # image rights unresolved: identifiers, labels, similarity only
 server:

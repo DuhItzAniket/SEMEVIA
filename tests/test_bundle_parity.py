@@ -47,3 +47,28 @@ def test_predictor_matches_cached_features_and_logits():
         zc, zo = z - z.mean(1, keepdims=True), z_off - z_off.mean(1, keepdims=True)
         assert np.allclose(zc, zo, atol=1e-3)
         assert (z.argmax(1) == z_off.argmax(1)).all()
+
+
+@pytest.mark.skipif(not (DATA_ROOT.is_dir() and _have_bundle() and (ROOT / RCFG["onnx_encoder"]).exists()),
+                    reason="needs data, bundle and exported ONNX encoder")
+def test_onnx_runtime_matches_torch_on_real_crops():
+    from src.data.crops import annotation_crop, load_rgb
+    from src.data.manifest import read_manifest
+    from src.models.inference import CropInput, Predictor
+
+    idx = json.loads((ROOT / "artifacts/manifests/manifest_index.json").read_text(encoding="utf-8"))
+    recs = read_manifest(ROOT / "artifacts/manifests" / idx["partitions"]["tune"]["file"])[8:16]
+    heads = {m: ROOT / p for m, p in RCFG["heads"].items()}
+    pt = Predictor(heads, ROOT / RCFG["backbone"], 2, "torch")
+    po = Predictor(heads, ROOT / RCFG["backbone"], 2, "onnx_fp32", ROOT / RCFG["onnx_encoder"])
+    crops = []
+    for r in recs:
+        rgb = load_rgb(DATA_ROOT / r.rel_path)
+        crop, box = annotation_crop(rgb, r.box, 0.05)
+        crops.append(CropInput(crop, box, (rgb.shape[1], rgb.shape[0])))
+    assert np.allclose(pt.learned(crops), po.learned(crops), atol=1e-4, rtol=1e-4)
+    for mode in ("deep", "hybrid"):
+        zt, _ = pt.score_crops(mode, crops)
+        zo, _ = po.score_crops(mode, crops)
+        assert (zt.argmax(1) == zo.argmax(1)).all()
+        assert np.allclose(zt - zt.mean(1, keepdims=True), zo - zo.mean(1, keepdims=True), atol=1e-3)

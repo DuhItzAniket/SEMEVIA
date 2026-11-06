@@ -25,7 +25,8 @@ class CropInput:
 
 
 class Predictor:
-    def __init__(self, heads: dict[str, Path], backbone: str | Path, torch_threads: int = 2):
+    def __init__(self, heads: dict[str, Path], backbone: str | Path, torch_threads: int = 2,
+                 encoder_runtime: str = "torch", onnx_encoder: str | Path | None = None):
         import joblib
         import torch
 
@@ -34,10 +35,25 @@ class Predictor:
         unknown = set(self.heads) - set(MODES)
         if unknown:
             raise ValueError(f"unknown modes {unknown}")
+        if encoder_runtime not in ("torch", "onnx_fp32"):
+            raise ValueError("encoder_runtime must be torch or onnx_fp32")
         self.backbone_spec = str(backbone)
+        self.encoder_runtime = encoder_runtime
         self.model = None
+        self.session = None
         if any(m in self.heads for m in ("deep", "hybrid")):
-            self.model = _load_backbone(backbone)
+            if encoder_runtime == "onnx_fp32":
+                import onnxruntime as ort
+
+                so = ort.SessionOptions()
+                so.intra_op_num_threads = torch_threads
+                self.session = ort.InferenceSession(str(onnx_encoder), so, providers=["CPUExecutionProvider"])
+            else:
+                self.model = _load_backbone(backbone)
+
+    @property
+    def has_encoder(self) -> bool:
+        return self.model is not None or self.session is not None
 
     @property
     def modes(self) -> list[str]:
@@ -49,6 +65,8 @@ class Predictor:
         from src.models.backbone import crop_to_tensor, embed_and_logits
 
         x = torch.stack([crop_to_tensor(c.crop) for c in crops])
+        if self.session is not None:
+            return self.session.run(None, {"input": x.numpy()})[0].astype(np.float64)
         f, _ = embed_and_logits(self.model, x)
         return f.numpy().astype(np.float64)
 
