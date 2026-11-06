@@ -36,7 +36,14 @@
   by bundle id / backbone tag and writes `eval_P5_T35.md` (old `eval_P5_TeamID.md` removed). A 6-agent check
   recomputed every number from the JSON: no wrong numbers; wording fixes applied. README updated (status,
   results pointer, team T35). On test, deep is +0.6 pt over hybrid top-1; hybrid stays (fixed on tune).
-* Next: step 8-9 local part (container run, offline check), then team decisions (step 7 publish, hosting).
+* Step 6 commit: 92ffbae (pushed).
+* Step 8 (local) done: `docker compose build` (image 3.05 GB; Docker's disk is on C: on this PC), container ready
+  with all three modes + final calibration; `--network none` container also reaches ready with recognition.
+  Recorded by `scripts/check_container.py` in `reports/container_check.json`. Fix: `promote_bundle.py` stored the
+  Windows path `artifacts\calibration_final.json`, which the Linux container could not open (recognition was
+  silently off); paths are now POSIX, bundle id unchanged.
+* **Waiting on the team:** step 7 (publish weights as a GitHub Release: public), the public host (step 9),
+  the negative suite, viewpoint-label review. Deadline: target 12:00, hard 14:00 on 2026-11-07.
 
 Updated 2026-11-06 at the P0/P1 checkpoint and partial P2. Branch `semevia/implementation`.
 Commit SHA and push status: see the bottom of this file (updated after each push).

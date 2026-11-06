@@ -111,7 +111,9 @@ def main() -> None:
                             "url": None, "optional": True, "source": "scripts/build_references.py (training split only)"})
 
     # --- calibration for the production mode
-    cal_rel = args.calibration or rc["calibration"]
+    # Stored paths are read inside the Linux container, so always record them with forward slashes
+    # (a Windows shell passes artifacts\calibration_final.json).
+    cal_rel = Path(args.calibration or rc["calibration"]).as_posix()
     cal = json.loads((ROOT / cal_rel).read_text(encoding="utf-8"))
     if cal.get("backbone") != tag:
         raise SystemExit(f"calibration {cal_rel} was made for backbone {cal.get('backbone')}, not {tag}")
