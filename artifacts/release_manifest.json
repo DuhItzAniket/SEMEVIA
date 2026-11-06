@@ -1,14 +1,63 @@
 {
-  "bundle_id": "release_p1_detection_only",
-  "note": "P1 bundle: generic vehicle detector only. No fine-grained classifier is included yet.",
-  "assets": [
-    {
-      "name": "yolo11n.pt",
-      "path": "artifacts/store/release/yolo11n.pt",
-      "sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
-      "bytes": 5613764,
-      "url": "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt",
-      "license": "AGPL-3.0 (Ultralytics); COCO-pretrained weights used unmodified"
-    }
-  ]
+ "bundle_id": "dev_imagenet_frozen_097c99803f",
+ "note": "Development bundle: YOLO11n detector (final) + frozen ImageNet EfficientNet-B0 + classical/deep/hybrid heads + development calibration. Not the fine-tuned release.",
+ "assets": [
+  {
+   "name": "yolo11n.pt",
+   "path": "artifacts/store/release/yolo11n.pt",
+   "sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+   "bytes": 5613764,
+   "url": "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt",
+   "license": "AGPL-3.0 (Ultralytics); COCO-pretrained weights used unmodified"
+  },
+  {
+   "name": "head_classical.joblib",
+   "path": "artifacts/store/release/heads/classical.joblib",
+   "sha256": "5e2999cdaa0cf8d4ab438971f0f9a73eefcb56d87784bf69a26a349fcdf0e3de",
+   "bytes": 1471049,
+   "url": null,
+   "optional": true,
+   "source": "heads\\classical_hc_v1_C0.005.joblib (fit_heads.py, backbone imagenet_frozen)",
+   "public_storage": "not yet published; clean builds run detection-only until a public URL is added"
+  },
+  {
+   "name": "head_deep.joblib",
+   "path": "artifacts/store/release/heads/deep.joblib",
+   "sha256": "65fb68c6d42106ac69cafa81cc0927213448eacf63da6d657bafe3474eccf4c9",
+   "bytes": 2042361,
+   "url": null,
+   "optional": true,
+   "source": "heads\\deep_imagenet_frozen_C0.1.joblib (fit_heads.py, backbone imagenet_frozen)",
+   "public_storage": "not yet published; clean builds run detection-only until a public URL is added"
+  },
+  {
+   "name": "head_hybrid.joblib",
+   "path": "artifacts/store/release/heads/hybrid.joblib",
+   "sha256": "4498322be1f3819376dfc157e8d7745e1c0b428f52e32d9efd4e76f0ea4be78d",
+   "bytes": 3134873,
+   "url": null,
+   "optional": true,
+   "source": "heads\\hybrid_imagenet_frozen_C0.1.joblib (fit_heads.py, backbone imagenet_frozen)",
+   "public_storage": "not yet published; clean builds run detection-only until a public URL is added"
+  },
+  {
+   "name": "efficientnet_b0_rwightman-7f5810bc.pth",
+   "path": "artifacts/store/release/efficientnet_b0_rwightman-7f5810bc.pth",
+   "sha256": "7f5810bc96def8f7552d5b7e68d53c4786f81167d28291b21c0d90e1fca14934",
+   "bytes": 21444401,
+   "url": "https://download.pytorch.org/models/efficientnet_b0_rwightman-7f5810bc.pth",
+   "optional": true,
+   "license": "torchvision ImageNet-1K weights (BSD-3 code licence)",
+   "status": "development backbone: frozen ImageNet, not fine-tuned"
+  },
+  {
+   "name": "development_calibration.json",
+   "path": "artifacts/development_calibration.json",
+   "sha256": "42e5f9d06993c1558d0a464322a70794b6b647a3af70f607f2a9889164757443",
+   "bytes": 1387,
+   "url": null,
+   "optional": true,
+   "in_git": true
+  }
+ ]
 }

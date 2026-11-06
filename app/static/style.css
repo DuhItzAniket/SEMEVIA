@@ -50,3 +50,31 @@ button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px 
 .pending p { color: var(--muted); }
 pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .8rem; max-height: 320px; overflow: auto; }
 .foot { color: var(--muted); font-size: .85rem; padding-bottom: 24px; }
+.muted { color: var(--muted); }
+.small { font-size: .9rem; }
+.small-btn { min-height: 36px; padding: 0 14px; font-size: .9rem; margin-top: 8px; }
+.modes { border: 1px solid var(--line); border-radius: 8px; margin: 12px 0 0; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.modes label { min-height: 32px; display: inline-flex; align-items: center; gap: 6px; }
+.top5 { padding-left: 1.4em; margin: 8px 0; }
+.top5 li { padding: 4px 0; border-bottom: 1px solid var(--line); }
+.top5 .score { float: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pp-state { font-size: 1.1rem; font-weight: 600; }
+.views { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.views figure { margin: 0; }
+.views img { width: 100%; border-radius: 6px; border: 1px solid var(--line); background: #000; }
+.views figcaption { font-size: .85rem; color: var(--muted); }
+.ch-grid-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 640px) { .ch-grid-wrap { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); } }
+.ch-view { position: relative; line-height: 0; }
+.ch-view img { width: 100%; border-radius: 6px; }
+.ch-overlay { position: absolute; inset: 0; pointer-events: none; }
+.ch-cell { position: absolute; border: 1px dashed rgba(255,255,255,.6); }
+.ch-cell.sel { border: 3px solid var(--box); }
+.ch-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.ch-buttons button { min-height: 52px; padding: 4px; font-size: .8rem; line-height: 1.2; background: transparent; color: var(--text); border-color: var(--line); }
+.ch-buttons button[aria-pressed=true] { border: 3px solid var(--box); }
+.ch-buttons .pos { color: var(--ok); } .ch-buttons .neg { color: var(--err); }
+.ch-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: .9rem; }
+.ch-table th, .ch-table td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.ch-table caption { text-align: left; }
+a { color: var(--accent); }

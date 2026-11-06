@@ -28,16 +28,33 @@ def load_manifest(path: Path = MANIFEST) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def verify(manifest: dict | None = None) -> list[str]:
-    """Return a list of problems (empty when every asset exists with the expected checksum)."""
+def asset_status(manifest: dict | None = None) -> dict[str, str]:
+    """name -> 'ok' | 'missing' | 'checksum_mismatch'."""
     manifest = manifest or load_manifest()
-    problems = []
+    out = {}
     for a in manifest["assets"]:
         p = ROOT / a["path"]
         if not p.is_file():
-            problems.append(f"missing asset {a['name']} at {a['path']}")
+            out[a["name"]] = "missing"
         elif sha256_file(p) != a["sha256"]:
+            out[a["name"]] = "checksum_mismatch"
+        else:
+            out[a["name"]] = "ok"
+    return out
+
+
+def verify(manifest: dict | None = None) -> list[str]:
+    """Problems that must block readiness: any required asset missing, and any asset (required
+    or optional) present with a wrong checksum. Missing optional assets only disable features."""
+    manifest = manifest or load_manifest()
+    status = asset_status(manifest)
+    problems = []
+    for a in manifest["assets"]:
+        s = status[a["name"]]
+        if s == "checksum_mismatch":
             problems.append(f"checksum mismatch for {a['name']}")
+        elif s == "missing" and not a.get("optional", False):
+            problems.append(f"missing asset {a['name']} at {a['path']}")
     return problems
 
 
@@ -49,6 +66,9 @@ def fetch(manifest: dict | None = None) -> None:
             print(f"ok (present) {a['name']}")
             continue
         if not a.get("url"):
+            if a.get("optional", False):
+                print(f"skip (optional, no public url) {a['name']}")
+                continue
             raise SystemExit(f"asset {a['name']} missing locally and has no public url")
         p.parent.mkdir(parents=True, exist_ok=True)
         tmp = p.with_suffix(p.suffix + ".part")

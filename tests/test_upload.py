@@ -38,7 +38,9 @@ def _post(client, data: bytes, name="x.jpg"):
 def test_health_and_ready(client):
     assert client.get("/healthz").json()["status"] == "alive"
     r = client.get("/readyz").json()
-    assert r["ready"] and r["classifier"] is None
+    assert r["ready"] and isinstance(r["recognition"], bool)
+    if not r["recognition"]:
+        assert r["modes"] == [] and r["recognition_reason"]
 
 
 @pytest.mark.skipif(not (DATA_ROOT / "cars_test").is_dir(), reason="dataset not available")
@@ -52,9 +54,10 @@ def test_vehicle_image_is_detected(client):
     assert d["state"] == "detected" and d["detector_score"] >= d["threshold"]
     l, t, rr, b = d["selected_box"]
     assert 0 <= l < rr <= j["input"]["width"] and 0 <= t < b <= j["input"]["height"]
-    # No fabricated fine-grained output in the P1 build
-    assert j["prediction"]["available"] is False and j["prediction"]["top5"] == []
-    assert j["passport"]["accepted_identity"] is None
+    if not j["model_status"]["recognition"]:
+        # Without the recognition bundle there is no fabricated fine-grained output
+        assert j["prediction"]["available"] is False and j["prediction"]["top5"] == []
+        assert j["passport"]["accepted_identity"] is None
     img = client.get(j["processing"]["images"]["crop.jpg"])
     assert img.status_code == 200 and img.headers["content-type"] == "image/jpeg"
 
@@ -85,7 +88,7 @@ def test_blank_image_no_vehicle(client):
     j = r.json()
     assert r.status_code == 200 and j["status"] == "no_vehicle"
     assert j["detection"]["selected_box"] is None
-    assert j["passport"]["decision_state"] == "detection_failed"
+    assert j["passport"]["decision_state"] in ("detection_failed", "unavailable")
     assert j["prediction"]["top5"] == []
 
 

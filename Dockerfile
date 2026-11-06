@@ -22,6 +22,7 @@ COPY src ./src
 COPY app ./app
 COPY configs ./configs
 COPY artifacts ./artifacts
+COPY reports ./reports
 # Fetch any release asset not present in the build context from its public URL and verify SHA256.
 RUN python -m src.release fetch && python -m src.release verify
 

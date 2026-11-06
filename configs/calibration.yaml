@@ -1,0 +1,5 @@
+# Passport calibration settings, fixed before viewing calibration results.
+backbone: imagenet_frozen        # development; becomes the fine-tuned checkpoint tag later
+alpha: 0.10                      # nominal marginal coverage target 90% (population-level)
+reject_grid: [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5]
+known_retention_target: 0.90     # keep at least 90% of known tuning inputs

@@ -17,6 +17,16 @@ target_policy:
   threshold: 0.25              # development value; tuning-selected in P3
 crop:
   margin: 0.05                 # development value; 0 vs 0.05 compared on tuning data in P3
+recognition:
+  # Optional assets: when any is missing the app serves detection only and says so.
+  backbone: artifacts/store/release/efficientnet_b0_rwightman-7f5810bc.pth
+  backbone_status: "development: frozen ImageNet EfficientNet-B0 (not fine-tuned)"
+  heads:
+    classical: artifacts/store/release/heads/classical.joblib
+    deep: artifacts/store/release/heads/deep.joblib
+    hybrid: artifacts/store/release/heads/hybrid.joblib
+  calibration: artifacts/development_calibration.json
+  default_mode: hybrid
 server:
   torch_threads: 2
   max_active_jobs: 1
