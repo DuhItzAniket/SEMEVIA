@@ -1,0 +1,45 @@
+# Third training recipe (r3): r2's full-network fine-tuning at a higher input resolution (320 px instead of 224).
+# Why: fine-grained cues (badges, grilles, lamp shapes) are small; r2's failure cases include near-identical sibling
+# classes, and higher input resolution is the standard lever for fine-grained recognition. Only input_size (and the
+# run name / time cap) differ from configs/train_v2.yaml. The release rule was fixed before training
+# (NEXT.md, "Iteration r3 decision record").
+run_name: effb0_r3
+backbone: efficientnet_b0
+weights: IMAGENET1K_V1
+num_classes: 196
+input_size: 320
+crop:
+  source: annotation_box_with_jitter
+  margin: 0.05
+  jitter: 0.08
+normalize:
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+augment:
+  hflip: 0.5
+  brightness: 0.2
+  contrast: 0.2
+  blur_p: 0.1
+stages:
+  - name: head
+    trainable: [classifier]
+    epochs: 2
+    lr: 0.001
+  - name: full_finetune               # all pretrained blocks unfrozen (includes features.7 and features.8)
+    trainable: [classifier, features]
+    epochs: 24
+    lr_head: 0.002
+    lr_backbone: 0.0005
+    schedule: cosine
+optimizer: adamw
+weight_decay: 0.0001
+label_smoothing: 0.1                 # training loss only; evaluation uses plain cross-entropy
+batch_size: 32
+early_stopping_patience: 6
+num_workers: 4
+seed: 20261107
+amp: true
+checkpoint:
+  dir_env: SEMEVIA_ARTIFACT_STORE
+  save_every_epoch: [last, best]
+  time_cap_minutes: 150

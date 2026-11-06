@@ -1,5 +1,14 @@
 # NEXT: SEMEVIA handoff
 
+## Iteration r3 decision record (written before r3 training starts; no r3 result exists)
+* r3 = `configs/train_v3.yaml`: r2's recipe at 320 px input instead of 224 (same seed and data).
+* **Release rule, fixed now:** r3 replaces r2 only if, on the **tune split**, its hybrid end-to-end top-1
+  (`scripts/evaluate.py --partition tune`, same protocol) beats r2's 731/815 by **at least 1.0 percentage point
+  (>= 740/815)** and every pipeline check passes (tests, verify, container). Hybrid stays the production mode.
+* If the rule is not met: r2 stays the release, r3 is **not** evaluated on the test split, and its tune result is
+  reported as a negative result. If met: r3 is frozen (tune negatives, as r2), then evaluated once on test, and
+  all three iterations are reported. Decision taken by the team (team Hypermetropia) on 2026-11-07.
+
 ## Iteration r2 decision record (written before any r2 test result exists)
 * Decided before r2's test run (this commit precedes it): iteration r2 (`configs/train_v2.yaml`, run effb0_r2)
   **replaces r1 as the release whatever its test result**, as long as its own pipeline checks pass. Its heads,
