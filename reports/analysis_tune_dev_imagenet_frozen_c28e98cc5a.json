@@ -1,0 +1,177 @@
+{
+ "partition": "tune",
+ "bundle_id": "dev_imagenet_frozen_c28e98cc5a",
+ "predictions_file": "e2e_tune_clean_0f54c77a26_dev_imagenet_frozen_c28e98cc5a.jsonl",
+ "production_mode": "hybrid",
+ "calibration_kind": "development",
+ "failures": [
+  {
+   "rule": "localisation failure (no box, or lowest IoU below 0.5)",
+   "image_key": "train/01549.jpg",
+   "true": "Ford GT Coupe 2006",
+   "selected_box": null,
+   "annotation_box": [
+    0.0,
+    2.0,
+    799.0,
+    600.0
+   ],
+   "iou": null,
+   "detector_score": null,
+   "annotation_crop_top5": [
+    [
+     "Audi R8 Coupe 2012",
+     0.5689
+    ],
+    [
+     "Bugatti Veyron 16.4 Convertible 2009",
+     0.3153
+    ],
+    [
+     "Chevrolet Corvette Ron Fellows Edition Z06 2007",
+     0.0856
+    ],
+    [
+     "Ford GT Coupe 2006",
+     0.0101
+    ],
+    [
+     "Lamborghini Reventon Coupe 2008",
+     0.0084
+    ]
+   ],
+   "annotation_crop_correct": false,
+   "hypothesis": "HYPOTHESIS: classifier confusion persists on the annotation crop"
+  },
+  {
+   "rule": "close-category error (same make), highest confidence",
+   "image_key": "train/07109.jpg",
+   "true": "Bentley Arnage Sedan 2009",
+   "selected_box": [
+    34.98664855957031,
+    93.29676818847656,
+    778.9224853515625,
+    534.2674560546875
+   ],
+   "annotation_box": [
+    30.0,
+    92.0,
+    774.0,
+    531.0
+   ],
+   "iou": 0.9766521701550306,
+   "detector_score": 0.8988033533096313,
+   "runtime_top5": [
+    [
+     "Bentley Mulsanne Sedan 2011",
+     0.9931
+    ],
+    [
+     "Bentley Arnage Sedan 2009",
+     0.005
+    ],
+    [
+     "Chrysler 300 SRT-8 2010",
+     0.0015
+    ],
+    [
+     "BMW X5 SUV 2007",
+     0.0
+    ],
+    [
+     "Bentley Continental GT Coupe 2007",
+     0.0
+    ]
+   ],
+   "annotation_crop_top5": [
+    [
+     "Bentley Mulsanne Sedan 2011",
+     0.9934
+    ],
+    [
+     "Bentley Arnage Sedan 2009",
+     0.0051
+    ],
+    [
+     "Chrysler 300 SRT-8 2010",
+     0.0014
+    ],
+    [
+     "BMW X5 SUV 2007",
+     0.0
+    ],
+    [
+     "MINI Cooper Roadster Convertible 2012",
+     0.0
+    ]
+   ],
+   "annotation_crop_correct": false,
+   "hypothesis": "HYPOTHESIS: classifier confusion persists on the annotation crop"
+  },
+  {
+   "rule": "confident cross-make error, highest confidence",
+   "image_key": "train/02911.jpg",
+   "true": "Acura Integra Type R 2001",
+   "selected_box": [
+    40.884246826171875,
+    236.0531463623047,
+    1506.119384765625,
+    929.1353149414062
+   ],
+   "annotation_box": [
+    63.0,
+    239.0,
+    1508.0,
+    943.0
+   ],
+   "iou": 0.9605414258237204,
+   "detector_score": 0.8830007910728455,
+   "runtime_top5": [
+    [
+     "Chevrolet Monte Carlo Coupe 2007",
+     0.9605
+    ],
+    [
+     "Chrysler Sebring Convertible 2010",
+     0.0141
+    ],
+    [
+     "Mitsubishi Lancer Sedan 2012",
+     0.004
+    ],
+    [
+     "Acura Integra Type R 2001",
+     0.0017
+    ],
+    [
+     "Audi S4 Sedan 2012",
+     0.0017
+    ]
+   ],
+   "annotation_crop_top5": [
+    [
+     "Chevrolet Monte Carlo Coupe 2007",
+     0.9768
+    ],
+    [
+     "Chrysler Sebring Convertible 2010",
+     0.0048
+    ],
+    [
+     "Mitsubishi Lancer Sedan 2012",
+     0.0044
+    ],
+    [
+     "Acura Integra Type R 2001",
+     0.0017
+    ],
+    [
+     "Hyundai Genesis Sedan 2012",
+     0.0015
+    ]
+   ],
+   "annotation_crop_correct": false,
+   "hypothesis": "HYPOTHESIS: classifier confusion persists on the annotation crop"
+  }
+ ]
+}

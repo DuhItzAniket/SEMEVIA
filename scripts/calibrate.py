@@ -5,7 +5,10 @@ Usage:
       Uses ONLY tuning-split predictions (annotation crops) and writes
       artifacts/development_calibration.json, labelled kind="development". The untouched
       calibration partition is not read.
-  (final mode, P6: computed from the calibration partition with the frozen pipeline; not yet implemented)
+  python scripts/calibrate.py --final
+      After scripts/freeze.py and `scripts/evaluate.py --partition calibration --resume`: computes the
+      conformal quantile from EVERY untouched calibration-partition input run through the frozen pipeline
+      (missed detections use the frozen uniform fallback score) and writes artifacts/calibration_final.json.
 """
 from __future__ import annotations
 
@@ -37,11 +40,18 @@ def fit_temperature(z: np.ndarray, y: np.ndarray) -> float:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--development", action="store_true", required=True)
+    g = ap.add_mutually_exclusive_group(required=True)
+    g.add_argument("--development", action="store_true")
+    g.add_argument("--final", action="store_true")
     ap.add_argument("--mode", default="hybrid", choices=["deep", "hybrid"])
     ap.add_argument("--config", default="configs/calibration.yaml")
+    ap.add_argument("--backbone", default=None, help="override the backbone tag (development mode)")
     args = ap.parse_args()
+    if args.final:
+        return final_calibration()
     cfg = yaml.safe_load((ROOT / args.config).read_text(encoding="utf-8"))
+    if args.backbone:
+        cfg["backbone"] = args.backbone
     heads_report = json.loads((ROOT / "reports" / f"heads_tune_{cfg['backbone']}.json").read_text(encoding="utf-8"))
     art = heads_report["artifacts"][args.mode]
     pred = store_dir() / "predictions" / f"tune_{args.mode}_{cfg['backbone']}_annotation_{art['sha256'][:12]}.npz"
@@ -81,6 +91,54 @@ def main() -> None:
     print(json.dumps({k: out[k] for k in ("bundle_id", "temperature", "k", "q", "quantile_mode")}, indent=1))
     print("reject", out["reject"]["threshold"], "retention", round(out["reject"]["tune_known_retention"], 3))
     print("diagnostics", json.dumps(out["diagnostics_tune"]))
+
+
+def final_calibration() -> None:
+    from src.data.manifest import read_manifest
+    from src.passport.calibration import final_conformal_scores, model_fingerprint
+    from src.release import load_manifest, sha256_file, verify
+
+    manifest = load_manifest()
+    if verify(manifest):
+        raise SystemExit("release assets do not verify")
+    fz_path = ROOT / "artifacts/production_freeze.json"
+    if not fz_path.exists():
+        raise SystemExit("run scripts/freeze.py first (P5 freeze)")
+    fz = json.loads(fz_path.read_text(encoding="utf-8"))
+    if model_fingerprint(manifest, fz["production_mode"], fz["encoder_runtime"]) != fz["model_fingerprint"]:
+        raise SystemExit("the current bundle's model files differ from the frozen pipeline; re-freeze")
+    idx = json.loads((ROOT / "artifacts/manifests/manifest_index.json").read_text(encoding="utf-8"))
+    part = idx["partitions"]["calibration"]
+    jl = store_dir() / "predictions" / f"e2e_calibration_clean_{part['sha256'][:10]}_{manifest['bundle_id']}.jsonl"
+    if not jl.exists():
+        raise SystemExit(f"missing {jl.name}; run scripts/evaluate.py --partition calibration --resume")
+    rows = [json.loads(line) for line in jl.read_text(encoding="utf-8").splitlines()]
+    keys = {r.image_key for r in read_manifest(ROOT / "artifacts/manifests" / part["file"])}
+    if len(rows) != len(keys) or {r["image_key"] for r in rows} != keys:
+        raise SystemExit("calibration predictions are incomplete or contain other keys")
+    zkey = f"z_{fz['production_mode']}"
+    scores, failures = final_conformal_scores(rows, zkey, fz["temperature"])
+    cq = calibrate(scores, fz["alpha"])
+    out = {
+        "kind": "final", "warning": None, "production_mode": fz["production_mode"], "backbone": fz["backbone"],
+        "head_sha256": fz["head_sha256"], "model_fingerprint": fz["model_fingerprint"],
+        "label_order": fz["label_order"], "temperature": fz["temperature"], **cq.to_dict(),
+        "score_convention": "1 - p_true with p = softmax(z / T); no-detection inputs use the uniform fallback 1 - 1/196",
+        "reject": {"rule": "max calibrated probability < threshold", "threshold": fz["reject"]["threshold"],
+                   "selection": fz["reject"]["rule"], "negatives_used": fz["reject"]["negatives_used"]},
+        "calibration_population": {"partition": "calibration", "count": len(rows), "manifest_sha256": part["sha256"],
+                                   "detection_failures_with_fallback_score": failures,
+                                   "predictions_file": jl.name, "predictions_sha256": sha256_file(jl)},
+        "freeze_sha256": sha256_file(fz_path),
+        "interpretation": ("Nominal marginal coverage 1 - alpha for supported-category inputs under exchangeability with the "
+                           "calibration partition. Not a per-image probability; does not cover unsupported vehicles or "
+                           "perturbed inputs."),
+    }
+    out["bundle_id"] = "cal_" + hashlib.sha256(json.dumps(out, sort_keys=True).encode()).hexdigest()[:12]
+    path = ROOT / "artifacts" / "calibration_final.json"
+    path.write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8", newline="\n")
+    print(json.dumps({k: out[k] for k in ("bundle_id", "temperature", "n", "k", "q", "quantile_mode")}, indent=1),
+          "failures:", failures)
 
 
 if __name__ == "__main__":

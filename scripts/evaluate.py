@@ -68,16 +68,26 @@ def main() -> None:
     if args.subset:
         args.partition = args.subset.split("_", 1)[1]
     rt = yaml.safe_load((ROOT / "configs/runtime.yaml").read_text(encoding="utf-8"))
-    rc = rt["recognition"]
+    from src.release import recognition_config
+
+    rc = recognition_config()
     cal = json.loads((ROOT / rc["calibration"]).read_text(encoding="utf-8"))
-    if args.partition == "test" and not (args.confirm_frozen and cal["kind"] == "final"):
-        raise SystemExit("refusing to evaluate the official test set before the P5 freeze and final calibration")
-    if args.partition == "calibration" and cal["kind"] != "final":
-        raise SystemExit("the calibration partition is reserved for the final conformal quantile")
     manifest = load_manifest()
     problems = verify(manifest)
     if problems:
         raise SystemExit("; ".join(problems))
+    if args.partition in ("calibration", "test"):
+        from src.passport.calibration import model_fingerprint
+
+        fz_path = ROOT / "artifacts/production_freeze.json"
+        if not fz_path.exists():
+            raise SystemExit(f"the {args.partition} partition is locked until the P5 freeze (scripts/freeze.py)")
+        fz = json.loads(fz_path.read_text(encoding="utf-8"))
+        if model_fingerprint(manifest, fz["production_mode"], fz["encoder_runtime"]) != fz["model_fingerprint"]:
+            raise SystemExit("current model files differ from the frozen pipeline; refusing to touch held-out data")
+        if args.partition == "test" and not (args.confirm_frozen and cal["kind"] == "final"
+                                             and cal.get("model_fingerprint") == fz["model_fingerprint"]):
+            raise SystemExit("refusing the official test set: needs --confirm-frozen and final calibration for the frozen pipeline")
     import torch
 
     from src.models.detector import VehicleDetector
