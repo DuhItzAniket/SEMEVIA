@@ -22,7 +22,14 @@
   reports hard-coded the old laptop CPU name (now `src/evaluation/hardware.py`); the detector now runs on
   CPU explicitly (Ultralytics would pick the GPU here, so evaluation would not match the CPU deployment).
 * Step 4 (negative suite): skipped, not collected by the team yet.
-* Next: step 5, P5 freeze (tune evaluation, freeze, calibration evaluation, final calibration).
+* Step 3 commit: 8ce22e7 (pushed).
+* Step 5 done: tune evaluation (`reports/e2e_tune_ft_ckpt_2339418979e1_7aa5332188.json`), freeze
+  (`artifacts/production_freeze.json`, hybrid, reject threshold from known tune images only because no
+  negative suite exists), calibration evaluation, final conformal calibration
+  (`artifacts/calibration_final.json`, 5 detection failures given the fallback score), bundle re-promoted
+  as `ft_ckpt_2339418979e1_0920511710`; verify passes; pytest 91 passed, 1 skipped.
+  **Frozen from here:** detector, backbone, heads, crop, features, runtime, thresholds.
+* Next: step 6, official test evaluation and stress test (P6), then the eval file.
 
 Updated 2026-11-06 at the P0/P1 checkpoint and partial P2. Branch `semevia/implementation`.
 Commit SHA and push status: see the bottom of this file (updated after each push).

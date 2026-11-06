@@ -1,0 +1,76 @@
+{
+ "kind": "frozen",
+ "created_at": "2026-11-06T20:24:26.249129+00:00",
+ "bundle_id_at_freeze": "ft_ckpt_2339418979e1_7aa5332188",
+ "model_fingerprint": "155e19183d98652538acc6fabb3f3f524f83c1d53ae67d4120948aaa2c1244dc",
+ "production_mode": "hybrid",
+ "backbone": "ckpt_2339418979e1",
+ "encoder_runtime": "torch",
+ "precision": "fp32",
+ "head_sha256": "0c86cd93a6ed802bc2eadc130a5206a1257e1360bd39d87110e768abc78e68a8",
+ "detector_sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+ "detector_threshold": 0.25,
+ "crop_margin": 0.05,
+ "temperature": 0.626860538184705,
+ "alpha": 0.1,
+ "temperature_fit": {
+  "population": "tune matched-primary (runtime box IoU >= 0.5)",
+  "n": 809,
+  "excluded": 6,
+  "nll_raw": 1.087430205688618,
+  "nll_T": 0.8951843574333302,
+  "ece_raw": 0.2116603439541325,
+  "ece_T": 0.03414005910113542,
+  "note": "in-sample on the tune split"
+ },
+ "reject": {
+  "rule_name": "max calibrated probability < threshold",
+  "threshold": 0.3,
+  "feasible": true,
+  "table": [
+   {
+    "threshold": 0.05,
+    "known_retention": 0.9950920245398773
+   },
+   {
+    "threshold": 0.1,
+    "known_retention": 0.9938650306748467
+   },
+   {
+    "threshold": 0.15,
+    "known_retention": 0.9914110429447853
+   },
+   {
+    "threshold": 0.2,
+    "known_retention": 0.9815950920245399
+   },
+   {
+    "threshold": 0.25,
+    "known_retention": 0.9595092024539877
+   },
+   {
+    "threshold": 0.3,
+    "known_retention": 0.9239263803680982
+   },
+   {
+    "threshold": 0.4,
+    "known_retention": 0.8576687116564418
+   },
+   {
+    "threshold": 0.5,
+    "known_retention": 0.7828220858895706
+   }
+  ],
+  "negatives_used": false,
+  "rule": "no negative tuning set: largest threshold meeting the known-retention target",
+  "known_retention_target": 0.9
+ },
+ "tune_predictions": {
+  "file": "e2e_tune_clean_0f54c77a26_ft_ckpt_2339418979e1_7aa5332188.jsonl",
+  "sha256": "c17dcb576947b63e9dae33b24b1529e6b9a4d55dd6551a32fd89492ca85d722b",
+  "count": 815
+ },
+ "label_order": "class_id 0..195 (original_class_id - 1)",
+ "metadata_sha256": "2f0280b36e04233f1e303f91d81e32ba0b7d2e35710e695c728e934fb4b428c9",
+ "features_config_sha256": "ac990825061c510699b47f8a21f5fc6ba9cf6c859303a7242ebf68162237ad2f"
+}

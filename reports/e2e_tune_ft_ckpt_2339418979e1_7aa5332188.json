@@ -1,0 +1,419 @@
+{
+ "population": {
+  "partition": "tune",
+  "count": 815,
+  "manifest_sha256": "0f54c77a26c98e021bf8472511f7db67e84e2cbc0258caa3048298efb0da79e3"
+ },
+ "bundle_id": "ft_ckpt_2339418979e1_7aa5332188",
+ "predictions_file": "e2e_tune_clean_0f54c77a26_ft_ckpt_2339418979e1_7aa5332188.jsonl",
+ "definitions": {
+  "end_to_end_topk": "runtime-selected box IoU >= 0.5 with the annotation AND true class in top-k; misses count as failures; denominator = all images",
+  "predicted_crop_topk": "category-only accuracy on images where the path produced a crop (may be a wrong target)",
+  "matched_primary_topk": "category accuracy only where the runtime box has IoU >= 0.5",
+  "fine_grained_ap": "COCO AP over 196 categories, max one prediction per image (top-1 class), score = localisation score x top-1 probability (ranking score, not a probability)"
+ },
+ "modes": {
+  "classical": {
+   "end_to_end_top1": {
+    "numerator": 53,
+    "denominator": 815,
+    "value": 0.06503067484662577
+   },
+   "end_to_end_top5": {
+    "numerator": 106,
+    "denominator": 815,
+    "value": 0.13006134969325153
+   },
+   "predicted_crop_top1": {
+    "numerator": 54,
+    "denominator": 634,
+    "value": 0.08517350157728706
+   },
+   "predicted_crop_top5": {
+    "numerator": 109,
+    "denominator": 634,
+    "value": 0.1719242902208202
+   },
+   "matched_primary_top1": {
+    "numerator": 53,
+    "denominator": 507,
+    "value": 0.10453648915187377
+   },
+   "matched_primary_top5": {
+    "numerator": 106,
+    "denominator": 507,
+    "value": 0.20907297830374755
+   },
+   "localization": {
+    "population_count": 815,
+    "mean_iou_valid_selected": {
+     "numerator": 422.3268350813714,
+     "denominator": 634,
+     "value": 0.6661306547024786
+    },
+    "mean_iou_zero_for_failures": {
+     "numerator": 422.3268350813714,
+     "denominator": 815,
+     "value": 0.5181924356826644
+    },
+    "primary_recall_at_iou": {
+     "numerator": 507,
+     "denominator": 815,
+     "value": 0.6220858895705521
+    },
+    "iou_threshold": 0.5,
+    "missing": 181,
+    "invalid": 0,
+    "wrong_target_below_thr": 127
+   },
+   "localization_source": "contour proposal",
+   "fine_grained_ap": {
+    "AP50_95": 0.03617617081448823,
+    "AP50": 0.04902695147142456,
+    "num_predictions": 634,
+    "num_ground_truth": 815,
+    "settings": {
+     "iouThrs": "0.50:0.05:0.95",
+     "recThrs": 101,
+     "maxDets": [
+      1,
+      10,
+      100
+     ],
+     "areaRng": "all"
+    },
+    "evaluator": "pycocotools COCOeval bbox"
+   }
+  },
+  "deep": {
+   "end_to_end_top1": {
+    "numerator": 607,
+    "denominator": 815,
+    "value": 0.7447852760736197
+   },
+   "end_to_end_top5": {
+    "numerator": 754,
+    "denominator": 815,
+    "value": 0.9251533742331288
+   },
+   "predicted_crop_top1": {
+    "numerator": 607,
+    "denominator": 811,
+    "value": 0.7484586929716399
+   },
+   "predicted_crop_top5": {
+    "numerator": 754,
+    "denominator": 811,
+    "value": 0.9297163995067818
+   },
+   "matched_primary_top1": {
+    "numerator": 607,
+    "denominator": 809,
+    "value": 0.7503090234857849
+   },
+   "matched_primary_top5": {
+    "numerator": 754,
+    "denominator": 809,
+    "value": 0.9320148331273177
+   },
+   "localization": {
+    "population_count": 815,
+    "mean_iou_valid_selected": {
+     "numerator": 765.2910090099704,
+     "denominator": 811,
+     "value": 0.943638728742257
+    },
+    "mean_iou_zero_for_failures": {
+     "numerator": 765.2910090099704,
+     "denominator": 815,
+     "value": 0.9390073730183686
+    },
+    "primary_recall_at_iou": {
+     "numerator": 809,
+     "denominator": 815,
+     "value": 0.992638036809816
+    },
+    "iou_threshold": 0.5,
+    "missing": 4,
+    "invalid": 0,
+    "wrong_target_below_thr": 2
+   },
+   "localization_source": "YOLO11n primary target",
+   "fine_grained_ap": {
+    "AP50_95": 0.6716621443485457,
+    "AP50": 0.7180985336142944,
+    "num_predictions": 811,
+    "num_ground_truth": 815,
+    "settings": {
+     "iouThrs": "0.50:0.05:0.95",
+     "recThrs": 101,
+     "maxDets": [
+      1,
+      10,
+      100
+     ],
+     "areaRng": "all"
+    },
+    "evaluator": "pycocotools COCOeval bbox"
+   }
+  },
+  "hybrid": {
+   "end_to_end_top1": {
+    "numerator": 616,
+    "denominator": 815,
+    "value": 0.7558282208588957
+   },
+   "end_to_end_top5": {
+    "numerator": 758,
+    "denominator": 815,
+    "value": 0.9300613496932515
+   },
+   "predicted_crop_top1": {
+    "numerator": 616,
+    "denominator": 811,
+    "value": 0.7595561035758323
+   },
+   "predicted_crop_top5": {
+    "numerator": 759,
+    "denominator": 811,
+    "value": 0.935881627620222
+   },
+   "matched_primary_top1": {
+    "numerator": 616,
+    "denominator": 809,
+    "value": 0.761433868974042
+   },
+   "matched_primary_top5": {
+    "numerator": 758,
+    "denominator": 809,
+    "value": 0.9369592088998764
+   },
+   "localization": {
+    "population_count": 815,
+    "mean_iou_valid_selected": {
+     "numerator": 765.2910090099704,
+     "denominator": 811,
+     "value": 0.943638728742257
+    },
+    "mean_iou_zero_for_failures": {
+     "numerator": 765.2910090099704,
+     "denominator": 815,
+     "value": 0.9390073730183686
+    },
+    "primary_recall_at_iou": {
+     "numerator": 809,
+     "denominator": 815,
+     "value": 0.992638036809816
+    },
+    "iou_threshold": 0.5,
+    "missing": 4,
+    "invalid": 0,
+    "wrong_target_below_thr": 2
+   },
+   "localization_source": "YOLO11n primary target",
+   "fine_grained_ap": {
+    "AP50_95": 0.6814690197153827,
+    "AP50": 0.7281197981314167,
+    "num_predictions": 811,
+    "num_ground_truth": 815,
+    "settings": {
+     "iouThrs": "0.50:0.05:0.95",
+     "recThrs": 101,
+     "maxDets": [
+      1,
+      10,
+      100
+     ],
+     "areaRng": "all"
+    },
+    "evaluator": "pycocotools COCOeval bbox"
+   }
+  }
+ },
+ "passport_production_mode": {
+  "mode": "hybrid",
+  "calibration_kind": "development",
+  "calibration_bundle": "devcal_ba887787f676",
+  "caveat": "Development calibration was fitted on this same tune split (annotation crops); coverage here is in-sample and not a valid conformal guarantee.",
+  "sets_all_inputs": {
+   "coverage": {
+    "numerator": 730,
+    "denominator": 815,
+    "value": 0.8957055214723927
+   },
+   "mean_set_size": 2.8797546012269937,
+   "median_set_size": 2.0,
+   "singleton": {
+    "numerator": 404,
+    "denominator": 815,
+    "value": 0.49570552147239266
+   },
+   "singleton_accuracy": {
+    "numerator": 387,
+    "denominator": 404,
+    "value": 0.9579207920792079
+   },
+   "empty": {
+    "numerator": 0,
+    "denominator": 815,
+    "value": 0.0
+   },
+   "specific_answer_rate": {
+    "numerator": 521,
+    "denominator": 815,
+    "value": 0.6392638036809816
+   }
+  },
+  "accepted": {
+   "retention": {
+    "numerator": 754,
+    "denominator": 815,
+    "value": 0.9251533742331288
+   },
+   "accepted_end_to_end_accuracy": {
+    "numerator": 600,
+    "denominator": 754,
+    "value": 0.7957559681697612
+   },
+   "threshold": 0.3
+  },
+  "calibration_matched_primary": {
+   "n": 809,
+   "excluded_miss_or_wrong_target": 6,
+   "ece_raw": 0.2116603439541325,
+   "ece_calibrated": {
+    "ece": 0.03425752384056293,
+    "n": 809,
+    "bins": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 1,
+      "accuracy": 1.0,
+      "mean_confidence": 0.09695962127249029
+     },
+     {
+      "bin": [
+       0.1,
+       0.2
+      ],
+      "count": 9,
+      "accuracy": 0.2222222222222222,
+      "mean_confidence": 0.16760737426640748
+     },
+     {
+      "bin": [
+       0.2,
+       0.3
+      ],
+      "count": 46,
+      "accuracy": 0.2826086956521739,
+      "mean_confidence": 0.2538105250477788
+     },
+     {
+      "bin": [
+       0.3,
+       0.4
+      ],
+      "count": 54,
+      "accuracy": 0.37037037037037035,
+      "mean_confidence": 0.3559697851077901
+     },
+     {
+      "bin": [
+       0.4,
+       0.5
+      ],
+      "count": 61,
+      "accuracy": 0.5901639344262295,
+      "mean_confidence": 0.45351917067379005
+     },
+     {
+      "bin": [
+       0.5,
+       0.6
+      ],
+      "count": 59,
+      "accuracy": 0.5084745762711864,
+      "mean_confidence": 0.5500443102895146
+     },
+     {
+      "bin": [
+       0.6,
+       0.7
+      ],
+      "count": 60,
+      "accuracy": 0.6166666666666667,
+      "mean_confidence": 0.6519472636927975
+     },
+     {
+      "bin": [
+       0.7,
+       0.8
+      ],
+      "count": 82,
+      "accuracy": 0.8292682926829268,
+      "mean_confidence": 0.7529109467782549
+     },
+     {
+      "bin": [
+       0.8,
+       0.9
+      ],
+      "count": 93,
+      "accuracy": 0.8279569892473119,
+      "mean_confidence": 0.8546973209854754
+     },
+     {
+      "bin": [
+       0.9,
+       1.0
+      ],
+      "count": 344,
+      "accuracy": 0.9651162790697675,
+      "mean_confidence": 0.9725711668352435
+     }
+    ]
+   },
+   "nll_raw": 1.087430205688618,
+   "nll_calibrated": 0.8951878540610789
+  }
+ },
+ "latency_ms": {
+  "detector_p50": 30.4,
+  "detector_p95": 45.129999999999995,
+  "features_and_heads_per_crop_mean_batched": 21.901849568434034,
+  "hardware": "Intel(R) Core(TM) i7-14650HX CPU, 4 torch threads, 24 logical cores",
+  "note": "offline batch timing, not user-visible latency"
+ },
+ "summary": {
+  "classical": {
+   "e2e_top1": 0.06503067484662577,
+   "e2e_top5": 0.13006134969325153,
+   "matched_top1": 0.10453648915187377,
+   "fg_AP50": 0.04902695147142456,
+   "loc_recall50": 0.6220858895705521
+  },
+  "deep": {
+   "e2e_top1": 0.7447852760736197,
+   "e2e_top5": 0.9251533742331288,
+   "matched_top1": 0.7503090234857849,
+   "fg_AP50": 0.7180985336142944,
+   "loc_recall50": 0.992638036809816
+  },
+  "hybrid": {
+   "e2e_top1": 0.7558282208588957,
+   "e2e_top5": 0.9300613496932515,
+   "matched_top1": 0.761433868974042,
+   "fg_AP50": 0.7281197981314167,
+   "loc_recall50": 0.992638036809816
+  }
+ },
+ "condition": {
+  "name": "clean",
+  "type": "none"
+ },
+ "wall_seconds_this_run": 60.4
+}

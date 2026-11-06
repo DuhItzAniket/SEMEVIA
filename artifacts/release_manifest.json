@@ -1,6 +1,6 @@
 {
- "bundle_id": "ft_ckpt_2339418979e1_7aa5332188",
- "note": "Fine-tuned bundle: YOLO11n detector + fine-tuned EfficientNet-B0 (effb0_r1, 6 fine-tuning epoch(s), best tune top-1 0.7644) + classical/deep/hybrid heads + development calibration.",
+ "bundle_id": "ft_ckpt_2339418979e1_0920511710",
+ "note": "Fine-tuned bundle: YOLO11n detector + fine-tuned EfficientNet-B0 (effb0_r1, 6 fine-tuning epoch(s), best tune top-1 0.7644) + classical/deep/hybrid heads + final calibration.",
  "assets": [
   {
    "name": "yolo11n.pt",
@@ -71,14 +71,14 @@
    "source": "scripts/build_references.py (training split only)"
   },
   {
-   "name": "development_calibration.json",
-   "path": "artifacts/development_calibration.json",
-   "sha256": "f511f9829c95c50bd5a85b1fa3167615f60106fce29bee49e56421b2e17ecf77",
-   "bytes": 1388,
+   "name": "calibration_final.json",
+   "path": "artifacts\\calibration_final.json",
+   "sha256": "7b38742a7804da2dbee919669e4d8992728906f60fff6f3ec361f6da9b709cb0",
+   "bytes": 1611,
    "url": null,
    "optional": true,
    "in_git": true,
-   "kind": "development"
+   "kind": "final"
   }
  ]
 }
