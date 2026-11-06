@@ -64,6 +64,9 @@ git restore reports artifacts\class_metadata.json
 
 ## 2. Fine-tune (mandatory requirement)
 
+This step as written produced iteration r1 (last-stage fine-tuning, now superseded). The released model
+is r2: run it with `configs\train_v2.yaml` instead (see step 3b).
+
 ```powershell
 & $PY scripts\train.py --config configs\train.yaml --resume auto
 ```
@@ -97,7 +100,7 @@ Optimization evidence on the final model (P5):
 ```
 
 Keep `encoder_runtime: torch` for the release unless you rebuild caches and references with the ONNX
-encoder; the measured in-app gain was about 12%.
+encoder; the measured in-app gain was small (for r2: `reports\optimization_ckpt_4f3584f597d5.json`).
 
 Commit: `reports/*.json`, `artifacts/release_manifest.json`, `artifacts/release_config.json`,
 `artifacts/development_calibration.json` (message e.g. `feat(model): promote fine-tuned backbone`).
@@ -114,7 +117,7 @@ $CK = "E:\semevia\store\runs\effb0_r2\best_finetuned.pt"     # then steps 3-6 wi
 
 Step 4 below then uses the collected negative suite, and step 7 publishes a new release (`model-v2`).
 
-## 4. Negative suite (if the team has collected it)
+## 4. Negative suite (collected; used for the r2 freeze)
 
 See `docs/negative_suite.md`. With `$env:SEMEVIA_NEG_ROOT` set:
 `& $PY scripts\evaluate_negatives.py --partition tune`
@@ -123,7 +126,7 @@ See `docs/negative_suite.md`. With `$env:SEMEVIA_NEG_ROOT` set:
 
 ```powershell
 & $PY scripts\evaluate.py --partition tune --resume
-& $PY scripts\freeze.py --mode hybrid            # add: --negatives reports\negatives_tune_<bundle>.json
+& $PY scripts\freeze.py --mode hybrid --negatives reports\negatives_tune_<bundle>.json   # r2; r1 was frozen without --negatives
 & $PY scripts\evaluate.py --partition calibration --resume
 & $PY scripts\calibrate.py --final
 & $PY scripts\promote_bundle.py --backbone $CK --calibration artifacts\calibration_final.json
@@ -142,7 +145,7 @@ foreach ($c in "clean","bright_0.5","bright_1.5","down_0.50","down_0.25","occl_0
   & $PY scripts\evaluate.py --subset stress_test --condition $c --resume --confirm-frozen }
 & $PY scripts\report_robustness.py --subset stress_test
 & $PY scripts\analyze_results.py --partition test
-& $PY scripts\evaluate_negatives.py --partition test          # only if the negative suite exists
+& $PY scripts\evaluate_negatives.py --partition test          # held-out negatives, once after the freeze
 & $PY scripts\report.py --team-id <TeamID> --usns "<USN1>,<USN2>"
 ```
 

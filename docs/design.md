@@ -3,9 +3,11 @@
 Team T35 (Aniket Kumar, USN 1RUA24CSE0051; C Lakshanaa, USN 1RUA24CSE0097). Computer Vision
 Hackathon 2026, problem statement PS5.
 
-Status (last update 2026-11-07): the first model iteration, **r1**, is frozen, evaluated once on the
-official test split and deployed. The second iteration, **r2**, is training; when it finishes, the whole
-pipeline after training is redone for it and r2 replaces r1 as the release (section 5). The file
+Status (last update 2026-11-07): the released model is iteration **r2** (run `effb0_r2`, full-network
+fine-tuning, backbone tag `ckpt_4f3584f597d5`, bundle `ft_ckpt_4f3584f597d5_9662c2e703`, model files in
+GitHub Release `model-v2`). It was frozen with the tune negatives, evaluated once on the official test split
+and deployed at the public URL (sections 5.4 and 8). The first iteration, **r1**, was also frozen and
+evaluated once on test; it is superseded and kept as history (section 5.3). The file
 `artifacts/release_config.json` always names the bundle that is currently released.
 
 **Rule for this document:** no metric is typed here by hand. Every result lives in a generated file:
@@ -126,7 +128,11 @@ Purpose: choose the reject threshold and measure false acceptance on inputs that
 * **Timing:** the suite arrived after r1 was frozen, so r1's reject threshold came from known tune images
   only (`"negatives_used": false` in r1's freeze record, archived as
   [artifacts/history/r1/production_freeze.json](../artifacts/history/r1/production_freeze.json)). r2 is the first iteration frozen
-  with it.
+  with it (`"negatives_used": true` in
+  [artifacts/production_freeze.json](../artifacts/production_freeze.json); tune run
+  [reports/negatives_tune_ft_ckpt_4f3584f597d5_c13883508a.json](../reports/negatives_tune_ft_ckpt_4f3584f597d5_c13883508a.json),
+  held-out run
+  [reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json](../reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json)).
 
 ## 3. Architecture
 
@@ -240,8 +246,8 @@ flowchart LR
    Earlier test results are never hidden: `scripts/report.py` reads superseded iterations from
    `artifacts/history/<iteration>/` and prints them next to the current one. r1's release config, manifest,
    freeze record and calibrations are archived in [artifacts/history/r1/](../artifacts/history/r1/); the
-   top-level `artifacts/production_freeze.json` and `artifacts/calibration_final.json` are rewritten by the
-   r2 freeze and final calibration.
+   top-level `artifacts/production_freeze.json` and `artifacts/calibration_final.json` were rewritten by the
+   r2 freeze and final calibration and now describe r2.
 
 ### 5.2 Development backbone (before fine-tuning)
 
@@ -275,7 +281,11 @@ r1/r2; this is unrelated to the training iterations below):
   ([reports/heads_tune_ckpt_2339418979e1.json](../reports/heads_tune_ckpt_2339418979e1.json)); hybrid kept
   as production mode (deep was not clearly better on tune); freeze with a reject threshold from known tune
   images only (no negative suite yet); final calibration; one test run; released as bundle
-  `ft_ckpt_2339418979e1_0920511710`.
+  `ft_ckpt_2339418979e1_0920511710` (GitHub Release `model-v1`).
+* Status: **superseded by r2**. r1's freeze, calibrations and release config are archived in
+  [artifacts/history/r1/](../artifacts/history/r1/); its test reports keep their bundle-named file names
+  (`reports/*_ft_ckpt_2339418979e1_0920511710.json`), and its test result is listed under "Model
+  iterations" in [eval_P5_T35.md](../eval_P5_T35.md).
 
 ### 5.4 Iteration r2: full-network fine-tuning (`configs/train_v2.yaml`, run `effb0_r2`)
 
@@ -290,16 +300,36 @@ r1/r2; this is unrelated to the training iterations below):
   normalisation as r1, so the inference pipeline is unchanged.
 * Code changes for r2 (in `src/models/training.py`): the cosine schedule is computed from the epoch
   counter, so a resumed run gets the same learning rate, and `label_smoothing` is read from the config.
-* After training, every later step is redone on tune/calibration data: caches, heads, production mode,
-  development calibration, references, promotion, freeze **with the 80-image negative suite**, final
-  calibration, then one test run, the stress and viewpoint analyses and the held-out negatives.
-* Reporting: both test results (r1 and r2) appear in [eval_P5_T35.md](../eval_P5_T35.md), which is
-  regenerated for r2 by `scripts/report.py` (r1's row comes from the archive in section 5.1). r1's report
-  files keep their bundle-named file names, for example
+* Training evidence: [reports/training/effb0_r2_summary.json](../reports/training/effb0_r2_summary.json)
+  and `reports/training/effb0_r2_train_log.jsonl`.
+* After training, every later step was redone on tune/calibration data: caches, heads
+  ([reports/heads_tune_ckpt_4f3584f597d5.json](../reports/heads_tune_ckpt_4f3584f597d5.json)), production
+  mode, development calibration, references, promotion, freeze **with the 40 tune negatives** of the
+  negative suite, and final calibration. Hybrid stays the production mode: deep and hybrid were level on
+  tune, and the project rule keeps hybrid unless deep is clearly better. The bundle at the freeze was
+  `ft_ckpt_4f3584f597d5_c13883508a`; the released bundle after the final calibration is
+  `ft_ckpt_4f3584f597d5_9662c2e703`, with model files in GitHub Release `model-v2`.
+* Then: one test run, the stress and viewpoint analyses and the held-out negatives
+  ([reports/e2e_test_ft_ckpt_4f3584f597d5_9662c2e703.json](../reports/e2e_test_ft_ckpt_4f3584f597d5_9662c2e703.json),
+  [reports/robustness_stress_test_ft_ckpt_4f3584f597d5_9662c2e703.md](../reports/robustness_stress_test_ft_ckpt_4f3584f597d5_9662c2e703.md),
+  [reports/analysis_test_ft_ckpt_4f3584f597d5_9662c2e703.json](../reports/analysis_test_ft_ckpt_4f3584f597d5_9662c2e703.json),
+  [reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json](../reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json)),
+  then redeployment with the release and container checks re-run on r2
+  ([reports/release_acceptance.json](../reports/release_acceptance.json),
+  [reports/container_check.json](../reports/container_check.json)).
+* Order of events (commits, IST on 2026-11-07): r1 test run `92ffbae` 02:20; r1 live `1c9461d` 02:43;
+  negative suite and viewpoint label check `8e0c84b` 03:09; r2 training and the pre-registration
+  ("Iteration r2 decision record" in `NEXT.md`) `4043f4e` 03:25; r2 freeze `38b1a62` 03:30; r2's single
+  test run, stress, analysis, held-out negatives and `model-v2` `cadcdc3` 03:46; r2 redeployed and checks
+  re-run `ae9a00b` 03:47. More detail: [docs/timeline.md](timeline.md).
+* Reporting: both test results (r1 and r2) appear in [eval_P5_T35.md](../eval_P5_T35.md), which was
+  regenerated for r2 by `scripts/report.py`; r1 is listed under "Model iterations" (its row comes from the
+  archive in section 5.1). r1's report files keep their bundle-named file names, for example
   [reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json](../reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json).
-* Honest note: r2 was started after r1's test result existed, so the test split has been looked at twice.
-  We limit the effect by choosing r2's recipe from tune behaviour, by deciding in advance that r2 replaces
-  r1 as the release, and by publishing both test results.
+* Honest note: r2 was designed after r1's test result was known, so the test split was looked at twice
+  (once per iteration). We limited the effect by choosing r2's recipe from training and tune behaviour
+  only, by committing the decision that r2 replaces r1 as the release whatever its test result
+  (`4043f4e`, before r2's test run in `cadcdc3`), and by publishing both test results.
 
 ### 5.5 Optimisation experiment
 
@@ -341,9 +371,16 @@ shares: category, family or make. If the set spans makes, the Passport says "ina
 
 A separate operational rule: if the highest calibrated probability is below the frozen threshold, the
 decision is `rejected`. It never removes labels from the candidate set. The threshold is chosen on tune
-data at the freeze (section 2.4); r1 used known images only, r2 also uses the tune negatives. Held-out
-false acceptance on the test negatives is in [eval_P5_T35.md](../eval_P5_T35.md) once evaluated for the
-current bundle.
+data at the freeze (section 2.4); r1 used known images only, r2 also used the 40 tune negatives. Held-out
+false acceptance on the 40 test negatives for the released r2 bundle is in
+[eval_P5_T35.md](../eval_P5_T35.md) (section 6) and
+[reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json](../reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json).
+
+Two behaviours seen on the live r2 container (demo observations, not metrics): the Ducati motorcycle tune
+negative `tw_tune_03.jpg` returns status `no_vehicle`, because YOLO's motorcycle class is not mapped to
+"vehicle"; the city bus tune negative `uv_tune_01.jpg` is detected and passes the reject threshold with top
+guess "GMC Savana Van 2012", but the Passport decision is `inadequate` (reason `no_shared_make`, two makes
+remain in the set), so no identity is claimed.
 
 ### 6.5 References and the thumbnail decision
 
@@ -389,8 +426,8 @@ iteration is an unbiased estimate.
 
 * **What runs:** the release Docker image (`Dockerfile`, `compose.yaml`: 2 CPUs, 4 GB, restart
   `unless-stopped`). At build time `python -m src.release fetch` downloads each model file from its
-  public URL in `artifacts/release_manifest.json` and checks its SHA256 (r1's files are in GitHub Release
-  `model-v1`). The runtime never downloads; the container also reaches ready with `--network none`
+  public URL in `artifacts/release_manifest.json` and checks its SHA256 (r2's files are in GitHub Release
+  `model-v2`; the superseded r1 files stay in `model-v1`). The runtime never downloads; the container also reaches ready with `--network none`
   ([reports/container_check.json](../reports/container_check.json)).
 * **Where:** Docker Desktop on the team laptop, exposed by a **Cloudflare quick tunnel**
   (`cloudflared tunnel --url http://localhost:8000`) at
@@ -407,8 +444,9 @@ iteration is an unbiased estimate.
   `cloudflared` are running; the address changes whenever `cloudflared` restarts (then the README and
   submission must be updated and the check rerun); Cloudflare documents quick tunnels as a testing feature
   with no uptime guarantee; one laptop is a single point of failure; requests are handled one at a time
-  with a queue of 4, so a burst of users gets "busy" replies. For r2, the bundle is promoted and the
-  container rebuilt; the public URL stays the same as long as the tunnel is not restarted.
+  with a queue of 4, so a burst of users gets "busy" replies. For r2, the bundle was promoted, the
+  container rebuilt and the release and container checks re-run; the public URL stayed the same because
+  the tunnel was not restarted, and it now serves r2.
 
 ## 9. Design decisions and alternatives
 
@@ -447,7 +485,9 @@ iteration is an unbiased estimate.
 * **INT8:** every INT8 encoder variant failed the accuracy policy, so the release does not use INT8.
 * **Hybrid gain:** whether handcrafted features add anything over the learned embedding is measured, not
   assumed; see the ablations in [eval_P5_T35.md](../eval_P5_T35.md).
-* **Test reuse:** r1 and r2 are each evaluated once on test, so the test split is used twice (section 5.4).
+* **Test reuse:** r1 and r2 were each evaluated once on test, so the test split was used twice in total.
+  r2 was designed after r1's test result was known; the decision that r2 replaces r1 whatever its result
+  was committed (`4043f4e`) before r2's test run (`cadcdc3`), and both results are published (section 5.4).
 * **Hosting:** the public URL depends on one laptop and a quick tunnel (section 8).
 * **No GPU on the development laptop:** training ran on a second laptop with an NVIDIA GPU
   ([docs/resource_lock.md](resource_lock.md), `NEXT.md`); serving and all reported latency use CPU.

@@ -7,13 +7,24 @@ the diagrams below is a real file or function. When a diagram names a function, 
 
 **Release iterations.**
 
-* **r1** (`configs/train.yaml`, run `effb0_r1`, last-stage fine-tuning) was frozen, evaluated once on test and
-  deployed. It is the release that is live now.
-* **r2** (`configs/train_v2.yaml`, run `effb0_r2`, full-network fine-tuning with a cosine learning rate and label
-  smoothing) is training now. After it finishes, every step from `cache_features.py` onwards in
-  [section 4](#4-offline-training-and-evaluation-pipeline) is run again. That includes the heads, the calibration,
-  a freeze that uses the new 80-image negative suite, and a single test run. r2 then replaces r1 as the release.
-  The architecture stays the same; only the trained files and reports change.
+* **r2** is the current release. It is run `effb0_r2` (`configs/train_v2.yaml`: full-network fine-tuning with a
+  cosine learning rate and label smoothing 0.1), backbone tag `ckpt_4f3584f597d5`, release bundle
+  `ft_ckpt_4f3584f597d5_9662c2e703` (the bundle at the freeze was `ft_ckpt_4f3584f597d5_c13883508a`), with its
+  model files on GitHub Release `model-v2`. Every step from `cache_features.py` onwards in
+  [section 4](#4-offline-training-and-evaluation-pipeline) was run again for r2: heads, development calibration,
+  a freeze whose reject threshold uses the 40 tune negatives (`negatives_used: true` in
+  `artifacts/production_freeze.json`), final calibration, a single test run, stress, analysis and the 40
+  held-out negatives. The production mode is hybrid. r2 is what the live container serves.
+* **r1** (`configs/train.yaml`, run `effb0_r1`, last-stage fine-tuning, tag `ckpt_2339418979e1`, bundle
+  `ft_ckpt_2339418979e1_0920511710`, GitHub Release `model-v1`) was frozen, evaluated once on test and deployed
+  first. It is superseded. Its freeze, calibration files, release config and release manifest are archived in
+  [artifacts/history/r1/](../artifacts/history/r1/), and its test reports stay in
+  `reports/*_ft_ckpt_2339418979e1_0920511710.json`.
+* r2 was designed after r1's test result was known. The decision that r2 replaces r1 whatever its result was
+  committed in [NEXT.md](../NEXT.md) ("Iteration r2 decision record") before r2's test run. The test split was
+  therefore evaluated once per iteration, twice in total. Both iterations are listed under "Model iterations"
+  in [eval_P5_T35.md](../eval_P5_T35.md). The architecture is the same for both; only the trained files and
+  reports differ.
 
 The release in service at any moment is the one named in
 [artifacts/release_manifest.json](../artifacts/release_manifest.json) (`bundle_id`) and
@@ -53,7 +64,8 @@ flowchart LR
   time: `src/release.py` fetches release files during `docker build`, and readiness fails if a file is missing
   or has the wrong SHA256.
 * The trained files are not stored in Git. Their URLs and SHA256 hashes are listed in
-  `artifacts/release_manifest.json`. For r1 they are on GitHub Release `model-v1`. `calibration_final.json`
+  `artifacts/release_manifest.json`. For the current release (r2) they are on GitHub Release `model-v2`; the
+  superseded r1 files stay on `model-v1`. `calibration_final.json`
   has no URL because it is stored in Git (`"in_git": true`).
 * Hosting details and the reason for this choice (Hugging Face Docker Spaces returned `402 Payment Required`)
   are in [docs/hosting_lock.md](hosting_lock.md). The public URL works only while the laptop, Docker Desktop and

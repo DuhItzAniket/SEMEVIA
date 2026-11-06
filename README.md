@@ -3,12 +3,16 @@
 **Vehicle identity through evidence.** SEMEVIA recognises the make, model and year of a car in a photo
 (196 Stanford Cars categories) and shows how much of that answer the evidence actually supports.
 
-**Status (2026-11-07):** release iteration **r1** is frozen, evaluated once on the official test split and
-live (bundle `ft_ckpt_2339418979e1_0920511710`). Iteration **r2** (full-network fine-tuning,
-[configs/train_v2.yaml](configs/train_v2.yaml), run `effb0_r2`) is training now. After training, the whole
-pipeline (heads, calibration, freeze with the 80-image negative suite, one test run) is redone for r2, and r2
-then replaces r1 as the release. The evaluation file is regenerated at that point; r1's test results stay in
-it as the superseded iteration.
+**Status (2026-11-07):** the released iteration is **r2** (run `effb0_r2`, full-network fine-tuning,
+[configs/train_v2.yaml](configs/train_v2.yaml); bundle `ft_ckpt_4f3584f597d5_9662c2e703`, model files in
+GitHub Release `model-v2`). It was frozen ([artifacts/production_freeze.json](artifacts/production_freeze.json),
+reject threshold chosen with the 40 tune negatives), evaluated once on the official test split, and is the
+version served at the live URL. The earlier iteration **r1** (`effb0_r1`, last-stage fine-tuning, bundle
+`ft_ckpt_2339418979e1_0920511710`, GitHub Release `model-v1`) is superseded: its freeze, calibration and
+config are archived in [artifacts/history/r1/](artifacts/history/r1/) and its test result is kept in the
+evaluation file under "Model iterations". r2 was designed after r1's test result was known; the decision that
+r2 replaces r1 whatever its result was recorded in [NEXT.md](NEXT.md) ("Iteration r2 decision record") before
+r2's test run. The test split was evaluated once per iteration (twice in total).
 
 ## Live application
 
@@ -72,17 +76,17 @@ Full diagrams (runtime, training and evaluation, partitions): [docs/architecture
 | Verified Stanford Cars manifests and class hierarchy | Implemented, tested |
 | Classical features (edges, contours, HOG, LBP, HSV, geometry), classical ROI proposals | Implemented, tested, shown in the app |
 | Classical, Deep and Hybrid modes with Top-5 and separate scores | Implemented on the fine-tuned backbone; evaluated on test |
-| EfficientNet-B0 fine-tuning | r1 done (`effb0_r1`, last stage, [summary](reports/training/effb0_r1_summary.json)); r2 (`effb0_r2`, full network) training |
+| EfficientNet-B0 fine-tuning | r2 released (`effb0_r2`, full network, [summary](reports/training/effb0_r2_summary.json)); r1 superseded (`effb0_r1`, last stage, [summary](reports/training/effb0_r1_summary.json)) |
 | Identity Evidence Passport (candidate set, specificity, decision states, JSON export) | Implemented; final calibration from the untouched calibration split |
 | Evidence Challenge (six blurred regions, fixed A/B margin) | Implemented, tested |
 | Nearest training references (588-entry training-only index: 3 per class) | Implemented; identifiers, labels and similarity only (no thumbnails, licence decision) |
 | Optimization: ONNX FP32 encoder, INT8 encoder attempts, INT8 linear head | Measured; every INT8 encoder failed our accuracy policy; the release keeps the PyTorch FP32 encoder |
 | End-to-end evaluator (Top-1/5 with IoU gating, IoU, AP, Passport, calibration) | Run on tune, calibration and (once per iteration, after its freeze) test |
-| Robustness: 6 fixed stress conditions on a predeclared 392-image test subset | Run for r1; rerun for r2 |
+| Robustness: 6 fixed stress conditions on a predeclared 392-image test subset | Run for r1 and for r2 |
 | Viewpoint subgroups: 60 viewpoint-labelled test photos | Labelled by an agent before any test result; blind second pass by agents ([reports/viewpoint_label_check.json](reports/viewpoint_label_check.json)); not human-reviewed |
 | Negative (unsupported-input) suite: 80 images, 40 tune + 40 test, 10 per bucket | Collected ([artifacts/negative_manifests/](artifacts/negative_manifests/)); used in the r2 freeze and test run |
 | Evaluation file [eval_P5_T35.md](eval_P5_T35.md) | Generated from reports by `scripts/report.py` |
-| Docker image, offline start, public deployment | Done for r1 ([reports/container_check.json](reports/container_check.json), [reports/release_acceptance.json](reports/release_acceptance.json)) |
+| Docker image, offline start, public deployment | Done for r2; checks re-run on the r2 bundle ([reports/container_check.json](reports/container_check.json), [reports/release_acceptance.json](reports/release_acceptance.json)) |
 
 Supported vehicle categories: the 196 Stanford Cars classes (49 makes, model years 1991-2012), listed in
 [artifacts/class_metadata.json](artifacts/class_metadata.json).
@@ -92,7 +96,8 @@ Supported vehicle categories: the 196 Stanford Cars classes (49 makes, model yea
 All results are in **[eval_P5_T35.md](eval_P5_T35.md)**, in the PS5 metric order: Top-1/Top-5, IoU, mAP,
 model size and latency, robustness, and confidence/threshold analysis, followed by ablations and three
 rule-selected failure cases. The file is generated by `scripts/report.py` from the report files below; no
-number in it or in this README is typed by hand. It will be regenerated for r2.
+number in it or in this README is typed by hand. It is generated for r2 and lists the superseded r1 test
+result under "Model iterations".
 
 <!-- RESULTS:START -->
 Generated by `scripts/report.py` from `reports/e2e_test_ft_ckpt_4f3584f597d5_9662c2e703.json` (official test split, 8041 images, bundle `ft_ckpt_4f3584f597d5_9662c2e703`). Full results: [eval_P5_T35.md](eval_P5_T35.md).
@@ -106,23 +111,30 @@ Generated by `scripts/report.py` from `reports/e2e_test_ft_ckpt_4f3584f597d5_966
 Also: unsupported-input false acceptance 20.0% (8/40 held-out negatives, `reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json`); public-URL latency p50 502 ms / p95 871 ms (`reports/release_acceptance.json`).
 <!-- RESULTS:END -->
 
-Report files. File names carry the bundle id or backbone tag, so the r2 files will have new names; the
-evaluation file always names the files it was generated from. The links below are the current r1 release.
+Report files. File names carry the bundle id (test runs use the released bundle
+`ft_ckpt_4f3584f597d5_9662c2e703`; tune-side freeze inputs use the bundle at freeze
+`ft_ckpt_4f3584f597d5_c13883508a`) or the backbone tag `ckpt_4f3584f597d5`; the evaluation file always names
+the files it was generated from. The links below are the current r2 release.
 
-| What | File pattern | r1 file |
+| What | File pattern | r2 file |
 |---|---|---|
-| End-to-end test evaluation (all three modes, Passport, calibration) | `reports/e2e_test_<bundle>.json` | [e2e_test_ft_ckpt_2339418979e1_0920511710.json](reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json) |
-| Robustness on the 392-image test stress subset | `reports/robustness_stress_test_<bundle>.md` | [robustness_stress_test_ft_ckpt_2339418979e1_0920511710.md](reports/robustness_stress_test_ft_ckpt_2339418979e1_0920511710.md) |
-| Viewpoint subgroups and failure cases | `reports/analysis_test_<bundle>.json` | [analysis_test_ft_ckpt_2339418979e1_0920511710.json](reports/analysis_test_ft_ckpt_2339418979e1_0920511710.json) |
-| Head selection and ablations (tune) | `reports/heads_tune_<tag>.json` | [heads_tune_ckpt_2339418979e1.json](reports/heads_tune_ckpt_2339418979e1.json) |
-| Optimization (ONNX FP32 / INT8) | `reports/optimization_<tag>.json` | [optimization_ckpt_2339418979e1.json](reports/optimization_ckpt_2339418979e1.json) |
-| Fine-tuning run | `reports/training/<run>_summary.json` | [effb0_r1_summary.json](reports/training/effb0_r1_summary.json) |
-| Negative suite (unsupported inputs) | `reports/negatives_<partition>_<bundle>.json` | none for r1 (suite collected after the r1 freeze) |
-| Public-URL release checks | `reports/release_acceptance.json` | [release_acceptance.json](reports/release_acceptance.json) |
+| End-to-end test evaluation (all three modes, Passport, calibration) | `reports/e2e_test_<bundle>.json` | [e2e_test_ft_ckpt_4f3584f597d5_9662c2e703.json](reports/e2e_test_ft_ckpt_4f3584f597d5_9662c2e703.json) |
+| Robustness on the 392-image test stress subset | `reports/robustness_stress_test_<bundle>.md` / `.json` | [robustness_stress_test_ft_ckpt_4f3584f597d5_9662c2e703.md](reports/robustness_stress_test_ft_ckpt_4f3584f597d5_9662c2e703.md) |
+| Viewpoint subgroups and failure cases | `reports/analysis_test_<bundle>.json` | [analysis_test_ft_ckpt_4f3584f597d5_9662c2e703.json](reports/analysis_test_ft_ckpt_4f3584f597d5_9662c2e703.json) |
+| End-to-end tune and calibration runs (freeze inputs) | `reports/e2e_<partition>_<bundle>.json` | [e2e_tune_ft_ckpt_4f3584f597d5_c13883508a.json](reports/e2e_tune_ft_ckpt_4f3584f597d5_c13883508a.json), [e2e_calibration_ft_ckpt_4f3584f597d5_c13883508a.json](reports/e2e_calibration_ft_ckpt_4f3584f597d5_c13883508a.json) |
+| Head selection and ablations (tune) | `reports/heads_tune_<tag>.json` | [heads_tune_ckpt_4f3584f597d5.json](reports/heads_tune_ckpt_4f3584f597d5.json) |
+| Nearest-reference check (tune) | `reports/references_tune_<tag>.json` | [references_tune_ckpt_4f3584f597d5.json](reports/references_tune_ckpt_4f3584f597d5.json) |
+| Optimization (ONNX FP32 / INT8 encoder; INT8 linear head) | `reports/optimization_<tag>.json`, `reports/optimization_head_hybrid_<tag>.json` | [optimization_ckpt_4f3584f597d5.json](reports/optimization_ckpt_4f3584f597d5.json), [optimization_head_hybrid_ckpt_4f3584f597d5.json](reports/optimization_head_hybrid_ckpt_4f3584f597d5.json) |
+| Fine-tuning run | `reports/training/<run>_summary.json` | [effb0_r2_summary.json](reports/training/effb0_r2_summary.json) |
+| Negative suite (unsupported inputs): tune (used at the freeze) and held-out test | `reports/negatives_<partition>_<bundle>.json` | [negatives_tune_ft_ckpt_4f3584f597d5_c13883508a.json](reports/negatives_tune_ft_ckpt_4f3584f597d5_c13883508a.json), [negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json](reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json) |
+| Viewpoint label check | `reports/viewpoint_label_check.json` | [viewpoint_label_check.json](reports/viewpoint_label_check.json) |
+| Container and public-URL release checks (re-run on r2) | `reports/container_check.json`, `reports/release_acceptance.json` | [container_check.json](reports/container_check.json), [release_acceptance.json](reports/release_acceptance.json) |
+| Superseded r1 test evaluation (history) | `reports/*_ft_ckpt_2339418979e1_0920511710.json` | [e2e_test_ft_ckpt_2339418979e1_0920511710.json](reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json); r1 freeze, calibration and config in [artifacts/history/r1/](artifacts/history/r1/) |
 
-Note on mode choice: the production mode (Hybrid) was fixed on the tuning split before the test split was
-evaluated. On r1's test run the Deep mode is marginally ahead on top-1 (see the eval file). We did not switch
-modes after seeing test results.
+Note on mode choice: the production mode (Hybrid) was fixed on the tuning split before each iteration's test
+run. For r2, Deep and Hybrid were level on tune, and the project rule keeps Hybrid unless Deep is clearly
+better on tune; this was recorded in [NEXT.md](NEXT.md) before r2's test run. The Deep/Hybrid comparison on
+test is in [eval_P5_T35.md](eval_P5_T35.md) (section 1). We did not switch modes after seeing test results.
 
 ## Quick start (Docker)
 
@@ -134,7 +146,7 @@ docker compose up --build
 
 Then open <http://localhost:8000>. The build downloads the public weights listed in
 [artifacts/release_manifest.json](artifacts/release_manifest.json) (YOLO11n from Ultralytics, plus the
-fine-tuned backbone, heads and reference index from GitHub Release `model-v1`) and verifies their SHA256
+fine-tuned backbone, heads and reference index from GitHub Release `model-v2`) and verifies their SHA256
 (`python -m src.release fetch` and `verify` in the [Dockerfile](Dockerfile)); the running container makes
 no downloads. A fresh clone built this way serves all three modes, also with `--network none`
 ([reports/container_check.json](reports/container_check.json)). `compose.yaml` limits the container to
@@ -166,8 +178,8 @@ PowerShell, with environment setup and the checks to run after each step) are in
    test 8,041). Findings, including 37 duplicate image groups with conflicting labels:
    [reports/data_audit.json](reports/data_audit.json), [docs/checkpoints/P1.md](docs/checkpoints/P1.md).
    Then `python -m pytest`.
-2. **Fine-tune.** `scripts/train.py --config configs/train.yaml --resume auto` (r1) or
-   `--config configs/train_v2.yaml` (r2). Rerunning the same command resumes.
+2. **Fine-tune.** `scripts/train.py --config configs/train_v2.yaml --resume auto` (r2, the release) or
+   `--config configs/train.yaml` (superseded r1). Rerunning the same command resumes.
 3. **Features and heads.** `scripts/cache_features.py --features classical --partitions train tune`, then
    `scripts/cache_features.py --features learned --backbone <checkpoint> --partitions train tune` (prints the
    backbone tag `ckpt_<sha12>`), `scripts/fit_heads.py --head classical`, `scripts/fit_heads.py --head
@@ -243,12 +255,17 @@ PowerShell, with environment setup and the checks to run after each step) are in
 * **Generic detector.** YOLO11n is a COCO model; it finds cars, buses and trucks, not specific models. Stanford
   Cars annotates one car per image, so real background cars count as false positives in detection AP.
 * **Rejection is fallible.** The reject rule is softmax-based. The negative suite (80 images) is a small stress
-  set, not an open-world guarantee. r1 was frozen before the suite existed, so its reject threshold came from
-  known tune images only.
+  set, not an open-world guarantee. The r2 reject threshold was chosen at the freeze with the 40 tune
+  negatives and checked on the 40 held-out test negatives
+  ([reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json](reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json));
+  some negatives still pass it (see [eval_P5_T35.md](eval_P5_T35.md)). YOLO's motorcycle class is not mapped,
+  so a motorcycle photo returns `no_vehicle`; a bus can pass the threshold, in which case the Passport decision
+  is what prevents an identity claim. (r1 was frozen before the suite existed, so its threshold came from known
+  tune images only.)
 * **Viewpoint labels are not human-reviewed.** The 60 viewpoint labels and the blind second pass were made by
   agents, not by people ([reports/viewpoint_label_check.json](reports/viewpoint_label_check.json)).
 * **INT8 encoder.** Every INT8 version of the encoder failed our predeclared accuracy policy
-  ([reports/optimization_ckpt_2339418979e1.json](reports/optimization_ckpt_2339418979e1.json)), so the release
+  ([reports/optimization_ckpt_4f3584f597d5.json](reports/optimization_ckpt_4f3584f597d5.json)), so the release
   runs the FP32 encoder. An INT8 linear head was measured separately; it shrinks only a tiny part of the model.
 * **No reference thumbnails.** References show identifiers, labels and similarity only (see below), which makes
   them less intuitive to check.
