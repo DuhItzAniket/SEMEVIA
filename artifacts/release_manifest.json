@@ -1,0 +1,14 @@
+{
+  "bundle_id": "release_p1_detection_only",
+  "note": "P1 bundle: generic vehicle detector only. No fine-grained classifier is included yet.",
+  "assets": [
+    {
+      "name": "yolo11n.pt",
+      "path": "artifacts/store/release/yolo11n.pt",
+      "sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+      "bytes": 5613764,
+      "url": "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt",
+      "license": "AGPL-3.0 (Ultralytics); COCO-pretrained weights used unmodified"
+    }
+  ]
+}

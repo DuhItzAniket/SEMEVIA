@@ -1,0 +1,32 @@
+# Frozen data-preparation contract (P0 lock). Changing any value creates a new manifest version.
+manifest_version: "m1"
+data_root_env: SEMEVIA_DATA_ROOT        # original-layout directory: cars_train/, cars_test/, devkit/, cars_test_annos_withlabels.mat
+source:
+  mirror: "https://github.com/jhpohovey/StanfordCars (git clone, extracted original layout)"
+  checksum_source: "https://raw.githubusercontent.com/tensorflow/datasets/master/tensorflow_datasets/url_checksums/cars196.txt"
+  published_sha256:
+    cars_test_annos_withlabels.mat: "790f75be8ea34eeded134cc559332baf23e30e91367e9ddca97d26ed9b895f05"
+    car_devkit.tgz: "b97deb463af7d58b6bfaa18b2a4de9829f0f79e8ce663dfa9261bf7810e9accd"   # archive only; mirror holds extracted devkit
+    cars_train.tgz: "512b227b30e2f0a8aab9e09485786ab4479582073a144998da74d64b801fd288"    # archive only; not verifiable from extracted mirror
+    cars_test.tgz: "bffea656d6f425cba3c91c6d83336e4c5f86c6cffd8975b0f375d3a10da8e243"
+expected:
+  train_records: 8144
+  test_records: 8041
+  num_classes: 196
+labels:
+  original_range: [1, 196]     # annotation file convention
+  application_range: [0, 195]  # class_id = original_class_id - 1
+coordinates:
+  # Original annotations are 1-based inclusive MATLAB pixel indices (confirmed by overlay audit in P1).
+  # Canonical: float [left, top, right, bottom], zero-based, half-open.
+  # Conversion: left = x1 - 1, top = y1 - 1, right = x2, bottom = y2
+  bbox_format_version: "ltrb_halfopen_0based_v1"
+  exif_orientation: "dataset: never applied (boxes refer to stored pixels; verified in audit); uploads: applied in decode_image"
+splits:
+  seed: 20261106
+  calibration_size: 815      # from original train pool, random, no model outcomes
+  tune_size: 815             # stratified by class from the remaining development pool
+  # train = remaining (expected ~6514); official test = all 8041 (final evaluation only)
+audit:
+  overlay_samples: 30
+  phash_hamming_threshold: 4

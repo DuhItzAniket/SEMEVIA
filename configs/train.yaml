@@ -1,0 +1,40 @@
+# Deep baseline training contract (EfficientNet-B0, ImageNet-1K weights, 196 outputs).
+# Training runs on a separate GPU machine later (see docs/resource_lock.md); this file is the frozen recipe.
+run_name: effb0_r1
+backbone: efficientnet_b0
+weights: IMAGENET1K_V1
+num_classes: 196
+input_size: 224
+crop:
+  source: annotation_box_with_jitter   # training only; inference uses detector crops
+  margin: 0.05
+  jitter: 0.08                         # max fractional shift/scale of the box per side
+normalize:
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+augment:
+  hflip: 0.5
+  brightness: 0.2
+  contrast: 0.2
+  blur_p: 0.1
+stages:
+  - name: head
+    trainable: [classifier]
+    epochs: 3
+    lr: 0.001
+  - name: last_stage_finetune         # mandatory: >=1 completed epoch with final pretrained stage unfrozen
+    trainable: [classifier, features.7, features.8]
+    epochs: 6
+    lr_head: 0.001
+    lr_backbone: 0.0001
+optimizer: adamw
+weight_decay: 0.0001
+batch_size: 32
+early_stopping_patience: 3
+num_workers: 4
+seed: 20261106
+amp: true            # used only when CUDA is available
+checkpoint:
+  dir_env: SEMEVIA_ARTIFACT_STORE
+  save_every_epoch: [last, best]
+  time_cap_minutes: 150

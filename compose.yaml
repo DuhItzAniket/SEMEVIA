@@ -1,0 +1,14 @@
+services:
+  semevia:
+    build: .
+    image: semevia:local
+    ports:
+      - "${SEMEVIA_PORT:-8000}:8000"
+    environment:
+      SEMEVIA_TORCH_THREADS: "${SEMEVIA_TORCH_THREADS:-2}"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4g
+    restart: unless-stopped

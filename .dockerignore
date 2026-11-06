@@ -1,0 +1,31 @@
+# Keep the build context small and free of secrets, datasets and uploads.
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+**/__pycache__
+**/*.pyc
+.pytest_cache
+venv
+.venv
+data
+datasets
+uploads
+runs
+work
+artifacts/cache
+reports/predictions
+docs
+tests
+scripts
+*.tgz
+*.tar
+*.zip
+*.mat
+kaggle.json
+*.pem
+*.key
+# Inference weights are copied explicitly from artifacts/store/release (see Dockerfile)
+artifacts/store/*
+!artifacts/store/release

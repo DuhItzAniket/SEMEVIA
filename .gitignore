@@ -1,0 +1,53 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+kaggle.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Datasets, uploads and large generated data (kept outside Git; see docs/resource_lock.md)
+/data/
+/datasets/
+/uploads/
+*.tgz
+*.tar
+*.zip
+*.mat
+*.jpg
+*.jpeg
+*.png
+!app/static/**/*.png
+!reports/figures/**/*.png
+!docs/**/*.png
+
+# Model weights and caches live in the artifact store; Git keeps manifests and checksums
+*.pt
+*.pth
+*.onnx
+*.npy
+*.npz
+*.joblib
+*.pkl
+artifacts/store/
+artifacts/cache/
+/runs/
+/work/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local tool config (contains machine-specific paths)
+.claude/

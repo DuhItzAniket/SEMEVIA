@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "semevia.api.v1",
+  "title": "SEMEVIA API contract v1 (frozen in P0)",
+  "description": "Response contract for POST /predict and POST /challenge. Identity fields use explicit nulls, never placeholder values. Boxes are float [left, top, right, bottom], zero-based half-open, in the coordinate frame of the decoded upload after EXIF orientation is applied. class_id is 0..195; original_class_id = class_id + 1.",
+  "endpoints": {
+    "GET /healthz": "Process alive. Always 200 when the server runs.",
+    "GET /readyz": "200 only when every artifact in the release manifest is loaded, checksum-verified and a real warmup inference has completed; otherwise 503 with reasons.",
+    "POST /predict": "multipart/form-data: file (image), mode (classical|deep|hybrid, optional). Returns PredictResponse.",
+    "POST /challenge": "application/json: {request_id}. Runs the six-region challenge on that request's frozen crop. Returns ChallengeResponse.",
+    "GET /benchmarks": "Precomputed benchmark summary with populations and artifact IDs (not per-upload accuracy).",
+    "GET /reference/{ref_id}": "Packaged training-reference thumbnail (training split only).",
+    "GET /request-image/{request_id}/{name}": "Request-scoped diagnostic image held in memory with expiry; never a filesystem path."
+  },
+  "$defs": {
+    "status": {"enum": ["ok", "uncertain", "no_vehicle", "invalid_image", "busy", "error"]},
+    "box": {"type": "array", "items": {"type": "number"}, "minItems": 4, "maxItems": 4},
+    "class_entry": {
+      "type": "object",
+      "required": ["class_id", "original_class_id", "name", "make", "family", "model", "year", "score"],
+      "properties": {
+        "class_id": {"type": "integer", "minimum": 0, "maximum": 195},
+        "original_class_id": {"type": "integer", "minimum": 1, "maximum": 196},
+        "name": {"type": "string"},
+        "make": {"type": "string"},
+        "family": {"type": ["string", "null"]},
+        "model": {"type": "string"},
+        "year": {"type": "integer"},
+        "score": {"type": "number"}
+      }
+    },
+    "detection": {
+      "type": "object",
+      "properties": {
+        "state": {"enum": ["detected", "no_vehicle", "unavailable"]},
+        "selected_box": {"$ref": "#/$defs/box"},
+        "detector_score": {"type": ["number", "null"]},
+        "candidate_count": {"type": "integer"},
+        "candidates": {"type": "array", "items": {"type": "object", "properties": {"box": {"$ref": "#/$defs/box"}, "score": {"type": "number"}, "coco_class": {"type": "string"}}}},
+        "selection_rule": {"type": "string"},
+        "threshold": {"type": "number"},
+        "detector_version": {"type": "string"}
+      }
+    },
+    "passport": {
+      "type": "object",
+      "properties": {
+        "decision_state": {"enum": ["exact_candidate", "ambiguous", "rejected", "inadequate", "detection_failed", "comparison_only", "unavailable"]},
+        "reason_codes": {"type": "array", "items": {"type": "string"}},
+        "accepted_identity": {"oneOf": [{"$ref": "#/$defs/class_entry"}, {"type": "null"}]},
+        "candidate_set": {"type": "array", "items": {"type": "integer"}},
+        "candidate_count": {"type": "integer"},
+        "set_convention": {"type": "string"},
+        "specificity": {"type": "object", "properties": {"level": {"enum": ["category", "family", "make", "root", "empty", "full_set"]}, "label": {"type": ["string", "null"]}}},
+        "calibration": {"type": "object", "properties": {"bundle_id": {"type": "string"}, "kind": {"enum": ["development", "final"]}, "alpha": {"type": "number"}, "q": {"type": ["number", "null"]}, "n": {"type": "integer"}, "quantile_mode": {"enum": ["order_statistic", "full_set"]}}}
+      }
+    }
+  },
+  "PredictResponse": {
+    "type": "object",
+    "required": ["schema_version", "request_id", "status", "created_at", "active_mode", "production_mode", "error", "input", "detection", "prediction", "passport", "challenge", "references", "cnn_diagnostic", "processing", "provenance", "timings"],
+    "properties": {
+      "schema_version": {"const": "semevia.v1"},
+      "request_id": {"type": "string", "description": "opaque random id"},
+      "status": {"$ref": "#/$defs/status"},
+      "created_at": {"type": "string", "format": "date-time"},
+      "active_mode": {"enum": ["classical", "deep", "hybrid"]},
+      "production_mode": {"type": ["string", "null"]},
+      "error": {"type": ["object", "null"], "properties": {"code": {"type": "string"}, "message": {"type": "string"}}},
+      "input": {"type": "object", "properties": {"sha256": {"type": "string"}, "width": {"type": "integer"}, "height": {"type": "integer"}, "orientation_applied": {"type": "boolean"}, "resized_from": {"type": ["array", "null"]}, "crop_sha256": {"type": ["string", "null"]}}},
+      "detection": {"$ref": "#/$defs/detection"},
+      "prediction": {"type": "object", "properties": {"available": {"type": "boolean"}, "unavailable_reason": {"type": ["string", "null"]}, "score_type": {"type": "string"}, "calibrated": {"type": "boolean"}, "temperature": {"type": ["number", "null"]}, "top5": {"type": "array", "items": {"$ref": "#/$defs/class_entry"}}, "probabilities": {"type": ["array", "null"]}, "classifier_score": {"type": ["number", "null"]}}},
+      "passport": {"$ref": "#/$defs/passport"},
+      "challenge": {"type": "object", "properties": {"state": {"enum": ["not_requested", "running", "complete", "failed", "unavailable"]}}},
+      "references": {"type": "object", "properties": {"state": {"enum": ["available", "unavailable"]}, "items": {"type": "array"}}},
+      "cnn_diagnostic": {"type": "object", "properties": {"state": {"enum": ["unavailable", "not_requested", "complete"]}}},
+      "processing": {"type": "object", "description": "request-scoped image URLs: crop, gray, edges, contours, plus named measurements"},
+      "provenance": {"type": "object", "description": "detector, encoder, head, feature/scaler/PCA, hierarchy, calibration, precision and config hashes"},
+      "timings": {"type": "object", "description": "milliseconds: queue, decode, detection, features, classifier, total"}
+    }
+  },
+  "ChallengeResponse": {
+    "type": "object",
+    "properties": {
+      "request_id": {"type": "string"},
+      "state": {"enum": ["complete", "failed", "unavailable"]},
+      "reason": {"type": ["string", "null"]},
+      "class_a": {"type": "integer"}, "class_b": {"type": "integer"},
+      "m0": {"type": "number", "description": "original z_A - z_B, raw pre-temperature logits"},
+      "blur_recipe": {"type": "object"},
+      "cells": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"type": "object", "properties": {"index": {"type": "integer"}, "label": {"enum": ["upper left", "upper center", "upper right", "lower left", "lower center", "lower right"]}, "bounds": {"$ref": "#/$defs/box"}, "m_r": {"type": "number"}, "delta": {"type": "number"}, "new_top1": {"type": "integer"}, "new_top1_prob": {"type": "number"}, "image_url": {"type": "string"}}}},
+      "selected_cell": {"type": ["integer", "null"]},
+      "summary": {"type": "string"},
+      "duration_ms": {"type": "number"},
+      "label": {"const": "diagnostic stress input; clean calibration does not extend to these variants"}
+    }
+  }
+}

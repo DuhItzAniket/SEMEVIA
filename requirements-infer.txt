@@ -1,0 +1,17 @@
+# Inference container dependencies (pinned to the versions smoke-tested in P0, see requirements.lock).
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.15.0+cpu
+torchvision==0.29.2+cpu
+ultralytics==8.4.203
+numpy==2.4.6
+pillow==13.0.0
+opencv-python-headless==5.0.0.93
+scikit-image==0.26.0
+scikit-learn==1.9.1
+scipy==1.17.1
+onnxruntime==1.31.1
+fastapi==0.162.0
+starlette==1.10.0
+uvicorn==0.54.0
+python-multipart==0.0.33
+PyYAML==6.0.3
