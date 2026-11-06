@@ -32,6 +32,7 @@ from src.data.manifest import read_manifest  # noqa: E402
 from src.evaluation.metrics import (  # noqa: E402
     coco_ap, ece, end_to_end_topk, localization, nll, ranked, ratio, set_metrics,
 )
+from src.evaluation.hardware import hardware_label  # noqa: E402
 from src.models.cache_io import store_dir  # noqa: E402
 from src.models.detector import select_target  # noqa: E402
 from src.models.heads import softmax  # noqa: E402
@@ -276,7 +277,7 @@ def build_report(rows, recs, partition, part, bundle, cal, rt, pred_file) -> dic
     feat = np.array([r["feat_ms_per_crop"] for r in rows if "feat_ms_per_crop" in r])
     out["latency_ms"] = {"detector_p50": float(np.percentile(lat, 50)), "detector_p95": float(np.percentile(lat, 95)),
                          "features_and_heads_per_crop_mean_batched": float(feat.mean()) if len(feat) else None,
-                         "hardware": "Intel i5-1135G7 CPU, 4 torch threads", "note": "offline batch timing, not user-visible latency"}
+                         "hardware": hardware_label(4), "note": "offline batch timing, not user-visible latency"}
     out["summary"] = summary
     return out
 

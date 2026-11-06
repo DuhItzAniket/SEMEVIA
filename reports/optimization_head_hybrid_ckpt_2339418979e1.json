@@ -1,0 +1,63 @@
+{
+ "mode": "hybrid",
+ "backbone": "ckpt_2339418979e1",
+ "population": {
+  "partition": "tune",
+  "count": 815,
+  "crops": "annotation"
+ },
+ "method": "logistic coefficients copied to ONNX MatMul+Add after the unchanged FP32 fusion transform; onnxruntime quantize_dynamic, INT8 weights (MatMulInteger)",
+ "int8_graph_ops": [
+  "Add",
+  "Cast",
+  "DynamicQuantizeLinear",
+  "MatMulInteger",
+  "Mul"
+ ],
+ "fp32_parity_vs_sklearn": {
+  "max_abs_centered_logit_diff": 3.846567967258352e-06,
+  "max_abs_prob_diff": 9.956654583032076e-07,
+  "passes_atol_1e-4": true,
+  "top1_agreement": 1.0
+ },
+ "accuracy": {
+  "sklearn_fp32": {
+   "tune_top1": 0.7533742331288343,
+   "tune_top5": 0.9374233128834356
+  },
+  "onnx_fp32": {
+   "tune_top1": 0.7533742331288343,
+   "tune_top5": 0.9374233128834356
+  },
+  "onnx_int8": {
+   "tune_top1": 0.7533742331288343,
+   "tune_top5": 0.9374233128834356
+  }
+ },
+ "int8_vs_fp32": {
+  "top1_agreement": 0.9975460122699387,
+  "max_abs_centered_logit_diff": 0.07887048959583343
+ },
+ "size_bytes": {
+  "onnx_fp32": 1054647,
+  "onnx_int8": 264976,
+  "sklearn_joblib_whole_head_incl_pca": 3134873
+ },
+ "latency_single_row_head_only": {
+  "onnx_fp32": {
+   "p50_ms": 0.01609999981155852,
+   "p95_ms": 0.019605000079536694,
+   "runs": 200
+  },
+  "onnx_int8": {
+   "p50_ms": 0.012299999980314169,
+   "p95_ms": 0.012800000149582047,
+   "runs": 200
+  },
+  "threads": 2,
+  "hardware": "Intel(R) Core(TM) i7-14650HX CPU, 2 torch threads, 24 logical cores"
+ },
+ "note": "The head is a tiny part of end-to-end time; no meaningful end-to-end speed gain is claimed from it.",
+ "int8_top1_drop_pp": 0.0,
+ "int8_passes_policy": true
+}

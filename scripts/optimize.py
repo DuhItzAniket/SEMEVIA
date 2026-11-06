@@ -23,6 +23,7 @@ import yaml  # noqa: E402
 
 from src.data.crops import annotation_crop, load_rgb  # noqa: E402
 from src.data.manifest import read_manifest  # noqa: E402
+from src.evaluation.hardware import hardware_label  # noqa: E402
 from src.models.cache_io import cache_meta, load_cache, store_dir  # noqa: E402
 from src.models.heads import canonical_logits, softmax, topk_accuracy  # noqa: E402
 
@@ -189,7 +190,7 @@ def main() -> None:
         "size_bytes": {"torch_state_dict_pth": pth.stat().st_size, "onnx_fp32": fp32_path.stat().st_size,
                        **{n: v["path"].stat().st_size for n, v in variants.items() if v["path"].exists()}},
         "latency_single_crop_encoder_only": {"threads": args.threads, "torch_fp32": lat_t, "onnx_fp32": lat32, **lat_variants,
-                                             "hardware": "Intel i5-1135G7 CPU", "note": "encoder forward only, batch 1, warm"},
+                                             "hardware": hardware_label(args.threads), "note": "encoder forward only, batch 1, warm"},
         "selection_policy": "keep INT8 only if tune top-1 drop <= 1.0 percentage point for the production head (project choice, not a PS rule)",
         "wall_seconds": round(time.time() - t_start, 1),
     }

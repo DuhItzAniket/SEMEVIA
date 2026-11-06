@@ -61,8 +61,10 @@ class VehicleDetector:
     def detect(self, rgb: np.ndarray) -> tuple[list[Detection], int, int]:
         h, w = rgb.shape[:2]
         bgr = np.ascontiguousarray(rgb[..., ::-1])
+        # CPU always: the deployed app is CPU-only, and Ultralytics would otherwise pick a GPU when one
+        # exists, so offline evaluation on a GPU machine would not measure the deployed pipeline.
         res = self.model.predict(bgr, imgsz=self.imgsz, conf=self.conf_floor, iou=self.nms_iou,
-                                 max_det=self.max_det, verbose=False)[0]
+                                 max_det=self.max_det, verbose=False, device="cpu")[0]
         names = res.names
         out, invalid, total = [], 0, 0
         if res.boxes is not None and len(res.boxes):

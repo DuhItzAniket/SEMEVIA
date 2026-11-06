@@ -1,8 +1,8 @@
 {
- "bundle_id": "dev_imagenet_frozen_c28e98cc5a",
- "backbone": "artifacts/store/release/efficientnet_b0_rwightman-7f5810bc.pth",
- "backbone_tag": "imagenet_frozen",
- "backbone_status": "development: frozen ImageNet EfficientNet-B0 (not fine-tuned)",
+ "bundle_id": "ft_ckpt_2339418979e1_7aa5332188",
+ "backbone": "artifacts/store/release/backbone_ckpt_2339418979e1.pth",
+ "backbone_tag": "ckpt_2339418979e1",
+ "backbone_status": "fine-tuned EfficientNet-B0 (effb0_r1, 6 fine-tuning epoch(s), best tune top-1 0.7644)",
  "calibration": "artifacts/development_calibration.json",
  "calibration_kind": "development",
  "precision": "fp32"

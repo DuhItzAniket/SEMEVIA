@@ -22,16 +22,16 @@
    "tune_nll": 3.9662,
    "train_top1": 0.9645379183297513,
    "n_iter": 51,
-   "fit_seconds": 7.1
+   "fit_seconds": 5.2
   },
   {
    "C": 0.02,
    "tune_top1": 0.17791411042944785,
    "tune_top5": 0.3914110429447853,
-   "tune_nll": 3.9559,
+   "tune_nll": 3.956,
    "train_top1": 0.9992324224746699,
    "n_iter": 68,
-   "fit_seconds": 12.2
+   "fit_seconds": 6.7
   },
   {
    "C": 0.1,
@@ -40,7 +40,7 @@
    "tune_nll": 4.1978,
    "train_top1": 0.9992324224746699,
    "n_iter": 30,
-   "fit_seconds": 5.1
+   "fit_seconds": 2.9
   }
  ],
  "selected": {
@@ -50,11 +50,11 @@
   "tune_nll": 3.9662,
   "train_top1": 0.9645379183297513,
   "n_iter": 51,
-  "fit_seconds": 7.1
+  "fit_seconds": 5.2
  },
  "artifact": {
   "path": "heads\\classical_hc_v1_C0.005.joblib",
-  "sha256": "5e2999cdaa0cf8d4ab438971f0f9a73eefcb56d87784bf69a26a349fcdf0e3de",
+  "sha256": "77fa1f92e6dc6941d4c3c66e75133c79cb794b68d358cfe2b0cb6903cbed2b01",
   "bytes": 1471049
  }
 }

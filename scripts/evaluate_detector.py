@@ -24,6 +24,7 @@ from PIL import Image  # noqa: E402
 
 from src.data.manifest import read_manifest  # noqa: E402
 from src.evaluation.metrics import coco_ap, localization, ratio  # noqa: E402
+from src.evaluation.hardware import hardware_label  # noqa: E402
 from src.models.cache_io import store_dir  # noqa: E402
 from src.models.detector import VehicleDetector, select_target  # noqa: E402
 from src.release import load_manifest  # noqa: E402
@@ -108,7 +109,7 @@ def main() -> None:
         "detector_recall_any_candidate_iou50": ratio(any_recall, len(recs)),
         "primary_target_by_threshold": by_thr,
         "latency_ms_detector_only": {"p50": float(np.percentile(lat, 50)), "p95": float(np.percentile(lat, 95)),
-                                     "mean": float(lat.mean()), "hardware": "Intel i5-1135G7, 4 torch threads, CPU",
+                                     "mean": float(lat.mean()), "hardware": hardware_label(4),
                                      "note": "detector call only, warm process, excludes decode/network"},
         "notes": ["Stanford Cars annotates one target vehicle per image; extra visible vehicles are unannotated, so "
                   "generic AP false positives include real but unlabelled vehicles.",

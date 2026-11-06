@@ -13,7 +13,16 @@
   epochs with `pretrained_changed` true for features.7/features.8. Evidence copied from the store:
   `reports/training/effb0_r1_summary.json` and `effb0_r1_train_log.jsonl`. Checkpoint (not in Git):
   `C:\semevia\store\runs\effb0_r1\best_finetuned.pt`, tag `ckpt_2339418979e1`.
-* Next: step 3, rebuild caches/heads/calibration/references/bundle on that checkpoint.
+* Step 2 commit: 42e7cbf (pushed).
+* Step 3 done: caches, heads (`reports/heads_tune_ckpt_2339418979e1.json`), development calibration,
+  references, bundle `ft_ckpt_2339418979e1_7aa5332188` promoted; `src.release verify` passes; pytest 91 passed,
+  1 skipped (ONNX encoder parity: release keeps `encoder_runtime: torch`). Production mode stays **hybrid**
+  (tune top-1 hybrid 0.7534 vs deep 0.7521: deep not clearly better). Optimization reports regenerated on
+  this PC. Fixes made on the way: `test_bundle_parity.py` used a hard-coded `imagenet_frozen` tag; latency
+  reports hard-coded the old laptop CPU name (now `src/evaluation/hardware.py`); the detector now runs on
+  CPU explicitly (Ultralytics would pick the GPU here, so evaluation would not match the CPU deployment).
+* Step 4 (negative suite): skipped, not collected by the team yet.
+* Next: step 5, P5 freeze (tune evaluation, freeze, calibration evaluation, final calibration).
 
 Updated 2026-11-06 at the P0/P1 checkpoint and partial P2. Branch `semevia/implementation`.
 Commit SHA and push status: see the bottom of this file (updated after each push).

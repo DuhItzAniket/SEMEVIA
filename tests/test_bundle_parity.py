@@ -29,7 +29,7 @@ def test_predictor_matches_cached_features_and_logits():
 
     idx = json.loads((ROOT / "artifacts/manifests/manifest_index.json").read_text(encoding="utf-8"))
     recs = read_manifest(ROOT / "artifacts/manifests" / idx["partitions"]["tune"]["file"])[:8]
-    kl, _, XL, _ = load_cache(cache_meta("learned", "tune", "annotation", idx, "imagenet_frozen"))
+    kl, _, XL, _ = load_cache(cache_meta("learned", "tune", "annotation", idx, RCFG["backbone_tag"]))
     kc, _, XC, _ = load_cache(cache_meta("classical", "tune", "annotation", idx))
     pred = Predictor({m: ROOT / p for m, p in RCFG["heads"].items()}, ROOT / RCFG["backbone"], 2)
     margin = yaml.safe_load((ROOT / "configs/features.yaml").read_text(encoding="utf-8"))["crops"]["margin"]

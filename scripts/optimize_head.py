@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT))
 import joblib  # noqa: E402
 import numpy as np  # noqa: E402
 
+from src.evaluation.hardware import hardware_label  # noqa: E402
 from src.models.cache_io import cache_meta, load_cache, store_dir  # noqa: E402
 from src.models.heads import canonical_logits, softmax, topk_accuracy  # noqa: E402
 
@@ -105,7 +106,7 @@ def main() -> None:
                        "sklearn_joblib_whole_head_incl_pca": (ROOT / rc["heads"][args.mode]).stat().st_size},
         "latency_single_row_head_only": {"onnx_fp32": lat(lambda x: s32.run(None, {"features": x}), F[:1]),
                                          "onnx_int8": lat(lambda x: s8.run(None, {"features": x}), F[:1]),
-                                         "threads": 2, "hardware": "Intel i5-1135G7 CPU"},
+                                         "threads": 2, "hardware": hardware_label(2)},
         "note": "The head is a tiny part of end-to-end time; no meaningful end-to-end speed gain is claimed from it.",
     }
     drop = report["accuracy"]["sklearn_fp32"]["tune_top1"] - report["accuracy"]["onnx_int8"]["tune_top1"]
