@@ -79,6 +79,7 @@ def main() -> None:
             hold(1.0 + secs)
 
         def analyze(path, mode="hybrid"):
+            cap("")
             pg.locator("#reset").click()
             pg.set_input_files("#file", str(path))
             pg.locator(f"input[name=mode][value={mode}]").check()
