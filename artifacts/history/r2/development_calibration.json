@@ -1,0 +1,33 @@
+{
+ "kind": "development",
+ "warning": "DEVELOPMENT calibration from the tuning split (annotation crops), the same split used to select heads. Not the final calibration; coverage claims do not apply. Replaced in P6 by a quantile from the untouched calibration partition with the frozen pipeline.",
+ "production_mode": "hybrid",
+ "backbone": "ckpt_4f3584f597d5",
+ "head_sha256": "9ea8817e2e1874c124eeff38c08c393cdcbcb19f93dc5b307d348cd443a750f3",
+ "label_order": "class_id 0..195 (original_class_id - 1)",
+ "temperature": 0.7961907426279125,
+ "alpha": 0.1,
+ "n": 815,
+ "k": 735,
+ "quantile_mode": "order_statistic",
+ "q": 0.6651730817008734,
+ "set_convention": "lac_1_minus_p_le_q_inclusive_empty_kept_v1",
+ "score_convention": "1 - p_true with p = softmax(z / T)",
+ "reject": {
+  "rule": "max calibrated probability < threshold",
+  "threshold": 0.5,
+  "known_retention_target": 0.9,
+  "tune_known_retention": 0.9276073619631902,
+  "negative_suite": "not yet available; threshold chosen on known tuning images only"
+ },
+ "diagnostics_tune": {
+  "n": 815,
+  "nll_raw": 0.4699243989734358,
+  "nll_calibrated": 0.4342133280556919,
+  "ece_raw": 0.0678227941470234,
+  "ece_calibrated": 0.0318771975826795,
+  "note": "in-sample for T (fit on the same tune predictions)"
+ },
+ "source_predictions": "tune_hybrid_ckpt_4f3584f597d5_annotation_9ea8817e2e18.npz",
+ "bundle_id": "devcal_fd2db9b45c0d"
+}

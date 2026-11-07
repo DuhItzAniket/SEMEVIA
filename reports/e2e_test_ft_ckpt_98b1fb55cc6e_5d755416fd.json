@@ -1,0 +1,419 @@
+{
+ "population": {
+  "partition": "test",
+  "count": 8041,
+  "manifest_sha256": "5eb7f6150857e11078a7ff50d08d5905badcd259d2159187a4c27cf5412cb531"
+ },
+ "bundle_id": "ft_ckpt_98b1fb55cc6e_5d755416fd",
+ "predictions_file": "e2e_test_clean_5eb7f61508_ft_ckpt_98b1fb55cc6e_5d755416fd.jsonl",
+ "definitions": {
+  "end_to_end_topk": "runtime-selected box IoU >= 0.5 with the annotation AND true class in top-k; misses count as failures; denominator = all images",
+  "predicted_crop_topk": "category-only accuracy on images where the path produced a crop (may be a wrong target)",
+  "matched_primary_topk": "category accuracy only where the runtime box has IoU >= 0.5",
+  "fine_grained_ap": "COCO AP over 196 categories, max one prediction per image (top-1 class), score = localisation score x top-1 probability (ranking score, not a probability)"
+ },
+ "modes": {
+  "classical": {
+   "end_to_end_top1": {
+    "numerator": 507,
+    "denominator": 8041,
+    "value": 0.06305185922148987
+   },
+   "end_to_end_top5": {
+    "numerator": 1192,
+    "denominator": 8041,
+    "value": 0.14824026862330555
+   },
+   "predicted_crop_top1": {
+    "numerator": 519,
+    "denominator": 6164,
+    "value": 0.08419857235561323
+   },
+   "predicted_crop_top5": {
+    "numerator": 1239,
+    "denominator": 6164,
+    "value": 0.20100584036340038
+   },
+   "matched_primary_top1": {
+    "numerator": 507,
+    "denominator": 5090,
+    "value": 0.09960707269155206
+   },
+   "matched_primary_top5": {
+    "numerator": 1192,
+    "denominator": 5090,
+    "value": 0.23418467583497052
+   },
+   "localization": {
+    "population_count": 8041,
+    "mean_iou_valid_selected": {
+     "numerator": 4189.006737447266,
+     "denominator": 6164,
+     "value": 0.6795922675936511
+    },
+    "mean_iou_zero_for_failures": {
+     "numerator": 4189.006737447266,
+     "denominator": 8041,
+     "value": 0.5209559429731707
+    },
+    "primary_recall_at_iou": {
+     "numerator": 5090,
+     "denominator": 8041,
+     "value": 0.6330058450441487
+    },
+    "iou_threshold": 0.5,
+    "missing": 1877,
+    "invalid": 0,
+    "wrong_target_below_thr": 1074
+   },
+   "localization_source": "contour proposal",
+   "fine_grained_ap": {
+    "AP50_95": 0.019677591520168663,
+    "AP50": 0.027242623005562717,
+    "num_predictions": 6164,
+    "num_ground_truth": 8041,
+    "settings": {
+     "iouThrs": "0.50:0.05:0.95",
+     "recThrs": 101,
+     "maxDets": [
+      1,
+      10,
+      100
+     ],
+     "areaRng": "all"
+    },
+    "evaluator": "pycocotools COCOeval bbox"
+   }
+  },
+  "deep": {
+   "end_to_end_top1": {
+    "numerator": 7385,
+    "denominator": 8041,
+    "value": 0.9184181072005969
+   },
+   "end_to_end_top5": {
+    "numerator": 7870,
+    "denominator": 8041,
+    "value": 0.9787339883099117
+   },
+   "predicted_crop_top1": {
+    "numerator": 7397,
+    "denominator": 7992,
+    "value": 0.9255505505505506
+   },
+   "predicted_crop_top5": {
+    "numerator": 7883,
+    "denominator": 7992,
+    "value": 0.9863613613613613
+   },
+   "matched_primary_top1": {
+    "numerator": 7385,
+    "denominator": 7971,
+    "value": 0.9264835026972776
+   },
+   "matched_primary_top5": {
+    "numerator": 7870,
+    "denominator": 7971,
+    "value": 0.9873290678710325
+   },
+   "localization": {
+    "population_count": 8041,
+    "mean_iou_valid_selected": {
+     "numerator": 7547.7288703947825,
+     "denominator": 7992,
+     "value": 0.9444105193186665
+    },
+    "mean_iou_zero_for_failures": {
+     "numerator": 7547.7288703947825,
+     "denominator": 8041,
+     "value": 0.9386554993651016
+    },
+    "primary_recall_at_iou": {
+     "numerator": 7971,
+     "denominator": 8041,
+     "value": 0.9912946150976246
+    },
+    "iou_threshold": 0.5,
+    "missing": 49,
+    "invalid": 0,
+    "wrong_target_below_thr": 21
+   },
+   "localization_source": "YOLO11n primary target",
+   "fine_grained_ap": {
+    "AP50_95": 0.8278180671523776,
+    "AP50": 0.8962744883685057,
+    "num_predictions": 7992,
+    "num_ground_truth": 8041,
+    "settings": {
+     "iouThrs": "0.50:0.05:0.95",
+     "recThrs": 101,
+     "maxDets": [
+      1,
+      10,
+      100
+     ],
+     "areaRng": "all"
+    },
+    "evaluator": "pycocotools COCOeval bbox"
+   }
+  },
+  "hybrid": {
+   "end_to_end_top1": {
+    "numerator": 7382,
+    "denominator": 8041,
+    "value": 0.9180450192762094
+   },
+   "end_to_end_top5": {
+    "numerator": 7879,
+    "denominator": 8041,
+    "value": 0.9798532520830743
+   },
+   "predicted_crop_top1": {
+    "numerator": 7394,
+    "denominator": 7992,
+    "value": 0.9251751751751752
+   },
+   "predicted_crop_top5": {
+    "numerator": 7892,
+    "denominator": 7992,
+    "value": 0.9874874874874875
+   },
+   "matched_primary_top1": {
+    "numerator": 7382,
+    "denominator": 7971,
+    "value": 0.9261071383766152
+   },
+   "matched_primary_top5": {
+    "numerator": 7879,
+    "denominator": 7971,
+    "value": 0.9884581608330197
+   },
+   "localization": {
+    "population_count": 8041,
+    "mean_iou_valid_selected": {
+     "numerator": 7547.7288703947825,
+     "denominator": 7992,
+     "value": 0.9444105193186665
+    },
+    "mean_iou_zero_for_failures": {
+     "numerator": 7547.7288703947825,
+     "denominator": 8041,
+     "value": 0.9386554993651016
+    },
+    "primary_recall_at_iou": {
+     "numerator": 7971,
+     "denominator": 8041,
+     "value": 0.9912946150976246
+    },
+    "iou_threshold": 0.5,
+    "missing": 49,
+    "invalid": 0,
+    "wrong_target_below_thr": 21
+   },
+   "localization_source": "YOLO11n primary target",
+   "fine_grained_ap": {
+    "AP50_95": 0.8270595320379681,
+    "AP50": 0.8956131139505032,
+    "num_predictions": 7992,
+    "num_ground_truth": 8041,
+    "settings": {
+     "iouThrs": "0.50:0.05:0.95",
+     "recThrs": 101,
+     "maxDets": [
+      1,
+      10,
+      100
+     ],
+     "areaRng": "all"
+    },
+    "evaluator": "pycocotools COCOeval bbox"
+   }
+  }
+ },
+ "passport_production_mode": {
+  "mode": "hybrid",
+  "calibration_kind": "final",
+  "calibration_bundle": "cal_59ab4a37b8b6",
+  "caveat": null,
+  "sets_all_inputs": {
+   "coverage": {
+    "numerator": 7373,
+    "denominator": 8041,
+    "value": 0.9169257555030469
+   },
+   "mean_set_size": 2.162168884467106,
+   "median_set_size": 1.0,
+   "singleton": {
+    "numerator": 7654,
+    "denominator": 8041,
+    "value": 0.9518716577540107
+   },
+   "singleton_accuracy": {
+    "numerator": 7263,
+    "denominator": 7654,
+    "value": 0.9489155996864385
+   },
+   "empty": {
+    "numerator": 274,
+    "denominator": 8041,
+    "value": 0.03407536376072628
+   },
+   "specific_answer_rate": {
+    "numerator": 7709,
+    "denominator": 8041,
+    "value": 0.9587116030344485
+   }
+  },
+  "accepted": {
+   "retention": {
+    "numerator": 7567,
+    "denominator": 8041,
+    "value": 0.9410521079467727
+   },
+   "accepted_end_to_end_accuracy": {
+    "numerator": 7183,
+    "denominator": 7567,
+    "value": 0.9492533368574072
+   },
+   "threshold": 0.5
+  },
+  "calibration_matched_primary": {
+   "n": 7971,
+   "excluded_miss_or_wrong_target": 70,
+   "ece_raw": 0.1309629091222779,
+   "ece_calibrated": {
+    "ece": 0.027301832622237128,
+    "n": 7971,
+    "bins": [
+     {
+      "bin": [
+       0.0,
+       0.1
+      ],
+      "count": 13,
+      "accuracy": 0.15384615384615385,
+      "mean_confidence": 0.08568550937506428
+     },
+     {
+      "bin": [
+       0.1,
+       0.2
+      ],
+      "count": 58,
+      "accuracy": 0.2413793103448276,
+      "mean_confidence": 0.15713498458131409
+     },
+     {
+      "bin": [
+       0.2,
+       0.3
+      ],
+      "count": 88,
+      "accuracy": 0.42045454545454547,
+      "mean_confidence": 0.24836900038242105
+     },
+     {
+      "bin": [
+       0.3,
+       0.4
+      ],
+      "count": 112,
+      "accuracy": 0.5,
+      "mean_confidence": 0.34724085639487196
+     },
+     {
+      "bin": [
+       0.4,
+       0.5
+      ],
+      "count": 146,
+      "accuracy": 0.6164383561643836,
+      "mean_confidence": 0.45814903669041485
+     },
+     {
+      "bin": [
+       0.5,
+       0.6
+      ],
+      "count": 184,
+      "accuracy": 0.6141304347826086,
+      "mean_confidence": 0.5509907280559859
+     },
+     {
+      "bin": [
+       0.6,
+       0.7
+      ],
+      "count": 188,
+      "accuracy": 0.7606382978723404,
+      "mean_confidence": 0.6533586450305339
+     },
+     {
+      "bin": [
+       0.7,
+       0.8
+      ],
+      "count": 272,
+      "accuracy": 0.8161764705882353,
+      "mean_confidence": 0.7506883853815935
+     },
+     {
+      "bin": [
+       0.8,
+       0.9
+      ],
+      "count": 407,
+      "accuracy": 0.8968058968058968,
+      "mean_confidence": 0.8556682412145729
+     },
+     {
+      "bin": [
+       0.9,
+       1.0
+      ],
+      "count": 6503,
+      "accuracy": 0.9749346455482085,
+      "mean_confidence": 0.988796830707718
+     }
+    ]
+   },
+   "nll_raw": 0.44991010839096185,
+   "nll_calibrated": 0.3190331962288055
+  }
+ },
+ "latency_ms": {
+  "detector_p50": 36.9,
+  "detector_p95": 49.7,
+  "features_and_heads_per_crop_mean_batched": 39.778078078078074,
+  "hardware": "Intel(R) Core(TM) i7-14650HX CPU, 4 torch threads, 24 logical cores",
+  "note": "offline batch timing, not user-visible latency"
+ },
+ "summary": {
+  "classical": {
+   "e2e_top1": 0.06305185922148987,
+   "e2e_top5": 0.14824026862330555,
+   "matched_top1": 0.09960707269155206,
+   "fg_AP50": 0.027242623005562717,
+   "loc_recall50": 0.6330058450441487
+  },
+  "deep": {
+   "e2e_top1": 0.9184181072005969,
+   "e2e_top5": 0.9787339883099117,
+   "matched_top1": 0.9264835026972776,
+   "fg_AP50": 0.8962744883685057,
+   "loc_recall50": 0.9912946150976246
+  },
+  "hybrid": {
+   "e2e_top1": 0.9180450192762094,
+   "e2e_top5": 0.9798532520830743,
+   "matched_top1": 0.9261071383766152,
+   "fg_AP50": 0.8956131139505032,
+   "loc_recall50": 0.9912946150976246
+  }
+ },
+ "condition": {
+  "name": "clean",
+  "type": "none"
+ },
+ "wall_seconds_this_run": 817.9
+}

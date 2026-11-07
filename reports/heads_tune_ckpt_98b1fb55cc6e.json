@@ -1,0 +1,348 @@
+{
+ "backbone": "ckpt_98b1fb55cc6e",
+ "backbone_status": "fine-tuned checkpoint",
+ "learned_feature_version": "effb0_pool1280_ckpt_98b1fb55cc6e",
+ "preprocess_version": "crop_squash320_bilinear_imagenetnorm_v1",
+ "classical_feature_version": "hc_v1",
+ "crop_policy": "annotation_margin0.05",
+ "train": {
+  "count": 6514,
+  "manifest_sha256": "a78aaf50b8171e4452179e8095dc54899ed16a280233a7152c3997b1fd87c179"
+ },
+ "tune": {
+  "count": 815,
+  "manifest_sha256": "0f54c77a26c98e021bf8472511f7db67e84e2cbc0258caa3048298efb0da79e3"
+ },
+ "population_note": "Tune partition, annotation (oracle) crops; development diagnostic, not test or end-to-end accuracy.",
+ "protocol": "Each head (incl. ablations) refit on train rows; C selected from the same fixed grid by tune top-1; PCA and scalers fit on train rows only.",
+ "heads": {
+  "deep": {
+   "spec": {
+    "use_learned": true,
+    "hc_groups": [],
+    "branch_balance": "per_feature"
+   },
+   "grid": [
+    {
+     "C": 0.005,
+     "tune_top1": 0.9361963190184049,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.6141,
+     "train_top1": 0.998925391464538,
+     "input_dim": 1280,
+     "fit_seconds": 1.6
+    },
+    {
+     "C": 0.02,
+     "tune_top1": 0.939877300613497,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.4598,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1280,
+     "fit_seconds": 1.6
+    },
+    {
+     "C": 0.1,
+     "tune_top1": 0.9411042944785276,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.3833,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1280,
+     "fit_seconds": 2.1
+    }
+   ],
+   "selected": {
+    "C": 0.1,
+    "tune_top1": 0.9411042944785276,
+    "tune_top5": 0.9877300613496932,
+    "tune_nll": 0.3833,
+    "train_top1": 0.9992324224746699,
+    "input_dim": 1280,
+    "fit_seconds": 2.1
+   }
+  },
+  "hybrid": {
+   "spec": {
+    "use_learned": true,
+    "hc_groups": [
+     "hog",
+     "lbp",
+     "hsv",
+     "geometry",
+     "flags"
+    ],
+    "branch_balance": "per_feature"
+   },
+   "grid": [
+    {
+     "C": 0.005,
+     "tune_top1": 0.9386503067484663,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.6165,
+     "train_top1": 0.998925391464538,
+     "input_dim": 1344,
+     "fit_seconds": 4.2
+    },
+    {
+     "C": 0.02,
+     "tune_top1": 0.9423312883435583,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.4616,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 4.3
+    },
+    {
+     "C": 0.1,
+     "tune_top1": 0.9411042944785276,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.3831,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 4.7
+    }
+   ],
+   "selected": {
+    "C": 0.02,
+    "tune_top1": 0.9423312883435583,
+    "tune_top5": 0.9877300613496932,
+    "tune_nll": 0.4616,
+    "train_top1": 0.9992324224746699,
+    "input_dim": 1344,
+    "fit_seconds": 4.3
+   }
+  },
+  "hybrid_equal_variance": {
+   "spec": {
+    "use_learned": true,
+    "hc_groups": [
+     "hog",
+     "lbp",
+     "hsv",
+     "geometry",
+     "flags"
+    ],
+    "branch_balance": "equal_variance"
+   },
+   "grid": [
+    {
+     "C": 0.005,
+     "tune_top1": 0.9202453987730062,
+     "tune_top5": 0.9901840490797545,
+     "tune_nll": 0.6623,
+     "train_top1": 0.9990789069696039,
+     "input_dim": 1344,
+     "fit_seconds": 4.3
+    },
+    {
+     "C": 0.02,
+     "tune_top1": 0.9251533742331288,
+     "tune_top5": 0.9901840490797545,
+     "tune_nll": 0.4994,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 4.4
+    },
+    {
+     "C": 0.1,
+     "tune_top1": 0.9251533742331288,
+     "tune_top5": 0.9901840490797545,
+     "tune_nll": 0.4098,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 5.7
+    }
+   ],
+   "selected": {
+    "C": 0.02,
+    "tune_top1": 0.9251533742331288,
+    "tune_top5": 0.9901840490797545,
+    "tune_nll": 0.4994,
+    "train_top1": 0.9992324224746699,
+    "input_dim": 1344,
+    "fit_seconds": 4.4
+   }
+  },
+  "hybrid_no_hog": {
+   "spec": {
+    "use_learned": true,
+    "hc_groups": [
+     "lbp",
+     "hsv",
+     "geometry",
+     "flags"
+    ],
+    "branch_balance": "per_feature"
+   },
+   "grid": [
+    {
+     "C": 0.005,
+     "tune_top1": 0.9349693251533743,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.6157,
+     "train_top1": 0.998925391464538,
+     "input_dim": 1329,
+     "fit_seconds": 1.6
+    },
+    {
+     "C": 0.02,
+     "tune_top1": 0.9411042944785276,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.4613,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1329,
+     "fit_seconds": 1.7
+    },
+    {
+     "C": 0.1,
+     "tune_top1": 0.939877300613497,
+     "tune_top5": 0.9889570552147239,
+     "tune_nll": 0.3841,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1329,
+     "fit_seconds": 2.1
+    }
+   ],
+   "selected": {
+    "C": 0.02,
+    "tune_top1": 0.9411042944785276,
+    "tune_top5": 0.9877300613496932,
+    "tune_nll": 0.4613,
+    "train_top1": 0.9992324224746699,
+    "input_dim": 1329,
+    "fit_seconds": 1.7
+   }
+  },
+  "hybrid_no_color_texture": {
+   "spec": {
+    "use_learned": true,
+    "hc_groups": [
+     "hog",
+     "geometry",
+     "flags"
+    ],
+    "branch_balance": "per_feature"
+   },
+   "grid": [
+    {
+     "C": 0.005,
+     "tune_top1": 0.9386503067484663,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.6166,
+     "train_top1": 0.998925391464538,
+     "input_dim": 1344,
+     "fit_seconds": 4.3
+    },
+    {
+     "C": 0.02,
+     "tune_top1": 0.9423312883435583,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.4617,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 4.0
+    },
+    {
+     "C": 0.1,
+     "tune_top1": 0.9411042944785276,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.3832,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 4.6
+    }
+   ],
+   "selected": {
+    "C": 0.02,
+    "tune_top1": 0.9423312883435583,
+    "tune_top5": 0.9877300613496932,
+    "tune_nll": 0.4617,
+    "train_top1": 0.9992324224746699,
+    "input_dim": 1344,
+    "fit_seconds": 4.0
+   }
+  },
+  "hybrid_no_geometry": {
+   "spec": {
+    "use_learned": true,
+    "hc_groups": [
+     "hog",
+     "lbp",
+     "hsv",
+     "flags"
+    ],
+    "branch_balance": "per_feature"
+   },
+   "grid": [
+    {
+     "C": 0.005,
+     "tune_top1": 0.9386503067484663,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.6166,
+     "train_top1": 0.998925391464538,
+     "input_dim": 1344,
+     "fit_seconds": 4.2
+    },
+    {
+     "C": 0.02,
+     "tune_top1": 0.9423312883435583,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.4617,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 4.3
+    },
+    {
+     "C": 0.1,
+     "tune_top1": 0.9411042944785276,
+     "tune_top5": 0.9877300613496932,
+     "tune_nll": 0.3832,
+     "train_top1": 0.9992324224746699,
+     "input_dim": 1344,
+     "fit_seconds": 4.6
+    }
+   ],
+   "selected": {
+    "C": 0.02,
+    "tune_top1": 0.9423312883435583,
+    "tune_top5": 0.9877300613496932,
+    "tune_nll": 0.4617,
+    "train_top1": 0.9992324224746699,
+    "input_dim": 1344,
+    "fit_seconds": 4.3
+   }
+  }
+ },
+ "artifacts": {
+  "deep": {
+   "path": "heads\\deep_ckpt_98b1fb55cc6e_C0.1.joblib",
+   "sha256": "a9209777ea6b55a925d3a6db855f71d75a2f53c3e40e6a3a945d1be3343dad2f",
+   "bytes": 2042361
+  },
+  "hybrid": {
+   "path": "heads\\hybrid_ckpt_98b1fb55cc6e_C0.02.joblib",
+   "sha256": "696ccd3b3d4cd48496029aa1dbd9bd623c4657fdc3cf6d5ae9f322b6f64003eb",
+   "bytes": 3134873
+  },
+  "hybrid_equal_variance": {
+   "path": "heads\\hybrid_equal_variance_ckpt_98b1fb55cc6e_C0.02.joblib",
+   "sha256": "5971abb351c02627d5b6914d80c8823430460deb9987bf095145cf0870b10076",
+   "bytes": 3134889
+  },
+  "hybrid_no_hog": {
+   "path": "heads\\hybrid_no_hog_ckpt_98b1fb55cc6e_C0.02.joblib",
+   "sha256": "8f970ac8e922c33910da24bdbdbf14e9c831ce8d9846e96251378f18bba94286",
+   "bytes": 2144777
+  },
+  "hybrid_no_color_texture": {
+   "path": "heads\\hybrid_no_color_texture_ckpt_98b1fb55cc6e_C0.02.joblib",
+   "sha256": "dbaf01957a4f61ff7b19b5f083242916f249deb083c27ca21717341834a949a8",
+   "bytes": 3112025
+  },
+  "hybrid_no_geometry": {
+   "path": "heads\\hybrid_no_geometry_ckpt_98b1fb55cc6e_C0.02.joblib",
+   "sha256": "91473aa3dfcff2190084ec05edc1b91148fb91275216b02dbad45401600d6665",
+   "bytes": 3130521
+  }
+ }
+}

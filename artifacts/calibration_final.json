@@ -2,21 +2,21 @@
  "kind": "final",
  "warning": null,
  "production_mode": "hybrid",
- "backbone": "ckpt_4f3584f597d5",
- "head_sha256": "9ea8817e2e1874c124eeff38c08c393cdcbcb19f93dc5b307d348cd443a750f3",
- "model_fingerprint": "68e07695555c757978396249d76b92ae076343d0f5e370af229c6a14e044418a",
+ "backbone": "ckpt_98b1fb55cc6e",
+ "head_sha256": "696ccd3b3d4cd48496029aa1dbd9bd623c4657fdc3cf6d5ae9f322b6f64003eb",
+ "model_fingerprint": "5d97761f5b6c726d1b246f48222a1ff9c8491259ca3f76cb33c9824235ff205c",
  "label_order": "class_id 0..195 (original_class_id - 1)",
- "temperature": 0.801577072272621,
+ "temperature": 0.6586010758968961,
  "alpha": 0.1,
  "n": 815,
  "k": 735,
  "quantile_mode": "order_statistic",
- "q": 0.7756877508814165,
+ "q": 0.6011246256176459,
  "set_convention": "lac_1_minus_p_le_q_inclusive_empty_kept_v1",
  "score_convention": "1 - p_true with p = softmax(z / T); no-detection inputs use the uniform fallback 1 - 1/196",
  "reject": {
   "rule": "max calibrated probability < threshold",
-  "threshold": 0.4,
+  "threshold": 0.5,
   "selection": "minimise negative false acceptance subject to known retention >= target",
   "negatives_used": true
  },
@@ -25,10 +25,10 @@
   "count": 815,
   "manifest_sha256": "f3b19f8386f10c491c62964fe8aa16c57779376fca6d3a4c69f5559dbbf34495",
   "detection_failures_with_fallback_score": 5,
-  "predictions_file": "e2e_calibration_clean_f3b19f8386_ft_ckpt_4f3584f597d5_c13883508a.jsonl",
-  "predictions_sha256": "f76639943de758610042dbf47a46603c05512de532afc518df204b6831208307"
+  "predictions_file": "e2e_calibration_clean_f3b19f8386_ft_ckpt_98b1fb55cc6e_f99e386191.jsonl",
+  "predictions_sha256": "3745923f752bd82a003c0b8eef41208d5036123b86487c7961b7956204c4ea36"
  },
- "freeze_sha256": "c5fcb7c4dd068e1b2d4170b27e2aa9abb8031b8642d0c1d374cca76d380f5984",
+ "freeze_sha256": "fa234106328d3fa1ee49b999dc0033cdccac74c5bfa0233dc308cfaa2bbad961",
  "interpretation": "Nominal marginal coverage 1 - alpha for supported-category inputs under exchangeability with the calibration partition. Not a per-image probability; does not cover unsupported vehicles or perturbed inputs.",
- "bundle_id": "cal_f314c9558043"
+ "bundle_id": "cal_59ab4a37b8b6"
 }
