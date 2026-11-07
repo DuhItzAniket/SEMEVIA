@@ -6,6 +6,23 @@
 Upload a photo of a car. SEMEVIA tells you its make, model and year, and how sure it really is.</p>
 
 <p align="center">
+<a href="https://semevia-298534486429.asia-south1.run.app"><img src="https://img.shields.io/badge/demo-live-brightgreen?logo=googlecloud&logoColor=white" alt="Live demo"></a>
+<a href="https://github.com/DuhItzAniket/SEMEVIA/actions/workflows/ci.yml"><img src="https://github.com/DuhItzAniket/SEMEVIA/actions/workflows/ci.yml/badge.svg?branch=semevia/implementation" alt="CI"></a>
+<a href="https://doi.org/10.5281/zenodo.24026963"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.24026963.svg" alt="DOI 10.5281/zenodo.24026963"></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0"></a>
+<a href="eval_P5_T35.md"><img src="https://img.shields.io/badge/test%20top--1-91.8%25-success" alt="Test top-1 91.8%"></a>
+</p>
+
+<p align="center">
+<img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11">
+<img src="https://img.shields.io/badge/PyTorch-2.15-EE4C2C?logo=pytorch&logoColor=white" alt="PyTorch 2.15">
+<img src="https://img.shields.io/badge/YOLO11n-Ultralytics-111F68" alt="YOLO11n (Ultralytics)">
+<img src="https://img.shields.io/badge/FastAPI-0.162-009688?logo=fastapi&logoColor=white" alt="FastAPI 0.162">
+<img src="https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white" alt="Docker ready">
+<img src="https://img.shields.io/badge/dataset-Stanford%20Cars%20(196%20classes)-8C1515" alt="Dataset: Stanford Cars, 196 classes">
+</p>
+
+<p align="center">
 <a href="https://semevia-298534486429.asia-south1.run.app"><b>Try it live</b></a> ·
 <a href="eval_P5_T35.md">Results</a> ·
 <a href="#video-showing-it-live">Demo video</a>
@@ -35,8 +52,8 @@ sometimes only the model family or just the brand.
 | Classic image features | OpenCV, scikit-image (edges, shapes, texture, colour) |
 | Final classifier and confidence | scikit-learn |
 | Website | FastAPI (backend), plain HTML, CSS and JavaScript (frontend) |
-| Packaging and hosting | Docker, Cloudflare Tunnel; model files on GitHub Releases |
-| Speed-up experiments | ONNX Runtime |
+| Packaging and hosting | Docker, Google Cloud Run; model files on GitHub Releases |
+| Speed-up and compression | ONNX Runtime (8-bit final classifier) |
 
 ## Features
 
@@ -72,9 +89,10 @@ sometimes only the model family or just the brand.
    claims what the evidence supports.
 5. **Lock it, then test once.** We froze the final model, then tested it a single time on 8,041 photos it had
    never seen.
-6. **Try to make it smaller and faster.** We converted the network to ONNX and tried 8-bit compression. The
-   compressed network lost too much accuracy, so the app keeps the full-precision model.
-7. **Ship it.** We packaged everything in Docker and put it online.
+6. **Try to make it smaller and faster.** We converted the network to ONNX and tried 8-bit compression.
+   Compressing the whole network lost too much accuracy, so it stays full precision. Only the small final
+   classifier runs in 8-bit, with the same test accuracy.
+7. **Ship it.** We packaged everything in Docker and put it online on Google Cloud Run.
 
 ### How well it works
 
@@ -87,7 +105,7 @@ Measured on the 8,041 unseen test photos (full details in [eval_P5_T35.md](eval_
 | Classical | 6.3% | 14.8% |
 
 - The car was found correctly in **99.1%** of the photos.
-- A result comes back in about **half a second** on the live site (463 ms typical).
+- A result comes back in about **half a second** on the live site (508 ms typical).
 - The classical features on their own are weak at telling 196 similar models apart; the neural network makes
   the big difference.
 
@@ -139,6 +157,27 @@ to `.env`. To retrain or re-run the evaluation, follow [docs/runbook_other_pc.md
 ## Video Showing It Live
 
 *Coming soon. The demo video will be added here once the demo is recorded.*
+
+## Citation
+
+SEMEVIA is archived on Zenodo: [10.5281/zenodo.24026963](https://doi.org/10.5281/zenodo.24026963) (all versions;
+v1.0.0 is [10.5281/zenodo.24026964](https://doi.org/10.5281/zenodo.24026964)). GitHub's **Cite this
+repository** button uses [CITATION.cff](CITATION.cff).
+
+```bibtex
+@software{kumar_lakshanaa_2026_semevia,
+  author    = {Kumar, Aniket and Lakshanaa, C},
+  title     = {SEMEVIA: fine-grained vehicle recognition with an Identity Evidence Passport},
+  year      = {2026},
+  version   = {1.0.0},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.24026963},
+  url       = {https://doi.org/10.5281/zenodo.24026963}
+}
+```
+
+Dataset: J. Krause, M. Stark, J. Deng and L. Fei-Fei, "3D Object Representations for Fine-Grained
+Categorization", 4th IEEE Workshop on 3D Representation and Recognition, at ICCV 2013.
 
 ---
 
