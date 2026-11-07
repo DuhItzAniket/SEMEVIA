@@ -16,15 +16,14 @@ Upload a photo of a car. SEMEVIA tells you its make, model and year, and how sur
 ## Introduction
 
 Many cars look almost the same: the same brand, the same shape, only a different year or trim. SEMEVIA is our
-answer to **PS5, Intelligent Fine-Grained Vehicle Recognition and Analysis** (Computer Vision Hackathon 2026).
+answer to **Intelligent Fine-Grained Vehicle Recognition and Analysis**.
 
-You give it a photo. It finds the car, names it among **196 car models** from the Stanford Cars dataset (for
-example *Audi R8 Coupe 2012*), and shows its top 5 guesses. It also gives an **Evidence Passport**: instead of
+You give it a photo. It finds the car, names it among **196 car models** from the Stanford Cars dataset, and shows its top 5 guesses. It also gives an **Evidence Passport**: instead of
 always claiming one exact answer, it says what the photo actually supports. Sometimes that is the exact model;
-sometimes only the model family (e.g. *Ford F-150*) or just the brand.
+sometimes only the model family or just the brand.
 
 **Live app:** <https://semevia-298534486429.asia-south1.run.app>
-(works on phone and laptop; currently served from a team laptop, so it is online only while that laptop is on)
+
 
 ## Technologies Used
 
@@ -105,10 +104,7 @@ Measured on the 8,041 unseen test photos (full details in [eval_P5_T35.md](eval_
 ## How It Could Be Improved
 
 - **Newer cars.** The dataset stops at 2012 models; newer cars and other vehicle types are not recognised.
-- **Better rejection of non-car photos.** About 1 in 8 of our test non-car photos was still accepted as a car
-  (for example, a city bus was named as a Hummer).
 - **Several cars in one photo.** The app always picks the largest car.
-- **Always-on hosting.** Move the app from the team laptop to a cloud server, so the link never goes down.
 - **A smaller, faster model** that keeps its accuracy, for phones and cheaper servers.
 - **Show pictures of similar cars.** Reference matches are shown as names only, because of the dataset's image rights.
 
