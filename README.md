@@ -41,6 +41,25 @@ sometimes only the model family or just the brand.
 
 **Live app:** <https://semevia.web.app> (direct Cloud Run address: <https://semevia-298534486429.asia-south1.run.app>)
 
+## Project Documents
+
+Everything the problem statement asks for, in one place:
+
+| Deliverable | Where to find it |
+|---|---|
+| Live hosted application | <https://semevia.web.app> |
+| Complete source code | This repository: [app/](app/) (website), [src/](src/) (vision and models), [scripts/](scripts/) (training and evaluation) |
+| System architecture diagram | [docs/architecture.md](docs/architecture.md) |
+| Design document | [docs/design.md](docs/design.md) |
+| Comparative evaluation results | [eval_P5_T35.md](eval_P5_T35.md) (Top-1/Top-5, IoU, mAP, model size and speed, robustness, confidence) |
+| Ablation study | [eval_P5_T35.md, section 7](eval_P5_T35.md#7-ablations) |
+| Failure-case analysis | [eval_P5_T35.md, section 8](eval_P5_T35.md#8-failure-analysis) |
+| Raw result files and charts | [reports/](reports/), charts in [reports/figures/](reports/figures/) |
+| How to reproduce the results | [Reproduce the Results](#reproduce-the-results) below, full commands in [docs/runbook_other_pc.md](docs/runbook_other_pc.md) |
+| Limitations and ethics | [Limitations](#limitations) and [Ethics and Privacy](#ethics-and-privacy) below |
+| Demo script and viva notes | [docs/demo.md](docs/demo.md), [docs/viva_prep.md](docs/viva_prep.md) |
+| Licences | [LICENSE](LICENSE) (code), [LICENSE-MODELS.md](LICENSE-MODELS.md) (model files and third-party material) |
+
 
 ## Technologies Used
 
@@ -135,12 +154,45 @@ Measured on the 8,041 unseen test photos (full details in [eval_P5_T35.md](eval_
 - **Smaller is not always better.** Compressing the model made it faster but broke its accuracy.
 - **Deployment takes real work.** Disk space, Docker images and free hosting limits took as much care as the model.
 
+## Limitations
+
+- **Only 196 car models, up to 2012.** Newer cars and other vehicles are outside the dataset, so the app can
+  give a wrong name for them.
+- **Rejecting non-car photos is not perfect.** On 40 held-out test photos that should be rejected, 5 were wrongly
+  accepted: 4 of 10 buses and trucks and 1 of 10 newer cars (0 of 10 non-vehicle photos and 0 of 10
+  motorbikes). One city bus, for example, was named as a Hummer SUV.
+- **One car per photo.** If there are several cars, the app picks the largest one.
+- **Some dataset labels disagree.** Stanford Cars has 37 groups of duplicate photos with different labels,
+  mostly neighbouring model years, so some years cannot be told apart reliably.
+- **Viewing-angle results are a small sample.** They come from 60 test photos whose angle labels were made
+  automatically and are still to be checked by us.
+- **The six-region challenge does not name car parts.** It only measures how much blurring each region changes
+  the answer.
+- **Only part of the model is compressed.** 8-bit compression of the whole network lost too much accuracy, so
+  only the final classifier is 8-bit.
+- **Hosting runs on free-trial credit.** The live site stays up while the Google Cloud credit lasts.
+
 ## How It Could Be Improved
 
 - **Newer cars.** The dataset stops at 2012 models; newer cars and other vehicle types are not recognised.
 - **Several cars in one photo.** The app always picks the largest car.
 - **A smaller, faster model** that keeps its accuracy, for phones and cheaper servers.
 - **Show pictures of similar cars.** Reference matches are shown as names only, because of the dataset's image rights.
+
+## Ethics and Privacy
+
+- **Uploaded photos are never stored.** They are kept in memory for a short time to show the result, then
+  deleted. They are not written to disk or logs, and the downloadable result contains no image pixels.
+- **It identifies car models, not people.** It does not read number plates, track vehicles or recognise faces,
+  and its answer is not proof of a car's identity.
+- **Dataset rights are respected.** Stanford Cars is for non-commercial research only. Its photos are not copied
+  into this repository or the app, which is also why similar cars are shown as names, not pictures. The trained
+  model files carry the same non-commercial condition.
+- **Other photos are credited.** The example and test photos we added are openly licensed, with their sources
+  and authors recorded ([app/static/examples/credits.json](app/static/examples/credits.json),
+  [artifacts/negative_manifests/](artifacts/negative_manifests/)).
+- **Results are reported honestly.** Every number comes from saved result files, the test set was used once
+  per model version, and known failures are listed instead of hidden.
 
 ## How to Run the Project
 
@@ -167,8 +219,28 @@ venv/Scripts/python -m uvicorn app.main:app --port 8000
 ```
 
 On macOS or Linux use `venv/bin/` instead of `venv/Scripts/`. Optional local settings: copy `.env.example`
-to `.env`. To retrain or re-run the evaluation, follow [docs/runbook_other_pc.md](docs/runbook_other_pc.md).
+to `.env`.
 </details>
+
+## Reproduce the Results
+
+Running the app needs no dataset. Retraining and re-testing do, and a GPU is strongly recommended. The full,
+step-by-step commands (with checks after each step) are in [docs/runbook_other_pc.md](docs/runbook_other_pc.md).
+In short:
+
+1. **Get the data.** `git clone --depth 1 https://github.com/jhpohovey/StanfordCars.git`, then set
+   `SEMEVIA_DATA_ROOT` to its `stanford_cars` folder (see [.env.example](.env.example)).
+2. **Rebuild and check the splits.** `python scripts/prepare_data.py --config configs/data.yaml`. The result must
+   match [artifacts/manifests/](artifacts/manifests/) exactly, so everyone gets the same train, tune,
+   calibration and test photos.
+3. **Fine-tune the network.** `python scripts/train.py --config configs/train_v3.yaml --resume auto`
+4. **Build the classifiers and calibration**, then **lock the model** with `scripts/freeze.py`.
+5. **Test once** on the 8,041 test photos with `scripts/evaluate.py --partition test --confirm-frozen`.
+6. **Write the results file.** `python scripts/report.py --team-id T35 --usns "1RUA24CSE0051,1RUA24CSE0097"`
+   regenerates [eval_P5_T35.md](eval_P5_T35.md) from the saved result files.
+
+The released model files are on GitHub Release `model-v3`, with their checksums in
+[artifacts/release_manifest.json](artifacts/release_manifest.json), so the app can be checked without retraining.
 
 ## Video Showing It Live
 
