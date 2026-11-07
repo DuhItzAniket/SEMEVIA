@@ -1,13 +1,13 @@
 {
- "created_at": "2026-11-06T22:16:35.301196+00:00",
+ "created_at": "2026-11-07T00:15:51.759923+00:00",
  "image": "semevia:local",
- "image_size": "3.12GB",
+ "image_size": "3.19GB",
  "host": "Intel(R) Core(TM) i7-14650HX CPU, 24 logical cores",
  "note": "local Docker Desktop checks; not the public-host release acceptance",
  "online_readyz": {
   "ready": true,
-  "bundle_id": "ft_ckpt_4f3584f597d5_9662c2e703",
-  "warmup_ms": 3536.0,
+  "bundle_id": "ft_ckpt_98b1fb55cc6e_5d755416fd",
+  "warmup_ms": 3204.1,
   "detector": "yolo11n:0ebbc80d4a76",
   "recognition": true,
   "recognition_reason": null,
@@ -18,7 +18,7 @@
   ],
   "production_mode": "hybrid",
   "calibration_kind": "final",
-  "backbone": "fine-tuned EfficientNet-B0 (effb0_r2, 12 fine-tuning epoch(s), best tune top-1 0.9166)",
+  "backbone": "fine-tuned EfficientNet-B0 (effb0_r3, 21 fine-tuning epoch(s), best tune top-1 0.9485)",
   "references": true,
   "references_reason": null,
   "encoder_runtime": "torch"
@@ -27,31 +27,31 @@
   {
    "file": "cars_test/00001.jpg",
    "status": "ok",
-   "ms_client": 109.4,
+   "ms_client": 117.7,
    "detection_state": "detected"
   },
   {
    "file": "cars_test/00002.jpg",
    "status": "ok",
-   "ms_client": 106.8,
+   "ms_client": 113.3,
    "detection_state": "detected"
   },
   {
    "file": "cars_test/00003.jpg",
    "status": "ok",
-   "ms_client": 152.8,
+   "ms_client": 157.7,
    "detection_state": "detected"
   },
   {
    "file": "cars_test/00004.jpg",
    "status": "ok",
-   "ms_client": 95.0,
+   "ms_client": 119.0,
    "detection_state": "detected"
   },
   {
    "file": "cars_test/00005.jpg",
    "status": "ok",
-   "ms_client": 144.8,
+   "ms_client": 117.5,
    "detection_state": "detected"
   }
  ],
@@ -59,8 +59,8 @@
   "network_mode": "none",
   "readyz": {
    "ready": true,
-   "bundle_id": "ft_ckpt_4f3584f597d5_9662c2e703",
-   "warmup_ms": 1947.9,
+   "bundle_id": "ft_ckpt_98b1fb55cc6e_5d755416fd",
+   "warmup_ms": 1754.9,
    "detector": "yolo11n:0ebbc80d4a76",
    "recognition": true,
    "recognition_reason": null,
@@ -71,7 +71,7 @@
    ],
    "production_mode": "hybrid",
    "calibration_kind": "final",
-   "backbone": "fine-tuned EfficientNet-B0 (effb0_r2, 12 fine-tuning epoch(s), best tune top-1 0.9166)",
+   "backbone": "fine-tuned EfficientNet-B0 (effb0_r3, 21 fine-tuning epoch(s), best tune top-1 0.9485)",
    "references": true,
    "references_reason": null,
    "encoder_runtime": "torch"

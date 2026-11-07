@@ -1,20 +1,20 @@
 {
  "url": "https://readings-agency-respond-bacteria.trycloudflare.com",
- "created_at": "2026-11-06T22:16:43.964906+00:00",
+ "created_at": "2026-11-07T00:15:57.163326+00:00",
  "host_note": "Cloudflare quick tunnel (trycloudflare.com) to Docker Desktop on the team laptop (Intel i7-14650HX); container limited to 2 CPUs / 4 GB by compose.yaml. The URL lasts only while the laptop, Docker and the tunnel keep running.",
  "client": "this PC over its internet connection; times are client wall time incl. network",
  "page": {
   "http": 200,
-  "ms": 1391.1,
-  "bytes": 6074,
+  "ms": 651.4,
+  "bytes": 7797,
   "has_viewport_meta": true
  },
  "readyz": {
   "http": 200,
-  "ms": 580.7,
+  "ms": 236.8,
   "ready": true,
-  "bundle_id": "ft_ckpt_4f3584f597d5_9662c2e703",
-  "warmup_ms": 3536.0,
+  "bundle_id": "ft_ckpt_98b1fb55cc6e_5d755416fd",
+  "warmup_ms": 3204.1,
   "detector": "yolo11n:0ebbc80d4a76",
   "recognition": true,
   "recognition_reason": null,
@@ -25,7 +25,7 @@
   ],
   "production_mode": "hybrid",
   "calibration_kind": "final",
-  "backbone": "fine-tuned EfficientNet-B0 (effb0_r2, 12 fine-tuning epoch(s), best tune top-1 0.9166)",
+  "backbone": "fine-tuned EfficientNet-B0 (effb0_r3, 21 fine-tuning epoch(s), best tune top-1 0.9485)",
   "references": true,
   "references_reason": null,
   "encoder_runtime": "torch"
@@ -37,9 +37,9 @@
    "ok": 19,
    "uncertain": 1
   },
-  "p50_ms": 502.4,
-  "p95_ms": 871.4,
-  "max_ms": 880.6,
+  "p50_ms": 439.7,
+  "p95_ms": 722.1,
+  "max_ms": 743.8,
   "rows": [
    {
     "file": "cars_test/00101.jpg",
@@ -47,8 +47,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 510.2,
-    "server_total_ms": 71.9
+    "ms": 440.8,
+    "server_total_ms": 82.2
    },
    {
     "file": "cars_test/00102.jpg",
@@ -56,8 +56,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 385.4,
-    "server_total_ms": 70.4
+    "ms": 316.6,
+    "server_total_ms": 76.0
    },
    {
     "file": "cars_test/00103.jpg",
@@ -65,8 +65,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 553.1,
-    "server_total_ms": 96.3
+    "ms": 463.1,
+    "server_total_ms": 88.3
    },
    {
     "file": "cars_test/00104.jpg",
@@ -74,8 +74,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 531.6,
-    "server_total_ms": 75.0
+    "ms": 438.6,
+    "server_total_ms": 79.1
    },
    {
     "file": "cars_test/00105.jpg",
@@ -83,8 +83,8 @@
     "status": "uncertain",
     "error_code": null,
     "message": null,
-    "ms": 390.2,
-    "server_total_ms": 70.7
+    "ms": 385.2,
+    "server_total_ms": 76.9
    },
    {
     "file": "cars_test/00106.jpg",
@@ -92,8 +92,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 388.4,
-    "server_total_ms": 64.2
+    "ms": 385.5,
+    "server_total_ms": 71.5
    },
    {
     "file": "cars_test/00107.jpg",
@@ -101,8 +101,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 460.6,
-    "server_total_ms": 82.6
+    "ms": 474.7,
+    "server_total_ms": 90.4
    },
    {
     "file": "cars_test/00108.jpg",
@@ -110,8 +110,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 560.0,
-    "server_total_ms": 86.4
+    "ms": 524.5,
+    "server_total_ms": 86.1
    },
    {
     "file": "cars_test/00109.jpg",
@@ -119,8 +119,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 870.9,
-    "server_total_ms": 107.2
+    "ms": 743.8,
+    "server_total_ms": 112.3
    },
    {
     "file": "cars_test/00110.jpg",
@@ -128,8 +128,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 514.1,
-    "server_total_ms": 82.7
+    "ms": 423.7,
+    "server_total_ms": 89.9
    },
    {
     "file": "cars_test/00111.jpg",
@@ -137,8 +137,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 440.7,
-    "server_total_ms": 85.8
+    "ms": 386.0,
+    "server_total_ms": 96.7
    },
    {
     "file": "cars_test/00112.jpg",
@@ -146,8 +146,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 553.6,
-    "server_total_ms": 77.3
+    "ms": 490.6,
+    "server_total_ms": 85.8
    },
    {
     "file": "cars_test/00113.jpg",
@@ -155,8 +155,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 695.4,
-    "server_total_ms": 90.0
+    "ms": 606.6,
+    "server_total_ms": 103.0
    },
    {
     "file": "cars_test/00114.jpg",
@@ -164,8 +164,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 426.3,
-    "server_total_ms": 62.4
+    "ms": 349.5,
+    "server_total_ms": 78.8
    },
    {
     "file": "cars_test/00115.jpg",
@@ -173,8 +173,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 880.6,
-    "server_total_ms": 70.9
+    "ms": 721.0,
+    "server_total_ms": 93.2
    },
    {
     "file": "cars_test/00116.jpg",
@@ -182,8 +182,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 575.8,
-    "server_total_ms": 78.6
+    "ms": 467.8,
+    "server_total_ms": 83.1
    },
    {
     "file": "cars_test/00117.jpg",
@@ -191,8 +191,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 438.6,
-    "server_total_ms": 66.9
+    "ms": 391.0,
+    "server_total_ms": 81.1
    },
    {
     "file": "cars_test/00118.jpg",
@@ -200,8 +200,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 434.9,
-    "server_total_ms": 69.7
+    "ms": 363.7,
+    "server_total_ms": 81.0
    },
    {
     "file": "cars_test/00119.jpg",
@@ -209,8 +209,8 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 494.6,
-    "server_total_ms": 74.7
+    "ms": 456.3,
+    "server_total_ms": 89.3
    },
    {
     "file": "cars_test/00120.jpg",
@@ -218,14 +218,14 @@
     "status": "ok",
     "error_code": null,
     "message": null,
-    "ms": 441.0,
-    "server_total_ms": 72.8
+    "ms": 345.9,
+    "server_total_ms": 79.8
    }
   ]
  },
  "concurrent": {
   "clients": 4,
-  "wall_ms": 816.8,
+  "wall_ms": 754.2,
   "http": [
    200,
    200,
@@ -239,10 +239,10 @@
    "ok"
   ],
   "ms": [
-   814.2,
-   660.1,
-   593.8,
-   435.4
+   752.6,
+   608.2,
+   496.4,
+   314.8
   ]
  },
  "bad_inputs": {
@@ -252,7 +252,7 @@
    "status": "invalid_image",
    "error_code": "empty_file",
    "message": "The uploaded file is empty. Choose an image file.",
-   "ms": 302.1,
+   "ms": 238.3,
    "server_total_ms": null
   },
   "text_file": {
@@ -261,7 +261,7 @@
    "status": "invalid_image",
    "error_code": "invalid_image",
    "message": "The file could not be read as an image. Choose a valid JPEG or PNG.",
-   "ms": 389.8,
+   "ms": 320.1,
    "server_total_ms": null
   },
   "truncated_jpeg": {
@@ -270,7 +270,7 @@
    "status": "invalid_image",
    "error_code": "invalid_image",
    "message": "The file could not be read as an image. Choose a valid JPEG or PNG.",
-   "ms": 406.9,
+   "ms": 306.1,
    "server_total_ms": null
   },
   "random_bytes_named_jpg": {
@@ -279,7 +279,7 @@
    "status": "invalid_image",
    "error_code": "invalid_image",
    "message": "The file could not be read as an image. Choose a valid JPEG or PNG.",
-   "ms": 472.0,
+   "ms": 345.1,
    "server_total_ms": null
   },
   "over_10_mb": {
@@ -288,7 +288,7 @@
    "status": "invalid_image",
    "error_code": "file_too_large",
    "message": "File exceeds 10 MB. Choose a smaller image.",
-   "ms": 7561.7,
+   "ms": 4850.0,
    "server_total_ms": null
   },
   "no_car_flat_image": {
@@ -297,8 +297,8 @@
    "status": "no_vehicle",
    "error_code": null,
    "message": null,
-   "ms": 583.5,
-   "server_total_ms": 189.1
+   "ms": 554.5,
+   "server_total_ms": 182.8
   }
  },
  "checks": {
