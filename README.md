@@ -244,7 +244,9 @@ The released model files are on GitHub Release `model-v3`, with their checksums 
 
 ## Video Showing It Live
 
-<a href="https://youtu.be/6CdDN6YsZAE"><img src="docs/assets/demo_video_thumbnail.jpg" alt="SEMEVIA demo video on YouTube" width="640"></a>
+<p align="center"><img src="docs/assets/demo_preview.gif" alt="15-second preview of the SEMEVIA demo: an Audi R8 recognised at 99.8%, the edge view, a Lamborghini Aventador, a newer Kia EV6 rejected and a motorcycle ignored" width="640"></p>
+
+<!-- Full video player: paste the GitHub video link on the line below (see the note in the commit message). -->
 
 **[Watch the 3-minute demo on YouTube](https://youtu.be/6CdDN6YsZAE)**: a short intro, how SEMEVIA works, then a live
 demo on a photo the model has never seen (all six PS5 outputs, in order). The narration uses synthetic voices
