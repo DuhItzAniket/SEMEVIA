@@ -1,0 +1,512 @@
+{
+  "purpose": "Blind third labelling pass by an AI model (claude-sonnet-5-5) on 2026-11-07; not a human review.",
+  "labeller": "claude-sonnet-5-5",
+  "blind": true,
+  "labels": [
+    {
+      "image_key": "test/00281.jpg",
+      "viewpoint": "front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/00465.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/00468.jpg",
+      "viewpoint": "indeterminate",
+      "natural_occlusion": "partial",
+      "multiple_vehicles": true,
+      "note": "tiny collage of two renders of one white sedan (rear-left views); top view cropped at frame edge; collage rule -> indeterminate"
+    },
+    {
+      "image_key": "test/00579.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/00621.jpg",
+      "viewpoint": "three_quarter_rear",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/00733.jpg",
+      "viewpoint": "side",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/00817.jpg",
+      "viewpoint": "three_quarter_rear",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/00835.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/00841.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": "slight angle, near head-on; borderline front"
+    },
+    {
+      "image_key": "test/01022.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": "nose touches left frame edge"
+    },
+    {
+      "image_key": "test/01229.jpg",
+      "viewpoint": "side",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "mostly profile with slight front angle; borderline three_quarter_front; distant car at right"
+    },
+    {
+      "image_key": "test/01355.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "second car partly visible behind"
+    },
+    {
+      "image_key": "test/01661.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "two near-identical cars, each ~20 deg off head-on; borderline front"
+    },
+    {
+      "image_key": "test/01695.jpg",
+      "viewpoint": "side",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": "profile with slight front angle; borderline three_quarter_front"
+    },
+    {
+      "image_key": "test/01732.jpg",
+      "viewpoint": "front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/02007.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/02075.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/02111.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/02235.jpg",
+      "viewpoint": "side",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/02269.jpg",
+      "viewpoint": "indeterminate",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": "top-down overhead view, front of car at bottom of frame; not covered by the 5 classes"
+    },
+    {
+      "image_key": "test/02505.jpg",
+      "viewpoint": "front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "near head-on; part of another car at top-left corner"
+    },
+    {
+      "image_key": "test/02529.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "parked cars in background"
+    },
+    {
+      "image_key": "test/02868.jpg",
+      "viewpoint": "three_quarter_rear",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/02886.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "distant cars in background"
+    },
+    {
+      "image_key": "test/03592.jpg",
+      "viewpoint": "three_quarter_rear",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/03648.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "other cars in showroom"
+    },
+    {
+      "image_key": "test/03823.jpg",
+      "viewpoint": "rear",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/04110.jpg",
+      "viewpoint": "front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/04264.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "other Ford trucks/cars around"
+    },
+    {
+      "image_key": "test/04297.jpg",
+      "viewpoint": "side",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/04543.jpg",
+      "viewpoint": "three_quarter_rear",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/04589.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": "motorbike on the truck bed counted as cargo, not a second vehicle"
+    },
+    {
+      "image_key": "test/04852.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": "tilted camera"
+    },
+    {
+      "image_key": "test/04868.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/04876.jpg",
+      "viewpoint": "three_quarter_rear",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/05189.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/05195.jpg",
+      "viewpoint": "front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/05225.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "partial",
+      "multiple_vehicles": false,
+      "note": "promo text banner covers the lower front of the car"
+    },
+    {
+      "image_key": "test/05320.jpg",
+      "viewpoint": "side",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "tiny image: white modern car and black vintage car, both roughly profile; unclear which is the target"
+    },
+    {
+      "image_key": "test/05406.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "other cars in background"
+    },
+    {
+      "image_key": "test/05456.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/05462.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/05478.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/05491.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/05635.jpg",
+      "viewpoint": "front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/05880.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/05892.jpg",
+      "viewpoint": "side",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": "person in background not blocking car"
+    },
+    {
+      "image_key": "test/06016.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "partial",
+      "multiple_vehicles": false,
+      "note": "near-front, borderline front; woman leaning over hood/fender; right edge cropped"
+    },
+    {
+      "image_key": "test/06060.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/06084.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/06130.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/06271.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "other cars in background"
+    },
+    {
+      "image_key": "test/06341.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/06344.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/06763.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/07113.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/07203.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    },
+    {
+      "image_key": "test/07357.jpg",
+      "viewpoint": "three_quarter_front",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "other vehicles in background"
+    },
+    {
+      "image_key": "test/07378.jpg",
+      "viewpoint": "side",
+      "natural_occlusion": "none",
+      "multiple_vehicles": true,
+      "note": "profile with slight front angle; borderline three_quarter_front"
+    },
+    {
+      "image_key": "test/07422.jpg",
+      "viewpoint": "three_quarter_rear",
+      "natural_occlusion": "none",
+      "multiple_vehicles": false,
+      "note": ""
+    }
+  ],
+  "agreement_with_first_pass": 57,
+  "agreement_with_second_pass": 58,
+  "agreement_notes": "Counts are on viewpoint only (the second-pass file stores viewpoint only; its labels are taken as equal to the first pass except for the 5 disagreements it lists). Pass 3 was done before opening either earlier pass.",
+  "occlusion_none_vs_some_agreement_with_first_pass": 59,
+  "multiple_vehicles_agreement_with_first_pass": 50,
+  "multiple_vehicles_note": "Pass 3 marked multiple_vehicles=true whenever another vehicle was clearly visible anywhere in the frame (including background cars). All 10 differences from the first pass are of this kind (first pass False, pass 3 True): test/01229.jpg, test/01355.jpg, test/02505.jpg, test/02529.jpg, test/02886.jpg, test/03648.jpg, test/05406.jpg, test/06271.jpg, test/07357.jpg, test/07378.jpg. This is a difference in definition, not a viewpoint error; the team should decide which rule the tag follows.",
+  "to_review_by_a_person": [
+    {
+      "image_key": "test/00468.jpg",
+      "first_pass": "indeterminate",
+      "second_pass": "three_quarter_rear",
+      "pass3": "indeterminate",
+      "why": "viewpoint passes disagree; pass 3 unsure: tiny collage of two renders of one white sedan (rear-left views); top view cropped at frame edge; collage rule -> indeterminate"
+    },
+    {
+      "image_key": "test/00841.jpg",
+      "first_pass": "three_quarter_front",
+      "second_pass": "three_quarter_front",
+      "pass3": "three_quarter_front",
+      "why": "pass 3 unsure: slight angle, near head-on; borderline front"
+    },
+    {
+      "image_key": "test/01229.jpg",
+      "first_pass": "side",
+      "second_pass": "side",
+      "pass3": "side",
+      "why": "pass 3 unsure: mostly profile with slight front angle; borderline three_quarter_front; distant car at right"
+    },
+    {
+      "image_key": "test/01661.jpg",
+      "first_pass": "three_quarter_front",
+      "second_pass": "three_quarter_front",
+      "pass3": "three_quarter_front",
+      "why": "pass 3 unsure: two near-identical cars, each ~20 deg off head-on; borderline front"
+    },
+    {
+      "image_key": "test/01695.jpg",
+      "first_pass": "side",
+      "second_pass": "side",
+      "pass3": "side",
+      "why": "pass 3 unsure: profile with slight front angle; borderline three_quarter_front"
+    },
+    {
+      "image_key": "test/02269.jpg",
+      "first_pass": "indeterminate",
+      "second_pass": "front",
+      "pass3": "indeterminate",
+      "why": "viewpoint passes disagree; pass 3 unsure: top-down overhead view, front of car at bottom of frame; not covered by the 5 classes"
+    },
+    {
+      "image_key": "test/03648.jpg",
+      "first_pass": "three_quarter_front",
+      "second_pass": "three_quarter_front",
+      "pass3": "three_quarter_front",
+      "why": "occlusion differs (first pass partial, pass 3 none)"
+    },
+    {
+      "image_key": "test/05320.jpg",
+      "first_pass": "side",
+      "second_pass": "side",
+      "pass3": "side",
+      "why": "pass 3 unsure: tiny image: white modern car and black vintage car, both roughly profile; unclear which is the target"
+    },
+    {
+      "image_key": "test/06016.jpg",
+      "first_pass": "front",
+      "second_pass": "three_quarter_front",
+      "pass3": "three_quarter_front",
+      "why": "viewpoint passes disagree; pass 3 unsure: near-front, borderline front; woman leaning over hood/fender; right edge cropped"
+    },
+    {
+      "image_key": "test/07378.jpg",
+      "first_pass": "three_quarter_front",
+      "second_pass": "side",
+      "pass3": "side",
+      "why": "viewpoint passes disagree; pass 3 unsure: profile with slight front angle; borderline three_quarter_front"
+    },
+    {
+      "image_key": "test/07422.jpg",
+      "first_pass": "side",
+      "second_pass": "three_quarter_rear",
+      "pass3": "three_quarter_rear",
+      "why": "viewpoint passes disagree"
+    }
+  ]
+}
