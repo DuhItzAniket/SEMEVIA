@@ -13,7 +13,7 @@ Upload a photo of a car. SEMEVIA tells you its make, model and year, and how sur
 
 ---
 
-## Intro
+## Introduction
 
 Many cars look almost the same: the same brand, the same shape, only a different year or trim. SEMEVIA is our
 answer to **PS5, Intelligent Fine-Grained Vehicle Recognition and Analysis** (Computer Vision Hackathon 2026).
