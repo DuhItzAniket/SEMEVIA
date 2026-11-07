@@ -52,3 +52,4 @@ Thumbs.db
 
 # Local tool config (contains machine-specific paths)
 .claude/
+!docs/assets/demo_video_thumbnail.jpg

@@ -95,6 +95,15 @@ classical mode, when no contour box passes the filters, the app analyses the who
 
 ## Recorded demo video
 
+**Final video (2026-11-07): <https://youtu.be/6CdDN6YsZAE>** (3:00, 1080p, captioned). Minute 1 is a cinematic
+intro with original generated music; minute 2 explains the required PS5 outputs and what sets SEMEVIA apart;
+minute 3 is a live demo on an unseen Wikimedia photo (Bugatti Veyron by M 93, CC BY-SA 3.0 DE) at
+<https://semevia.web.app>. The screen recording comes from `scripts/record_demo_v2.py` (cue-driven Playwright
+recorder); the narration uses synthetic voices (Kokoro TTS), which the end card states. No Stanford Cars images
+appear in it. The older silent recording described below is kept for reference.
+
+### Earlier silent recording (superseded)
+
 * File: `C:\Users\Luikz\Downloads\SEMEVIA_demo\semevia_demo_silent.webm` (silent, captioned, about 2:52, 1280x720),
   recorded from the live r3 URL (FP32 hybrid head, before the `cf2b69e` UI fixes and before r3-int8) by
   `scripts/record_demo.py` (Playwright; usage in the script's header). It follows

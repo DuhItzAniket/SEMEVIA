@@ -244,7 +244,12 @@ The released model files are on GitHub Release `model-v3`, with their checksums 
 
 ## Video Showing It Live
 
-*Coming soon. The demo video will be added here once the demo is recorded.*
+<a href="https://youtu.be/6CdDN6YsZAE"><img src="docs/assets/demo_video_thumbnail.jpg" alt="SEMEVIA demo video on YouTube" width="640"></a>
+
+**[Watch the 3-minute demo on YouTube](https://youtu.be/6CdDN6YsZAE)**: a short intro, how SEMEVIA works, then a live
+demo on a photo the model has never seen (all six PS5 outputs, in order). The narration uses synthetic voices
+(Kokoro TTS) and the music was generated in code for this video. Photo credits: Bugatti Veyron by M 93
+(CC BY-SA 3.0 DE) and the app's example photos (Wikimedia Commons, credited in the app and in the video description).
 
 ## Citation
 
