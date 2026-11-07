@@ -30,6 +30,15 @@ python scripts/check_release.py --url https://semevia-298534486429.asia-south1.r
 
 The URL stays the same across redeploys.
 
+On the team laptop the Google Cloud CLI is at `C:\semevia\google-cloud-sdk` and its sign-in is stored in
+`C:\semevia\gcloud_config`, so set that first in each new PowerShell window (otherwise gcloud reports that no
+project is set):
+
+```
+$env:CLOUDSDK_CONFIG = "C:\semevia\gcloud_config"
+C:\semevia\google-cloud-sdk\bin\gcloud.cmd run services update semevia --region asia-south1 --project semevia --min-instances 0
+```
+
 ## Limits the team must manage
 
 * The minimum instance is billed while it runs (covered by the Google Cloud free-trial credit). After judging,
