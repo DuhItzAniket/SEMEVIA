@@ -1,0 +1,50 @@
+{
+ "protocol": "standard Stanford Cars classification: ground-truth box crop (margin 0.05), no detector",
+ "partition": "test",
+ "bundle_id": "ft_ckpt_98b1fb55cc6e_5d755416fd",
+ "encoder_input_size": 320,
+ "population": {
+  "count": 8041,
+  "manifest_sha256": "5eb7f6150857e11078a7ff50d08d5905badcd259d2159187a4c27cf5412cb531"
+ },
+ "modes": {
+  "classical": {
+   "top1": {
+    "numerator": 1573,
+    "denominator": 8041,
+    "value": 0.19562243502051985
+   },
+   "top5": {
+    "numerator": 3285,
+    "denominator": 8041,
+    "value": 0.4085312772043278
+   }
+  },
+  "deep": {
+   "top1": {
+    "numerator": 7454,
+    "denominator": 8041,
+    "value": 0.9269991294615098
+   },
+   "top5": {
+    "numerator": 7932,
+    "denominator": 8041,
+    "value": 0.9864444720805869
+   }
+  },
+  "hybrid": {
+   "top1": {
+    "numerator": 7452,
+    "denominator": 8041,
+    "value": 0.9267504041785848
+   },
+   "top5": {
+    "numerator": 7939,
+    "denominator": 8041,
+    "value": 0.9873150105708245
+   }
+  }
+ },
+ "note": "Comparable to published classification results; SEMEVIA's headline metric is the stricter end-to-end top-1 in reports/e2e_<partition>_<bundle>.json.",
+ "wall_seconds": 369.3
+}
