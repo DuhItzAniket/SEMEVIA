@@ -159,8 +159,9 @@ Measured on the 8,041 unseen test photos (full details in [eval_P5_T35.md](eval_
 - **Only 196 car models, up to 2012.** Newer cars and other vehicles are outside the dataset, so the app can
   give a wrong name for them.
 - **Rejecting non-car photos is not perfect.** On 40 held-out test photos that should be rejected, 5 were wrongly
-  accepted: 4 of 10 buses and trucks and 1 of 10 newer cars (0 of 10 non-vehicle photos and 0 of 10
-  motorbikes). One city bus, for example, was named as a Hummer SUV.
+  accepted: 4 of 10 other vehicle types and 1 of 10 newer cars (0 of 10 non-vehicle photos and 0 of 10
+  motorbikes). A coach and a tram were named as a GMC Savana Van, a tipper lorry and a tuk-tuk as a Hummer SUV,
+  and a 2022 Lucid Air as a Nissan 240SX.
 - **One car per photo.** If there are several cars, the app picks the largest one.
 - **Some dataset labels disagree.** Stanford Cars has 37 groups of duplicate photos with different labels,
   mostly neighbouring model years, so some years cannot be told apart reliably.
