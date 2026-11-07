@@ -1,0 +1,15 @@
+{
+  "title": "SEMEVIA: fine-grained vehicle recognition with an Identity Evidence Passport",
+  "upload_type": "software",
+  "description": "SEMEVIA detects a vehicle with YOLO11n, identifies its make, model and year among the 196 Stanford Cars categories with classical, deep (fine-tuned EfficientNet-B0) and hybrid heads, and reports an Identity Evidence Passport: a conformally calibrated candidate set summarised at the most specific level the evidence supports, with a six-region Evidence Challenge. Built for the Computer Vision Hackathon 2026 (problem statement PS5) by team Hypermetropia. Evaluation results are generated from saved reports (eval_P5_T35.md). Code: AGPL-3.0. Trained model files (GitHub Releases model-v1 to model-v3): CC BY-NC 4.0, see LICENSE-MODELS.md.",
+  "creators": [
+    {"name": "Kumar, Aniket"},
+    {"name": "Lakshanaa, C"}
+  ],
+  "license": "AGPL-3.0-only",
+  "keywords": ["computer vision", "fine-grained classification", "vehicle recognition", "Stanford Cars",
+               "object detection", "conformal prediction", "uncertainty quantification", "explainable AI"],
+  "related_identifiers": [
+    {"identifier": "https://github.com/DuhItzAniket/SEMEVIA", "relation": "isSupplementTo", "scheme": "url"}
+  ]
+}

@@ -333,7 +333,11 @@ Open limitations are also tracked as GitHub issues #1-#5 in the
   to disk or logged. The JSON export contains hashes and coordinates, not pixels.
 * The app identifies vehicle models, not people or number plates, and makes no ownership, insurance or legal
   claims. A Passport is not a certificate.
-* Code in this repository: licence to be chosen by the team.
+* **Licences:** code under [AGPL-3.0](LICENSE) (compatible with Ultralytics); trained model files (GitHub Releases
+  `model-v1` to `model-v3`) under CC BY-NC 4.0 because Stanford Cars is non-commercial; reports, figures and docs
+  under CC BY 4.0. Details and third-party material: [LICENSE-MODELS.md](LICENSE-MODELS.md).
+* **Citation:** [CITATION.cff](CITATION.cff) (GitHub shows a "Cite this repository" button); `.zenodo.json` holds
+  the metadata for a Zenodo DOI once the team enables the Zenodo GitHub integration.
 
 ## Team and submission
 
