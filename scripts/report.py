@@ -21,8 +21,9 @@ sys.path.insert(0, str(ROOT))
 
 PENDING = "pending (official test run after the P5 freeze, P6)"
 # Pairs of Stanford Cars makes/models sold as badge-engineered twins (same vehicle, different badge).
-TWINS = [("Chevrolet Express", "GMC Savana"), ("Chevrolet Silverado", "GMC Sierra"), ("Chevrolet Tahoe", "GMC Yukon"),
-         ("Dodge Caliber", "Jeep Compass"), ("Chrysler Town and Country", "Dodge Caravan")]
+TWINS = [("Chevrolet Express", "GMC Savana"), ("Chevrolet Tahoe", "GMC Yukon"), ("Chevrolet Traverse", "GMC Acadia"),
+         ("Dodge Sprinter", "Mercedes-Benz Sprinter"), ("Ram C/V", "Dodge Caravan"), ("Ram C/V", "Chrysler Town and Country"),
+         ("Chevrolet Avalanche", "Cadillac Escalade EXT")]
 MODES = ("classical", "deep", "hybrid")
 
 
@@ -243,6 +244,17 @@ def main() -> None:
                     f"and the project rule keeps hybrid unless deep is clearly better on tune. It was not changed after "
                     f"seeing test results.")
         L += [cmp, ""]
+        ex, ex_f = find(f"extra_test_{bundle}.json")
+        if ex:
+            bs = ex["bootstrap"]
+            ci = lambda k: f"{pct(bs[k]['value'])} [{pct(bs[k]['ci95'][0])}, {pct(bs[k]['ci95'][1])}]"  # noqa: E731
+            dmh = bs["deep_minus_hybrid_top1"]
+            L += [f"Uncertainty (95% intervals from {bs['resamples']} image-level bootstrap resamples of the saved test "
+                  f"predictions; no new inference; `reports/{ex_f}`): end-to-end top-1 classical {ci('classical_top1')}, deep "
+                  f"{ci('deep_top1')}, hybrid {ci('hybrid_top1')}. Paired deep minus hybrid top-1: "
+                  f"{100 * dmh['value']:+.2f} pt [{100 * dmh['ci95'][0]:+.2f}, {100 * dmh['ci95'][1]:+.2f}] pt, "
+                  + ("so no significant difference was detected on test (this is not a test of equivalence)." if dmh["includes_zero"]
+                     else "so the difference is unlikely to be chance.") + "", ""]
     else:
         L += [f"Final (official test, end-to-end): {PENDING}", ""]
     if tune:
@@ -406,9 +418,27 @@ def main() -> None:
                   "images (`artifacts/production_freeze.json`).", ""]
     else:
         L += ["* Negative (unsupported-input) false acceptance: pending (negative suite not evaluated for this bundle).", ""]
+    ex2, ex2_f = find(f"extra_test_{bundle}.json")
+    if ex2:
+        rl = ex2["reliability"]
+        L += [f"Reliability (production mode `{rl['mode']}`, {rl['n']} correctly localised test images, `reports/{ex2_f}`, "
+              f"figure `reports/figures/reliability_test.png`): ECE {rl['raw']['ece']:.3f} with raw softmax, "
+              f"{rl['calibrated']['ece']:.3f} after temperature scaling.", "",
+              "| Confidence bin | Images | Raw: mean confidence / accuracy | Calibrated: mean confidence / accuracy |",
+              "|---|---|---|---|"]
+        for br, bc in zip(rl["raw"]["bins"], rl["calibrated"]["bins"]):
+            f = lambda b: (f"{pct(b['mean_confidence'])} / {pct(b['accuracy'])} (n={b['count']})" if b["count"] else "-")  # noqa: E731
+            L.append(f"| {br['bin'][0]:.1f}-{br['bin'][1]:.1f} | {br['count']} / {bc['count']} | {f(br)} | {f(bc)} |")
+        L.append("")
 
     # Ablations / failures ------------------------------------------------------------------------
     L += ["## 7. Ablations", ""]
+    cv = read("reports/crossval_classical.json")
+    if cv:
+        L += [f"Cross-validation of the classical head ({cv['folds']}-fold stratified, {cv['population']['count']} training "
+              f"images, C={cv['C']}, `reports/crossval_classical.json`): top-1 {pct(cv['top1_mean'])} +/- "
+              f"{100 * cv['top1_std']:.1f} pt, top-5 {pct(cv['top5_mean'])} +/- {100 * cv['top5_std']:.1f} pt "
+              f"(tune top-1 for reference {pct(cv['tune_top1_for_reference'])}). {cv['why_not_deep_hybrid']}", ""]
     if heads:
         import yaml
 
@@ -453,6 +483,15 @@ def main() -> None:
                  f"tune NLL from {hd['hybrid']['selected']['tune_nll']:.3f} to {ev['tune_nll']:.3f}." if ev else "")
               + " These are 815-image tune differences without a significance test.", ""]
     L += ["## 8. Failure analysis", ""]
+    ex3, ex3_f = find(f"extra_test_{bundle}.json")
+    if ex3:
+        cf = ex3["confusions"]
+        L += [f"Where the production mode goes wrong ({cf['wrong']} correctly localised test images with a wrong top-1, "
+              f"`reports/{ex3_f}`, figure `reports/figures/confusions_test.png`): "
+              + "; ".join(f"{k}: {v} ({pct(v / cf['wrong'])})" for k, v in cf["by_kind"].items()) + ".", "",
+              "| True class | Predicted as | Times | Kind |", "|---|---|---|---|"]
+        L += [f"| {r['true']} | {r['predicted']} | {r['count']} | {r['kind']} |" for r in cf["top_pairs"][:10]]
+        L += ["", "Rule-selected individual cases:", ""]
     fails = (ana or {}).get("failures")
     if fails:
         L += [f"Selected by fixed rules from the test predictions (`reports/{ana_f}`). Image sizes from "

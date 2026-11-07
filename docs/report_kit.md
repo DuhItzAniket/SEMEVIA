@@ -30,10 +30,10 @@ committed in `NEXT.md` before r3 was trained. Report r3 as the result and r1/r2 
 | 7 | Hybrid fusion | How are learned and handcrafted features combined? What did the ablations show? | `configs/heads.yaml`, eval section 7, figure `ablations_tune.png` |
 | 8 | Identity Evidence Passport | What is a conformal candidate set, what does "90%" mean and not mean, what are the decision states? | `docs/design.md` section 6, `src/passport/` |
 | 9 | Evaluation protocol | Why end-to-end top-1 (box IoU >= 0.5 and right class) and how it differs from the usual ground-truth-crop number. Why freeze before testing? How many times was the test split used, and why is that disclosed? | eval "Model iterations" and section 1; `NEXT.md` decision records (r3: "Iteration r3 decision record"); the standard-protocol (ground-truth crop) report `reports/oracle_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json` from `scripts/evaluate_oracle.py` |
-| 10 | Results | Top-1/Top-5, IoU, mAP, model size and latency, robustness, confidence/threshold (in the PS order); the standard-protocol number beside the end-to-end one | `eval_P5_T35.md` sections 1-6; `reports/e2e_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`, `reports/oracle_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`; figures `iterations_test_top1.png`, `robustness_hybrid.png`, `reject_threshold.png` |
+| 10 | Results | Top-1/Top-5, IoU, mAP, model size and latency, robustness, confidence/threshold (in the PS order); the standard-protocol number beside the end-to-end one; how uncertain each number is (bootstrap intervals, and whether deep and hybrid differ); whether confidence is calibrated; why deep and hybrid are not cross-validated on train | `eval_P5_T35.md` sections 1-7; `reports/e2e_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`, `reports/oracle_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`, `reports/extra_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json` (`bootstrap`, `reliability`), `reports/crossval_classical.json`; figures `iterations_test_top1.png`, `robustness_hybrid.png`, `reject_threshold.png`, `reliability_test.png` |
 | 11 | Optimization | What did ONNX FP32 and INT8 give, why the release keeps PyTorch FP32 | eval section 4, `reports/optimization_ckpt_98b1fb55cc6e.json`, `reports/optimization_head_hybrid_ckpt_98b1fb55cc6e.json` |
 | 12 | Unsupported inputs | How the 80-image negative suite was built and what stopped each photo | `docs/negative_suite.md`, eval section 6, figure `negatives_test.png` |
-| 13 | Failure analysis | Three rule-selected failures and their causes | eval section 8 |
+| 13 | Failure analysis | Three rule-selected failures and their causes; which kinds of mix-up dominate (other model year, same make, badge-engineered twin, different make) | eval section 8; `reports/analysis_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`, `reports/extra_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json` (`confusions`); figure `confusions_test.png` |
 | 14 | Deployment and UI | How the app is served, the checks done on the public URL, error handling, the one-tap example row | `docs/hosting_lock.md`, `reports/release_acceptance.json`, `reports/container_check.json`, `app/static/examples/credits.json`, `docs/demo.md` |
 | 15 | Limitations and ethics | Data ends at 2012; label noise; tunnel hosting; agent-made viewpoint labels; licences; no images stored | `docs/design.md` sections 10-11 |
 | 16 | AI-use declaration | See below | |
@@ -49,6 +49,15 @@ committed in `NEXT.md` before r3 was trained. Report r3 as the result and r1/r2 
 | `reports/figures/reject_threshold.png` | Known-image retention and negative false acceptance against the reject threshold |
 | `reports/figures/negatives_test.png` | What stopped each held-out unsupported photo |
 | `reports/figures/ablations_tune.png` | Component ablations on tune |
+| `reports/figures/reliability_test.png` | Reliability on correctly localised test images: accuracy against confidence, raw softmax versus temperature-scaled (from `reports/extra_test_<bundle>.json`) |
+| `reports/figures/confusions_test.png` | The ten most frequent test mix-ups of the production mode, coloured by kind (from `reports/extra_test_<bundle>.json`) |
+
+Extra analysis files (no new inference; read numbers from them, do not retype):
+
+| File | Script | Shows |
+|---|---|---|
+| `reports/extra_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json` | `scripts/analyze_extra.py` | Bootstrap 95% intervals (2000 image-level resamples of the saved test predictions) for end-to-end top-1/top-5 of every mode and for the paired deep-minus-hybrid difference; most frequent confusion pairs by kind; reliability bins raw versus temperature-scaled |
+| `reports/crossval_classical.json` | `scripts/crossval_classical.py` | 5-fold stratified cross-validation of the classical head on train; why deep and hybrid are not cross-validated there (the CNN was trained on those images, so the score would be inflated) |
 
 Architecture and timeline diagrams: take screenshots of the Mermaid diagrams in `docs/architecture.md` and
 `docs/timeline.md` on GitHub, or redraw them.

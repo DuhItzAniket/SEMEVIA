@@ -44,6 +44,8 @@ Standard Stanford Cars protocol on the same frozen model (classify the ground-tr
 
 Comparison: on test the highest end-to-end top-1 is **deep** (91.8%); deep minus hybrid is +0.04 pt top-1 and -0.11 pt top-5. Classical-only is far behind (6.3% top-1): its contour box is often wrong (section 2) and handcrafted features alone separate few of the 196 classes. The production mode `hybrid` was fixed before this bundle's test run (decision record in `NEXT.md`): on the tune split deep and hybrid were level (end-to-end top-1 759 vs 759 of 815 images), and the project rule keeps hybrid unless deep is clearly better on tune. It was not changed after seeing test results.
 
+Uncertainty (95% intervals from 2000 image-level bootstrap resamples of the saved test predictions; no new inference; `reports/extra_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`): end-to-end top-1 classical 6.3% [5.8%, 6.8%], deep 91.8% [91.3%, 92.4%], hybrid 91.8% [91.2%, 92.4%]. Paired deep minus hybrid top-1: +0.04 pt [-0.10, +0.16] pt, so no significant difference was detected on test (this is not a test of equivalence).
+
 Development, tune split (815 images, same protocol; `reports/e2e_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json`):
 
 | Mode | End-to-end top-1 | End-to-end top-5 | Matched-primary top-1 | Predicted-crop top-1 |
@@ -193,7 +195,24 @@ Most non-cars are stopped by the detector (it only accepts car/bus/truck boxes).
 
 The reject threshold was chosen on the separate 40-photo tune negative set together with known tune images (`artifacts/production_freeze.json`).
 
+Reliability (production mode `hybrid`, 7971 correctly localised test images, `reports/extra_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`, figure `reports/figures/reliability_test.png`): ECE 0.131 with raw softmax, 0.027 after temperature scaling.
+
+| Confidence bin | Images | Raw: mean confidence / accuracy | Calibrated: mean confidence / accuracy |
+|---|---|---|---|
+| 0.0-0.1 | 89 / 13 | 7.2% / 24.7% (n=89) | 8.6% / 15.4% (n=13) |
+| 0.1-0.2 | 237 / 58 | 15.2% / 54.0% (n=237) | 15.7% / 24.1% (n=58) |
+| 0.2-0.3 | 228 / 88 | 25.3% / 72.8% (n=228) | 24.8% / 42.0% (n=88) |
+| 0.3-0.4 | 271 / 112 | 35.1% / 81.5% (n=271) | 34.7% / 50.0% (n=112) |
+| 0.4-0.5 | 326 / 146 | 44.9% / 78.5% (n=326) | 45.8% / 61.6% (n=146) |
+| 0.5-0.6 | 366 / 184 | 55.2% / 84.7% (n=366) | 55.1% / 61.4% (n=184) |
+| 0.6-0.7 | 444 / 188 | 65.4% / 92.6% (n=444) | 65.3% / 76.1% (n=188) |
+| 0.7-0.8 | 668 / 272 | 75.4% / 94.8% (n=668) | 75.1% / 81.6% (n=272) |
+| 0.8-0.9 | 1189 / 407 | 85.8% / 97.1% (n=1189) | 85.6% / 89.7% (n=407) |
+| 0.9-1.0 | 4153 / 6503 | 95.8% / 98.2% (n=4153) | 98.9% / 97.5% (n=6503) |
+
 ## 7. Ablations
+
+Cross-validation of the classical head (5-fold stratified, 6514 training images, C=0.005, `reports/crossval_classical.json`): top-1 17.6% +/- 0.8 pt, top-5 37.4% +/- 0.7 pt (tune top-1 for reference 18.7%). The fine-tuned CNN was trained on the training split, so its features on any training fold are optimistic; cross-validating the deep or hybrid head there would overstate accuracy. Their uncertainty is reported with bootstrap intervals on the test predictions (reports/extra_test_<bundle>.json).
 
 Component ablations (tune, annotation crops; every variant refit on train with the same C grid and selected by tune top-1; `reports/heads_tune_ckpt_98b1fb55cc6e.json`, classical row from `reports/classical_tune.json`, groups from `configs/heads.yaml`). The handcrafted branch is reduced by PCA to at most 64 components, so removing a group can leave the input size unchanged.
 
@@ -211,6 +230,23 @@ Component ablations (tune, annotation crops; every variant refit on train with t
 Change in tune top-1 versus the full hybrid head: deep: -0.1 pt; hybrid_equal_variance: -1.7 pt; hybrid_no_hog: -0.1 pt; hybrid_no_color_texture: +0.0 pt; hybrid_no_geometry: +0.0 pt; released fine-tuned backbone vs frozen ImageNet backbone: +29.3 pt (hybrid; fine-tuned at 320 px vs frozen at 224 px, so this mixes fine-tuning and input resolution). Reading: the fine-tuned backbone gives by far the largest gain. Removing handcrafted feature groups (no_hog -0.1 pt, no_color_texture +0.0 pt, no_geometry +0.0 pt) moves tune top-1 by at most 0.1 pt, so with fine-tuned features the handcrafted branch adds little accuracy; the deep-only head is within 0.1 pt. Equal-variance branch weighting changes top-1 by -1.7 pt and raises tune NLL from 0.462 to 0.499. These are 815-image tune differences without a significance test.
 
 ## 8. Failure analysis
+
+Where the production mode goes wrong (589 correctly localised test images with a wrong top-1, `reports/extra_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`, figure `reports/figures/confusions_test.png`): same make, other model: 319 (54.2%); different make: 177 (30.1%); badge-engineered twin: 48 (8.1%); same family, other model year: 45 (7.6%).
+
+| True class | Predicted as | Times | Kind |
+|---|---|---|---|
+| Audi S5 Coupe 2012 | Audi A5 Coupe 2012 | 14 | same make, other model |
+| Audi TT Hatchback 2011 | Audi TTS Coupe 2012 | 14 | same make, other model |
+| Chevrolet Express Cargo Van 2007 | Chevrolet Express Van 2007 | 12 | same make, other model |
+| BMW 6 Series Convertible 2007 | BMW M6 Convertible 2010 | 12 | same make, other model |
+| Audi V8 Sedan 1994 | Audi 100 Sedan 1994 | 12 | same make, other model |
+| Bentley Continental GT Coupe 2012 | Bentley Continental GT Coupe 2007 | 11 | same family, other model year |
+| Chevrolet Express Van 2007 | Chevrolet Express Cargo Van 2007 | 11 | same make, other model |
+| Dodge Caliber Wagon 2007 | Dodge Caliber Wagon 2012 | 11 | same family, other model year |
+| Bugatti Veyron 16.4 Convertible 2009 | Bugatti Veyron 16.4 Coupe 2009 | 10 | same make, other model |
+| Dodge Caliber Wagon 2012 | Dodge Caliber Wagon 2007 | 10 | same family, other model year |
+
+Rule-selected individual cases:
 
 Selected by fixed rules from the test predictions (`reports/analysis_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`). Image sizes from `artifacts/manifests/test_m1.csv`; duplicate lists from `reports/data_audit.json`.
 

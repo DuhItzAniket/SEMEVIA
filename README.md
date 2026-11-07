@@ -148,6 +148,8 @@ the files it was generated from. The links below are the current r3 release.
 | Standard protocol on test (ground-truth crop, no detector) | `reports/oracle_test_<bundle>.json` | [oracle_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json](reports/oracle_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json) |
 | Robustness on the 392-image test stress subset | `reports/robustness_stress_test_<bundle>.md` / `.json` | [robustness_stress_test_ft_ckpt_98b1fb55cc6e_5d755416fd.md](reports/robustness_stress_test_ft_ckpt_98b1fb55cc6e_5d755416fd.md), [.json](reports/robustness_stress_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json) |
 | Viewpoint subgroups and failure cases | `reports/analysis_test_<bundle>.json` | [analysis_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json](reports/analysis_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json) |
+| Bootstrap 95% intervals (all modes, paired deep minus hybrid), confusion pairs by kind, reliability raw vs temperature-scaled ([scripts/analyze_extra.py](scripts/analyze_extra.py), saved test predictions, no new inference) | `reports/extra_test_<bundle>.json` | [extra_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json](reports/extra_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json); figures [reliability_test.png](reports/figures/reliability_test.png), [confusions_test.png](reports/figures/confusions_test.png) |
+| 5-fold cross-validation of the classical head on train ([scripts/crossval_classical.py](scripts/crossval_classical.py); deep and hybrid not cross-validated on train, the CNN was trained on those images) | `reports/crossval_classical.json` | [crossval_classical.json](reports/crossval_classical.json) |
 | End-to-end tune and calibration runs (freeze inputs; the tune run decided the r3 release rule) | `reports/e2e_<partition>_<bundle>.json` | [e2e_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json](reports/e2e_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json), [e2e_calibration_ft_ckpt_98b1fb55cc6e_f99e386191.json](reports/e2e_calibration_ft_ckpt_98b1fb55cc6e_f99e386191.json) |
 | Head selection and ablations (tune) | `reports/heads_tune_<tag>.json` | [heads_tune_ckpt_98b1fb55cc6e.json](reports/heads_tune_ckpt_98b1fb55cc6e.json) |
 | Nearest-reference check (tune) | `reports/references_tune_<tag>.json` | [references_tune_ckpt_98b1fb55cc6e.json](reports/references_tune_ckpt_98b1fb55cc6e.json) |
@@ -216,7 +218,9 @@ PowerShell, with environment setup and the checks to run after each step) are in
 3. **Features and heads.** `scripts/cache_features.py --features classical --partitions train tune`, then
    `scripts/cache_features.py --features learned --backbone <checkpoint> --partitions train tune` (prints the
    backbone tag `ckpt_<sha12>`), `scripts/fit_heads.py --head classical`, `scripts/fit_heads.py --head
-   learned --backbone <tag>`.
+   learned --backbone <tag>`. Optional: `scripts/crossval_classical.py --folds 5` cross-validates the classical
+   head on train ([reports/crossval_classical.json](reports/crossval_classical.json)); deep and hybrid are not
+   cross-validated there because the CNN was trained on those images.
 4. **Development calibration, references, bundle.** `scripts/calibrate.py --development --mode hybrid
    --backbone <tag>`, `scripts/build_references.py --backbone <tag>`, `scripts/promote_bundle.py --backbone
    <checkpoint>`; optimization evidence with `scripts/optimize.py --backbone <tag>` and
@@ -233,7 +237,9 @@ PowerShell, with environment setup and the checks to run after each step) are in
    (`--subset stress_test --condition clean|bright_0.5|bright_1.5|down_0.50|down_0.25|occl_0.15|occl_0.30`),
    `scripts/report_robustness.py --subset stress_test`, `scripts/analyze_results.py --partition test`,
    `scripts/evaluate_negatives.py --partition test`, and the standard protocol
-   `scripts/evaluate_oracle.py --partition test --confirm-frozen`.
+   `scripts/evaluate_oracle.py --partition test --confirm-frozen`. Then `scripts/analyze_extra.py --partition
+   test` reads the saved test predictions (no new inference) for bootstrap intervals, confusion pairs and
+   reliability bins; it stops unless its recomputed counts equal the end-to-end report.
 8. **Report.** `python scripts/report.py --team-id T35 --usns "1RUA24CSE0051,1RUA24CSE0097" --readme` writes
    [eval_P5_T35.md](eval_P5_T35.md) and refreshes the results block in this README;
    `python scripts/make_figures.py` draws [reports/figures/](reports/figures/).

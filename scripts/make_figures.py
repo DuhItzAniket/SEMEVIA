@@ -210,8 +210,56 @@ def fig_ablation():
     save(fig, "ablations_tune.png", f"reports/heads_tune_{rc['backbone_tag']}.json, reports/heads_tune_imagenet_frozen.json, reports/classical_tune.json")
 
 
+def fig_reliability():
+    rc = read("artifacts/release_config.json")
+    ex = read(f"reports/extra_test_{rc['bundle_id']}.json")
+    if not ex:
+        return
+    rl = ex["reliability"]
+    fig, ax = plt.subplots(figsize=(6.4, 5.6))
+    ax.plot([0, 100], [0, 100], color=GRID, linewidth=1.5, linestyle="--")
+    ax.annotate("perfect calibration", (62, 58), color=INK2, fontsize=8, rotation=38)
+    for i, (key, lab) in enumerate((("raw", "Raw softmax"), ("calibrated", "Temperature-scaled (released)"))):
+        bins = [b for b in rl[key]["bins"] if b["count"]]
+        ax.plot([100 * b["mean_confidence"] for b in bins], [100 * b["accuracy"] for b in bins], color=SERIES[i], linewidth=2,
+                marker="o", markersize=5, label=f"{lab}  ECE {rl[key]['ece']:.3f}")
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
+    style(ax, f"Reliability on {rl['n']} correctly localised test images", "Accuracy in bin (%)")
+    ax.set_xlabel("Mean confidence in bin (%)", color=INK2, fontsize=9)
+    ax.legend(frameon=False, fontsize=8.5, labelcolor=INK, loc="upper left")
+    save(fig, "reliability_test.png", f"reports/extra_test_{rc['bundle_id']}.json")
+
+
+def fig_confusions():
+    rc = read("artifacts/release_config.json")
+    ex = read(f"reports/extra_test_{rc['bundle_id']}.json")
+    if not ex:
+        return
+    cf = ex["confusions"]
+    rows = cf["top_pairs"][:10][::-1]
+    kinds = list(dict.fromkeys(r["kind"] for r in cf["top_pairs"][:10]))
+    colour = {k: SERIES[i % 3] for i, k in enumerate(kinds)}
+    fig, ax = plt.subplots(figsize=(9, 5.4))
+    bars = ax.barh(range(len(rows)), [r["count"] for r in rows], 0.6, color=[colour[r["kind"]] for r in rows])
+    for b in bars:
+        ax.text(b.get_width() + 0.2, b.get_y() + b.get_height() / 2, f"{int(b.get_width())}", va="center", fontsize=8, color=INK)
+    ax.set_yticks(range(len(rows)), [f"{r['true']}  →  {r['predicted']}" for r in rows], fontsize=8)
+    style(ax, "Most frequent mix-ups on the test split", None)
+    ax.grid(axis="x", color=GRID, linewidth=0.8)
+    ax.grid(axis="y", visible=False)
+    from matplotlib.patches import Patch
+
+    ax.legend(handles=[Patch(color=colour[k], label=k) for k in kinds], frameon=False, fontsize=8, labelcolor=INK,
+              loc="upper center", bbox_to_anchor=(0.35, -0.12), ncol=len(kinds))
+    ax.set_xlabel(f"Test images ({cf['wrong']} wrong top-1 among correctly localised images)", color=INK2, fontsize=9)
+    save(fig, "confusions_test.png", f"reports/extra_test_{rc['bundle_id']}.json")
+
+
 def main() -> None:
     its = iterations()
+    fig_reliability()
+    fig_confusions()
     fig_iterations(its)
     fig_training()
     fig_robustness(its)

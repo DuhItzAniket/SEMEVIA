@@ -1,0 +1,55 @@
+{
+ "head": "classical (handcrafted features only)",
+ "C": 0.005,
+ "folds": 5,
+ "population": {
+  "partition": "train",
+  "count": 6514,
+  "manifest_sha256": "a78aaf50b8171e4452179e8095dc54899ed16a280233a7152c3997b1fd87c179",
+  "crops": "annotation"
+ },
+ "protocol": "StratifiedKFold(shuffle, seed from configs/heads.yaml); scaler and classifier refit per fold; C fixed to the tune-selected value",
+ "per_fold": [
+  {
+   "fold": 1,
+   "train": 5211,
+   "validation": 1303,
+   "top1": 0.18035303146584805,
+   "top5": 0.37989255564082886
+  },
+  {
+   "fold": 2,
+   "train": 5211,
+   "validation": 1303,
+   "top1": 0.1688411358403684,
+   "top5": 0.37835763622409824
+  },
+  {
+   "fold": 3,
+   "train": 5211,
+   "validation": 1303,
+   "top1": 0.17881811204911743,
+   "top5": 0.36531082118188796
+  },
+  {
+   "fold": 4,
+   "train": 5211,
+   "validation": 1303,
+   "top1": 0.16653875671527243,
+   "top5": 0.36761320030698386
+  },
+  {
+   "fold": 5,
+   "train": 5212,
+   "validation": 1302,
+   "top1": 0.1858678955453149,
+   "top5": 0.38018433179723504
+  }
+ ],
+ "top1_mean": 0.17608378632318425,
+ "top1_std": 0.008139339051274168,
+ "top5_mean": 0.37427170903020685,
+ "top5_std": 0.007209040766400341,
+ "tune_top1_for_reference": 0.18650306748466258,
+ "why_not_deep_hybrid": "The fine-tuned CNN was trained on the training split, so its features on any training fold are optimistic; cross-validating the deep or hybrid head there would overstate accuracy. Their uncertainty is reported with bootstrap intervals on the test predictions (reports/extra_test_<bundle>.json)."
+}

@@ -6,8 +6,9 @@ Short answers to the questions judges are most likely to ask. Each answer names 
 generated for the released iteration **r3** (bundle `ft_ckpt_98b1fb55cc6e_5d755416fd`, backbone tag
 `ckpt_98b1fb55cc6e`); r1 and r2 are listed there under "Model iterations". Current r3 report files end in
 `_ft_ckpt_98b1fb55cc6e_5d755416fd` (test: `e2e_test`, `robustness_stress_test` `.md`/`.json`, `analysis_test`,
-`negatives_test`, `oracle_test`), `_ft_ckpt_98b1fb55cc6e_f99e386191` (tune and calibration, bundle at freeze:
-`e2e_tune`, `negatives_tune`) or `_ckpt_98b1fb55cc6e` (heads, references, optimization). Training:
+`negatives_test`, `oracle_test`, `extra_test`), `_ft_ckpt_98b1fb55cc6e_f99e386191` (tune and calibration, bundle
+at freeze: `e2e_tune`, `e2e_calibration`, `negatives_tune`) or `_ckpt_98b1fb55cc6e` (heads, references,
+optimization). Cross-validation of the classical head: `reports/crossval_classical.json`. Training:
 `reports/training/effb0_r3_summary.json`. Live checks: `reports/release_acceptance.json`,
 `reports/container_check.json`. Superseded test reports stay in `reports/*_ft_ckpt_4f3584f597d5_9662c2e703.*` (r2)
 and `reports/*_ft_ckpt_2339418979e1_0920511710.*` (r1).
@@ -30,6 +31,16 @@ truck is included because some Stanford categories are pickups and vans). It is 
 tune split are in `reports/detector_tune.json`, and its box quality on test is in section 2 of the eval file.
 Code: `src/models/detector.py: VehicleDetector`. It always runs on CPU so offline evaluation measures the
 deployed pipeline.
+
+**Why YOLO11n and not the newest YOLO?**
+Because the detector is not where the errors are. Box recall at IoU 0.5 on test is in
+`reports/e2e_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json` (`modes.<mode>.localization.primary_recall_at_iou`;
+also eval file, section 2). End-to-end top-1 counts a missed box as wrong, so a better detector can add at most
+the remaining misses (one minus that recall), and only if the classifier then also gets those images right; every
+other error is a classifier error on a correct box. YOLO11n is the nano model: small, fast on the 2-CPU container,
+and its COCO weights already find cars. A swap would change the model fingerprint
+(`src/passport/calibration.py: model_fingerprint`), so it would need a new freeze and another use of the test
+split, which we chose not to spend on a small possible gain.
 
 **How is the target car chosen when there are several?**
 `select_target` in `src/models/detector.py`: the largest vehicle box with detector score >= 0.25, ties broken
@@ -103,6 +114,14 @@ tune; both decision records in `NEXT.md` ("Iteration r2 decision record", "Itera
 "hybrid stays the production mode" before the test run. Switching after seeing test results would be selecting on
 test. Section 1 of the eval file states which mode led on test.
 
+**Is deep better than hybrid?**
+Not in a way the test set can show. `scripts/analyze_extra.py` resamples the saved test predictions (2000
+image-level bootstrap resamples, fixed seed, no new inference) and reports a 95% interval for each mode and for the
+**paired** deep-minus-hybrid top-1 difference (same images in both modes):
+`reports/extra_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`, `bootstrap.deep_minus_hybrid_top1` (`value`, `ci95`,
+`includes_zero`); eval file, section 1, "Uncertainty". Read whether the interval includes zero from the file; if
+it does, the two modes are statistically indistinguishable on test and we claim neither is better.
+
 ## 4. Fine-tuning: three iterations
 
 | | r1 (`configs/train.yaml`, run `effb0_r1`) | r2 (`configs/train_v2.yaml`, run `effb0_r2`) | r3, released (`configs/train_v3.yaml`, run `effb0_r3`) |
@@ -132,6 +151,33 @@ pre-registration below.
 records `fine_tuning_requirement_met`. Frozen blocks keep BatchNorm in eval mode
 (`src/models/backbone.py: train_mode_respecting_freeze`). The release uses `best_finetuned.pt`, the best tune
 checkpoint after at least one fine-tuning epoch.
+
+**Did you check over- or underfitting?** Yes, at three levels.
+* **r1 underfit.** Its tune top-1 was still rising at the last epoch (header of `configs/train_v2.yaml`;
+  per-epoch `train_loss` and `tune` values in `reports/training/effb0_r1_summary.json`, figure
+  `reports/figures/training_tune_top1.png`). Training only the last stage for six epochs was the limit, which is
+  why r2 trains the whole network for longer.
+* **r2/r3 against overfitting.** Checkpoints are chosen on tune with early stopping (patience 6), and training
+  uses augmentation and label smoothing (`configs/train_v3.yaml`). The real check is the gap between splits: r3
+  end to end on tune (used for choices), on the **untouched** calibration split (used only for the conformal
+  quantile, never for a choice) and on test, in `reports/e2e_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json`,
+  `reports/e2e_calibration_ft_ckpt_98b1fb55cc6e_f99e386191.json` and
+  `reports/e2e_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`. Compare them on screen; similar values mean the tune
+  choices did not overfit tune.
+* **Linear heads memorise train features.** `train_top1` beside `tune_top1` in
+  `reports/heads_tune_ckpt_98b1fb55cc6e.json` (`heads.<name>.selected`) and `reports/classical_tune.json`
+  (`selected`) shows the heads fit the training rows almost perfectly. That is expected for a 196-way linear
+  model on high-dimensional features (and the CNN was trained on those same images), so train accuracy is never
+  used as evidence; the regularisation strength C is selected on tune (`configs/heads.yaml`).
+
+**Did you cross-validate?** Only where it is honest. `scripts/crossval_classical.py` runs 5-fold stratified
+cross-validation of the **classical** head on the 6,514 training images (scaler and classifier refit per fold, C
+fixed to the tune-selected value): `reports/crossval_classical.json` (per-fold, mean and std, with tune top-1 for
+reference; eval file, section 7). Handcrafted features do not depend on the CNN, so the folds are fair. The
+**deep and hybrid** heads are not cross-validated on train: the fine-tuned CNN was trained on those very images,
+so its features on any training fold are optimistic and a CV score would be inflated (the report states this in
+`why_not_deep_hybrid`). Their uncertainty comes from the bootstrap intervals on the test predictions instead
+(`reports/extra_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`, `bootstrap`).
 
 **Did you look at the test set more than once?** Yes, honestly: end to end once per iteration, three times in
 total (r1, r2, r3). In addition, the frozen r2 bundle had one standard-protocol (ground-truth crop) test run
@@ -211,6 +257,14 @@ after that invalidates the freeze and the test lock stays shut. r3's freeze was 
   the true class at least about 90% of the time. It is **not** the probability that this photo is right, and it
   does not hold for unsupported vehicles, edited images or street photos unlike the dataset. Measured coverage
   on test is in the eval file, section 6.
+
+**Is the confidence calibrated?** After temperature scaling, and we show it rather than assert it. The
+temperature is fit on tune before the freeze. `scripts/analyze_extra.py` bins the production mode's test
+predictions on correctly localised images (10 equal-width confidence bins, same ECE as `metrics.py: ece`) and
+records accuracy against mean confidence for the **raw** softmax and the **temperature-scaled** probabilities:
+`reports/extra_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`, `reliability.raw` and `reliability.calibrated` (ECE and
+bins); figure `reports/figures/reliability_test.png`; eval file, section 6, "Reliability". A calibrated curve lies
+near the diagonal. Calibration on known categories says nothing about unsupported inputs (section 7: the bus).
 
 **How are the states decided?** `src/passport/decision.py: make_passport`, in this order:
 
@@ -314,6 +368,15 @@ errors, and both are very confident. Earlier iterations: r2 had the same thumbna
 TTS Coupe called an Audi TT Hatchback (`reports/analysis_test_ft_ckpt_4f3584f597d5_9662c2e703.json`); r1 had a
 tiny thumbnail with no box, an Aston Martin V8 Vantage called a Virage, and a BMW M3 called a Lamborghini
 Aventador (`reports/analysis_test_ft_ckpt_2339418979e1_0920511710.json`).
+
+**What does the model confuse?** Beyond the three rule-selected cases, `scripts/analyze_extra.py` counts every
+wrong top-1 of the production mode among correctly localised test images (so box errors are excluded), from the
+saved predictions with no new inference. It groups them by kind (same family, other model year; same make, other
+model; badge-engineered twin, e.g. Chevrolet Express / GMC Savana; different make) and lists the 15 most frequent
+true-to-predicted pairs: `reports/extra_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`, `confusions.by_kind` and
+`confusions.top_pairs`; figure `reports/figures/confusions_test.png` (top 10); eval file, section 8. Read the
+shares from the file; the point to make is which kind dominates and that near-identical siblings are where a
+fine-grained classifier is expected to fail.
 
 ## 10. Deployment and CI
 

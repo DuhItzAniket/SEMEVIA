@@ -1,0 +1,367 @@
+{
+ "partition": "test",
+ "bundle_id": "ft_ckpt_98b1fb55cc6e_5d755416fd",
+ "predictions_file": "e2e_test_clean_5eb7f61508_ft_ckpt_98b1fb55cc6e_5d755416fd.jsonl",
+ "population": {
+  "count": 8041,
+  "manifest_sha256": "5eb7f6150857e11078a7ff50d08d5905badcd259d2159187a4c27cf5412cb531"
+ },
+ "production_mode": "hybrid",
+ "temperature": 0.6586010758968961,
+ "consistency": "end-to-end top-1/top-5 numerators of all modes and the raw ECE equal those in reports/e2e_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json",
+ "bootstrap": {
+  "resamples": 2000,
+  "seed": 20261107,
+  "method": "image-level percentile bootstrap",
+  "classical_top1": {
+   "value": 0.06305185922148987,
+   "ci95": [
+    0.05807735356298968,
+    0.06827509016291507
+   ]
+  },
+  "classical_top5": {
+   "value": 0.14824026862330555,
+   "ci95": [
+    0.1405266757865937,
+    0.15582638975251834
+   ]
+  },
+  "deep_top1": {
+   "value": 0.9184181072005969,
+   "ci95": [
+    0.9125699539858227,
+    0.9241387887078721
+   ]
+  },
+  "deep_top5": {
+   "value": 0.9787339883099117,
+   "ci95": [
+    0.9753761969904241,
+    0.9818430543464743
+   ]
+  },
+  "hybrid_top1": {
+   "value": 0.9180450192762094,
+   "ci95": [
+    0.9121968660614352,
+    0.9240144260664096
+   ]
+  },
+  "hybrid_top5": {
+   "value": 0.9798532520830743,
+   "ci95": [
+    0.9767441860465116,
+    0.9829623181196369
+   ]
+  },
+  "deep_minus_hybrid_top1": {
+   "value": 0.000373087924387514,
+   "ci95": [
+    -0.0009949011317000372,
+    0.0016167143390125606
+   ],
+   "includes_zero": true
+  }
+ },
+ "confusions": {
+  "mode": "hybrid",
+  "population": "correctly localised images (box IoU >= 0.5) with a wrong top-1",
+  "wrong": 589,
+  "by_kind": {
+   "same make, other model": 319,
+   "different make": 177,
+   "badge-engineered twin": 48,
+   "same family, other model year": 45
+  },
+  "top_pairs": [
+   {
+    "true": "Audi S5 Coupe 2012",
+    "predicted": "Audi A5 Coupe 2012",
+    "count": 14,
+    "kind": "same make, other model"
+   },
+   {
+    "true": "Audi TT Hatchback 2011",
+    "predicted": "Audi TTS Coupe 2012",
+    "count": 14,
+    "kind": "same make, other model"
+   },
+   {
+    "true": "Chevrolet Express Cargo Van 2007",
+    "predicted": "Chevrolet Express Van 2007",
+    "count": 12,
+    "kind": "same make, other model"
+   },
+   {
+    "true": "BMW 6 Series Convertible 2007",
+    "predicted": "BMW M6 Convertible 2010",
+    "count": 12,
+    "kind": "same make, other model"
+   },
+   {
+    "true": "Audi V8 Sedan 1994",
+    "predicted": "Audi 100 Sedan 1994",
+    "count": 12,
+    "kind": "same make, other model"
+   },
+   {
+    "true": "Bentley Continental GT Coupe 2012",
+    "predicted": "Bentley Continental GT Coupe 2007",
+    "count": 11,
+    "kind": "same family, other model year"
+   },
+   {
+    "true": "Chevrolet Express Van 2007",
+    "predicted": "Chevrolet Express Cargo Van 2007",
+    "count": 11,
+    "kind": "same make, other model"
+   },
+   {
+    "true": "Dodge Caliber Wagon 2007",
+    "predicted": "Dodge Caliber Wagon 2012",
+    "count": 11,
+    "kind": "same family, other model year"
+   },
+   {
+    "true": "Bugatti Veyron 16.4 Convertible 2009",
+    "predicted": "Bugatti Veyron 16.4 Coupe 2009",
+    "count": 10,
+    "kind": "same make, other model"
+   },
+   {
+    "true": "Dodge Caliber Wagon 2012",
+    "predicted": "Dodge Caliber Wagon 2007",
+    "count": 10,
+    "kind": "same family, other model year"
+   },
+   {
+    "true": "GMC Savana Van 2012",
+    "predicted": "Chevrolet Express Cargo Van 2007",
+    "count": 9,
+    "kind": "badge-engineered twin"
+   },
+   {
+    "true": "Chevrolet Silverado 1500 Regular Cab 2012",
+    "predicted": "Chevrolet Silverado 2500HD Regular Cab 2012",
+    "count": 7,
+    "kind": "same make, other model"
+   },
+   {
+    "true": "Bentley Continental GT Coupe 2007",
+    "predicted": "Bentley Continental GT Coupe 2012",
+    "count": 7,
+    "kind": "same family, other model year"
+   },
+   {
+    "true": "Dodge Sprinter Cargo Van 2009",
+    "predicted": "Mercedes-Benz Sprinter Van 2012",
+    "count": 7,
+    "kind": "badge-engineered twin"
+   },
+   {
+    "true": "Audi TTS Coupe 2012",
+    "predicted": "Audi TT Hatchback 2011",
+    "count": 6,
+    "kind": "same make, other model"
+   }
+  ]
+ },
+ "reliability": {
+  "mode": "hybrid",
+  "population": "correctly localised images (box IoU >= 0.5)",
+  "n": 7971,
+  "raw": {
+   "ece": 0.1309629091222779,
+   "n": 7971,
+   "bins": [
+    {
+     "bin": [
+      0.0,
+      0.1
+     ],
+     "count": 89,
+     "accuracy": 0.24719101123595505,
+     "mean_confidence": 0.07249735669418006
+    },
+    {
+     "bin": [
+      0.1,
+      0.2
+     ],
+     "count": 237,
+     "accuracy": 0.540084388185654,
+     "mean_confidence": 0.15154517846925986
+    },
+    {
+     "bin": [
+      0.2,
+      0.3
+     ],
+     "count": 228,
+     "accuracy": 0.7280701754385965,
+     "mean_confidence": 0.2529008169533617
+    },
+    {
+     "bin": [
+      0.3,
+      0.4
+     ],
+     "count": 271,
+     "accuracy": 0.8154981549815498,
+     "mean_confidence": 0.35054945169422297
+    },
+    {
+     "bin": [
+      0.4,
+      0.5
+     ],
+     "count": 326,
+     "accuracy": 0.7852760736196319,
+     "mean_confidence": 0.4490379533232721
+    },
+    {
+     "bin": [
+      0.5,
+      0.6
+     ],
+     "count": 366,
+     "accuracy": 0.8469945355191257,
+     "mean_confidence": 0.5518670268548155
+    },
+    {
+     "bin": [
+      0.6,
+      0.7
+     ],
+     "count": 444,
+     "accuracy": 0.9256756756756757,
+     "mean_confidence": 0.6536212171837308
+    },
+    {
+     "bin": [
+      0.7,
+      0.8
+     ],
+     "count": 668,
+     "accuracy": 0.9476047904191617,
+     "mean_confidence": 0.7539428068261641
+    },
+    {
+     "bin": [
+      0.8,
+      0.9
+     ],
+     "count": 1189,
+     "accuracy": 0.9714045416316233,
+     "mean_confidence": 0.8584052270603397
+    },
+    {
+     "bin": [
+      0.9,
+      1.0
+     ],
+     "count": 4153,
+     "accuracy": 0.9824223452925596,
+     "mean_confidence": 0.9583941143010782
+    }
+   ]
+  },
+  "calibrated": {
+   "ece": 0.027301832622237128,
+   "n": 7971,
+   "bins": [
+    {
+     "bin": [
+      0.0,
+      0.1
+     ],
+     "count": 13,
+     "accuracy": 0.15384615384615385,
+     "mean_confidence": 0.08568550937506428
+    },
+    {
+     "bin": [
+      0.1,
+      0.2
+     ],
+     "count": 58,
+     "accuracy": 0.2413793103448276,
+     "mean_confidence": 0.15713498458131409
+    },
+    {
+     "bin": [
+      0.2,
+      0.3
+     ],
+     "count": 88,
+     "accuracy": 0.42045454545454547,
+     "mean_confidence": 0.24836900038242105
+    },
+    {
+     "bin": [
+      0.3,
+      0.4
+     ],
+     "count": 112,
+     "accuracy": 0.5,
+     "mean_confidence": 0.34724085639487196
+    },
+    {
+     "bin": [
+      0.4,
+      0.5
+     ],
+     "count": 146,
+     "accuracy": 0.6164383561643836,
+     "mean_confidence": 0.45814903669041485
+    },
+    {
+     "bin": [
+      0.5,
+      0.6
+     ],
+     "count": 184,
+     "accuracy": 0.6141304347826086,
+     "mean_confidence": 0.5509907280559859
+    },
+    {
+     "bin": [
+      0.6,
+      0.7
+     ],
+     "count": 188,
+     "accuracy": 0.7606382978723404,
+     "mean_confidence": 0.6533586450305339
+    },
+    {
+     "bin": [
+      0.7,
+      0.8
+     ],
+     "count": 272,
+     "accuracy": 0.8161764705882353,
+     "mean_confidence": 0.7506883853815935
+    },
+    {
+     "bin": [
+      0.8,
+      0.9
+     ],
+     "count": 407,
+     "accuracy": 0.8968058968058968,
+     "mean_confidence": 0.8556682412145729
+    },
+    {
+     "bin": [
+      0.9,
+      1.0
+     ],
+     "count": 6503,
+     "accuracy": 0.9749346455482085,
+     "mean_confidence": 0.988796830707718
+    }
+   ]
+  }
+ }
+}
