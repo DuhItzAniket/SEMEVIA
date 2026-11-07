@@ -15,6 +15,55 @@
   limit 30%; kit in `docs/report_kit.md`), records voice-over on the demo video, fills the submission form.
 * **Keep running:** laptop awake and online, Docker Desktop, the `cloudflared` terminal tab.
 
+## Iteration r3-int8 decision record (committed before any per-image, end-to-end, calibration or test INT8 number exists)
+* **What changes:** r3-int8 is r3 (`ft_ckpt_98b1fb55cc6e_5d755416fd`) with one change: the final linear layer of the
+  hybrid head (the logistic-regression coefficients in `head_hybrid.joblib`, sha256 `696ccd3b...`) is served as an
+  **ONNX INT8** graph (onnxruntime `quantize_dynamic`, QInt8 per-tensor weights, MatMulInteger, opset 17 / IR 10).
+  The graph is derived deterministically from the published joblib by `src/models/head_onnx.py` and pinned by sha256;
+  no new public file is uploaded. The INT8 head scores **one image row at a time**, so each image's output depends
+  only on that image's fused features (no activation scale shared across a batch). The app and the evaluator can
+  still differ slightly because the FP32 encoder runs in different batch sizes (about 1e-6) and INT8 rounding can
+  amplify that by up to one quantisation step; the head itself is batch-invariant.
+* **What does not change:** detector, backbone (`f553f2e5...`), fusion transform (scalers + PCA, sklearn FP32),
+  classical and deep heads (sklearn FP32, comparison modes), features, crop, detector threshold, encoder (PyTorch
+  FP32; `precision: fp32` keeps meaning encoder precision) and production mode (hybrid). Motivation: PS5 item 4.6
+  ("optimisation applied and evaluated") was only partial because the INT8 head was measured but not deployed.
+* **What was already seen before this record:** `reports/optimization_head_hybrid_ckpt_98b1fb55cc6e.json` (batch-wise,
+  one 815-row tensor of tune annotation crops: INT8 top-1 equal to FP32, max centred logit difference 0.047). The
+  thresholds below were chosen knowing those numbers. That report is superseded by a per-row re-run (its old values
+  are kept in a `superseded_batchwise` block). No per-row, end-to-end, calibration or test INT8 number exists yet.
+* **Pipeline checks (all must pass; otherwise r3 FP32 stays released and no INT8 test run happens):**
+  (1) `scripts/optimize_head.py` per row on the tune caches: ONNX FP32 matches sklearn within atol 1e-4, and the
+  INT8 tune top-1 drop vs sklearn is <= 1.0 percentage point (existing policy);
+  (2) the INT8 file's sha256 is identical across builds, equals the manifest entry, and the Docker (Linux) build
+  regenerates it with the same sha256;
+  (3) a parity test on tune crops `tune[0:16]`: max centred logit difference vs sklearn <= 0.20 and the same argmax
+  on >= 15 of 16 (loose compared with the 0.047 already seen; disclosed);
+  (4) the full pytest suite, `python -m src.release verify`, and `scripts/check_container.py` with `/readyz`
+  showing recognition on and the hybrid head runtime `onnx_int8`;
+  (5) container vs host parity: the in-container predictor scores the same tune crops as the host within
+  max centred logit difference 1e-3 (INT8 results depend on the CPU's instruction set; both run on this laptop).
+  These thresholds are fixed now and will not be loosened after a result is seen.
+* **No accuracy rule beyond check (1):** if the checks pass, r3-int8 replaces r3 FP32 as the release **whatever its
+  tune, calibration and test results**. Only an operational failure (service not ready, crash) can trigger a
+  rollback, never a test result, and any rollback is disclosed. Decision: team Hypermetropia (user approval
+  "Yes, deploy INT8"), 2026-11-07.
+* **Procedure, as for r3:** promote a bundle with the INT8 head and the development calibration placeholder; run
+  `evaluate.py --partition tune` and `evaluate_negatives.py --partition tune`; `freeze.py --mode hybrid --negatives
+  <tune negatives>` re-derives temperature and reject threshold from INT8 logits with the unchanged rules and grid;
+  `evaluate.py --partition calibration` and `calibrate.py --final` give the conformal q from INT8 logits (n = 815);
+  promote the final bundle. Every prediction row records the hybrid head runtime, and the freeze and calibration
+  refuse rows produced by a different runtime. The tune report of the first bundle mixes INT8 logits with the FP32
+  development calibration, so its calibrated-set numbers are not cited.
+* **Test-split use (each once, all disclosed in `eval_P5_T35.md`):** one end-to-end test run of the final r3-int8
+  bundle (4th end-to-end use: r1, r2, r3, r3-int8); the 7 `stress_test` conditions (4th use); the 40-photo held-out
+  negatives (3rd use; r1 had none). The ground-truth-crop oracle study is not re-run (r3 FP32's stays). Smoke checks
+  that post a few test images (`check_container.py`, two pytest tests) and the failure-case re-scoring in
+  `analyze_results.py` also touch test images without informing any decision; they are disclosed as well. An
+  INT8-vs-FP32 per-image comparison is computed from the two saved test prediction files.
+* **History:** r3 FP32's release config, manifest, freeze and both calibrations are archived in
+  `artifacts/history/r3/`; r3 FP32 is reported as a superseded iteration next to r3-int8.
+
 ## Iteration r3 decision record (written before r3 training starts; no r3 result exists)
 * r3 = `configs/train_v3.yaml`: r2's recipe at 320 px input instead of 224 (same seed and data).
 * **Release rule, fixed now:** r3 replaces r2 only if, on the **tune split**, its hybrid end-to-end top-1

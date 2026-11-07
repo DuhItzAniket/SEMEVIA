@@ -1,0 +1,84 @@
+{
+ "kind": "frozen",
+ "created_at": "2026-11-06T23:46:30.385619+00:00",
+ "bundle_id_at_freeze": "ft_ckpt_98b1fb55cc6e_f99e386191",
+ "model_fingerprint": "5d97761f5b6c726d1b246f48222a1ff9c8491259ca3f76cb33c9824235ff205c",
+ "production_mode": "hybrid",
+ "backbone": "ckpt_98b1fb55cc6e",
+ "encoder_runtime": "torch",
+ "precision": "fp32",
+ "head_sha256": "696ccd3b3d4cd48496029aa1dbd9bd623c4657fdc3cf6d5ae9f322b6f64003eb",
+ "detector_sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+ "detector_threshold": 0.25,
+ "crop_margin": 0.05,
+ "temperature": 0.6586010758968961,
+ "alpha": 0.1,
+ "temperature_fit": {
+  "population": "tune matched-primary (runtime box IoU >= 0.5)",
+  "n": 809,
+  "excluded": 6,
+  "nll_raw": 0.4569074522878734,
+  "nll_T": 0.3376628000624993,
+  "ece_raw": 0.13825634217408336,
+  "ece_T": 0.04344325124001366,
+  "note": "in-sample on the tune split"
+ },
+ "reject": {
+  "rule_name": "max calibrated probability < threshold",
+  "threshold": 0.5,
+  "feasible": true,
+  "table": [
+   {
+    "threshold": 0.05,
+    "known_retention": 0.9950920245398773,
+    "negative_false_acceptance": 0.425
+   },
+   {
+    "threshold": 0.1,
+    "known_retention": 0.992638036809816,
+    "negative_false_acceptance": 0.4
+   },
+   {
+    "threshold": 0.15,
+    "known_retention": 0.9889570552147239,
+    "negative_false_acceptance": 0.375
+   },
+   {
+    "threshold": 0.2,
+    "known_retention": 0.9828220858895705,
+    "negative_false_acceptance": 0.35
+   },
+   {
+    "threshold": 0.25,
+    "known_retention": 0.9815950920245399,
+    "negative_false_acceptance": 0.225
+   },
+   {
+    "threshold": 0.3,
+    "known_retention": 0.9742331288343559,
+    "negative_false_acceptance": 0.175
+   },
+   {
+    "threshold": 0.4,
+    "known_retention": 0.9607361963190184,
+    "negative_false_acceptance": 0.15
+   },
+   {
+    "threshold": 0.5,
+    "known_retention": 0.947239263803681,
+    "negative_false_acceptance": 0.1
+   }
+  ],
+  "negatives_used": true,
+  "rule": "minimise negative false acceptance subject to known retention >= target",
+  "known_retention_target": 0.9
+ },
+ "tune_predictions": {
+  "file": "e2e_tune_clean_0f54c77a26_ft_ckpt_98b1fb55cc6e_f99e386191.jsonl",
+  "sha256": "5ed45da7a58f218ada9040e367003275d1b62ed76393bfcd91a415a599a09083",
+  "count": 815
+ },
+ "label_order": "class_id 0..195 (original_class_id - 1)",
+ "metadata_sha256": "2f0280b36e04233f1e303f91d81e32ba0b7d2e35710e695c728e934fb4b428c9",
+ "features_config_sha256": "ac990825061c510699b47f8a21f5fc6ba9cf6c859303a7242ebf68162237ad2f"
+}

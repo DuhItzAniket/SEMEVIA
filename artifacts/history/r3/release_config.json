@@ -1,0 +1,9 @@
+{
+ "bundle_id": "ft_ckpt_98b1fb55cc6e_5d755416fd",
+ "backbone": "artifacts/store/release/backbone_ckpt_98b1fb55cc6e.pth",
+ "backbone_tag": "ckpt_98b1fb55cc6e",
+ "backbone_status": "fine-tuned EfficientNet-B0 (effb0_r3, 21 fine-tuning epoch(s), best tune top-1 0.9485)",
+ "calibration": "artifacts/calibration_final.json",
+ "calibration_kind": "final",
+ "precision": "fp32"
+}
