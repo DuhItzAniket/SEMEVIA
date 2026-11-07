@@ -160,9 +160,17 @@ to `.env`. To retrain or re-run the evaluation, follow [docs/runbook_other_pc.md
 
 ## Citation
 
-SEMEVIA is archived on Zenodo: [10.5281/zenodo.24026963](https://doi.org/10.5281/zenodo.24026963) (all versions;
-v1.0.0 is [10.5281/zenodo.24026964](https://doi.org/10.5281/zenodo.24026964)). GitHub's **Cite this
-repository** button uses [CITATION.cff](CITATION.cff).
+If you use SEMEVIA, please cite it as:
+
+> C Lakshanaa and Aniket Kumar (2026). *SEMEVIA: fine-grained vehicle recognition with an Identity Evidence
+> Passport* (Version 1.0.0). Zenodo. <https://doi.org/10.5281/zenodo.24026963>
+
+The project is archived on Zenodo (the DOI above covers all versions; v1.0.0 alone is
+[10.5281/zenodo.24026964](https://doi.org/10.5281/zenodo.24026964)). GitHub's **Cite this repository** button,
+in the sidebar, gives the same citation in APA and BibTeX from [CITATION.cff](CITATION.cff).
+
+<details>
+<summary>BibTeX (for LaTeX)</summary>
 
 ```bibtex
 @software{lakshanaa_kumar_2026_semevia,
@@ -175,9 +183,10 @@ repository** button uses [CITATION.cff](CITATION.cff).
   url       = {https://doi.org/10.5281/zenodo.24026963}
 }
 ```
+</details>
 
-Dataset: J. Krause, M. Stark, J. Deng and L. Fei-Fei, "3D Object Representations for Fine-Grained
-Categorization", 4th IEEE Workshop on 3D Representation and Recognition, at ICCV 2013.
+**Dataset used:** Stanford Cars, by J. Krause, M. Stark, J. Deng and L. Fei-Fei, "3D Object Representations
+for Fine-Grained Categorization", 4th IEEE Workshop on 3D Representation and Recognition, at ICCV 2013.
 
 ---
 
