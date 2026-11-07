@@ -60,10 +60,16 @@ def iterations():
     its = []
     for f in sorted(glob.glob(str(ROOT / "artifacts/history/*/release_config.json"))):
         rc = json.loads(Path(f).read_text(encoding="utf-8"))
-        its.append((Path(f).parent.name, rc["bundle_id"], rc, read(f"artifacts/history/{Path(f).parent.name}/production_freeze.json")))
+        fz = read(f"artifacts/history/{Path(f).parent.name}/production_freeze.json")
+        name = Path(f).parent.name
+        its.append((name, rc["bundle_id"], rc, fz))
     rc = read("artifacts/release_config.json")
     run = rc["backbone_status"].split("(")[1].split(",")[0] if "(" in rc["backbone_status"] else "current"
-    its.append((f"{run.replace('effb0_', '')} (released)", rc["bundle_id"], rc, read("artifacts/production_freeze.json")))
+    run = run.replace("effb0_", "")
+    if rc.get("hybrid_head_runtime") == "onnx_int8":   # same backbone as the archived FP32 iteration: name both heads
+        run += "-int8"
+        its = [(f"{n} FP32 head" if n == run[:-5] else n, b, r, z) for n, b, r, z in its]
+    its.append((f"{run} (released)", rc["bundle_id"], rc, read("artifacts/production_freeze.json")))
     return its[-3:]
 
 

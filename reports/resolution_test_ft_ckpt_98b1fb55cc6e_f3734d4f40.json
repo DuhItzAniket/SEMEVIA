@@ -1,0 +1,109 @@
+{
+ "partition": "test",
+ "bundle_id": "ft_ckpt_98b1fb55cc6e_f3734d4f40",
+ "predictions_file": "e2e_test_clean_5eb7f61508_ft_ckpt_98b1fb55cc6e_f3734d4f40.jsonl",
+ "definition": "end-to-end: runtime box IoU >= 0.5 with the annotation and true class in top-k; denominator = all images in the group",
+ "width_bins": [
+  "under 150 px",
+  "150-299 px",
+  "300-499 px",
+  "500 px and over"
+ ],
+ "by_box_width": {
+  "deep": {
+   "under 150 px": {
+    "count": 102,
+    "top1": 80,
+    "top5": 83,
+    "top1_rate": 0.7843137254901961,
+    "top5_rate": 0.8137254901960784
+   },
+   "150-299 px": {
+    "count": 1609,
+    "top1": 1476,
+    "top5": 1574,
+    "top1_rate": 0.9173399627097576,
+    "top5_rate": 0.978247358607831
+   },
+   "300-499 px": {
+    "count": 2173,
+    "top1": 2004,
+    "top5": 2127,
+    "top1_rate": 0.922227335480902,
+    "top5_rate": 0.9788311090658076
+   },
+   "500 px and over": {
+    "count": 4157,
+    "top1": 3825,
+    "top5": 4086,
+    "top1_rate": 0.9201347125330768,
+    "top5_rate": 0.9829203752706278
+   }
+  },
+  "hybrid": {
+   "under 150 px": {
+    "count": 102,
+    "top1": 80,
+    "top5": 83,
+    "top1_rate": 0.7843137254901961,
+    "top5_rate": 0.8137254901960784
+   },
+   "150-299 px": {
+    "count": 1609,
+    "top1": 1476,
+    "top5": 1577,
+    "top1_rate": 0.9173399627097576,
+    "top5_rate": 0.9801118707271598
+   },
+   "300-499 px": {
+    "count": 2173,
+    "top1": 2004,
+    "top5": 2128,
+    "top1_rate": 0.922227335480902,
+    "top5_rate": 0.9792913023469857
+   },
+   "500 px and over": {
+    "count": 4157,
+    "top1": 3823,
+    "top5": 4091,
+    "top1_rate": 0.919653596343517,
+    "top5_rate": 0.9841231657445273
+   }
+  }
+ },
+ "by_natural_occlusion": {
+  "deep": {
+   "none": {
+    "count": 56,
+    "top1": 51,
+    "top5": 54,
+    "top1_rate": 0.9107142857142857,
+    "top5_rate": 0.9642857142857143
+   },
+   "partial": {
+    "count": 4,
+    "top1": 4,
+    "top5": 4,
+    "top1_rate": 1.0,
+    "top5_rate": 1.0
+   }
+  },
+  "hybrid": {
+   "none": {
+    "count": 56,
+    "top1": 52,
+    "top5": 54,
+    "top1_rate": 0.9285714285714286,
+    "top5_rate": 0.9642857142857143
+   },
+   "partial": {
+    "count": 4,
+    "top1": 4,
+    "top5": 4,
+    "top1_rate": 1.0,
+    "top5_rate": 1.0
+   }
+  }
+ },
+ "occlusion_note": "Labelled sample from reports/viewpoint_labels.csv (team review pending); groups are tiny and descriptive only."
+}

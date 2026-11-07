@@ -117,7 +117,10 @@ def main() -> None:
     test, test_f = find(f"e2e_test_{bundle}.json")
     rob, rob_f = find(f"robustness_stress_test_{bundle}.json")
     ana, ana_f = find(f"analysis_test_{bundle}.json")
-    tune, tune_f = find(f"e2e_tune_*_{tag}_*.json") if tag != "imagenet_frozen" else find("e2e_tune_dev_*097c99803f.json")
+    if freeze and freeze.get("bundle_id_at_freeze"):
+        tune, tune_f = find(f"e2e_tune_{freeze['bundle_id_at_freeze']}.json")   # the tune run the freeze was made from
+    else:
+        tune, tune_f = find(f"e2e_tune_*_{tag}_*.json") if tag != "imagenet_frozen" else find("e2e_tune_dev_*097c99803f.json")
     heads, heads_f = find(f"heads_tune_{tag}.json")
     cls, cls_f = find("classical_tune.json")
     det, det_f = find("detector_tune.json")
@@ -142,11 +145,17 @@ def main() -> None:
     if final:
         earlier_e2e = [Path(f).name for f in glob.glob(str(ROOT / "reports/e2e_test_*.json")) if bundle not in f]
         earlier_orc = [Path(f).name for f in glob.glob(str(ROOT / "reports/oracle_test_*.json")) if bundle not in f]
+        n_stress = len({Path(f).name.split("stress_test_")[1] for f in glob.glob(str(ROOT / "reports/robustness_stress_test_*.json"))})
+        n_neg = len(glob.glob(str(ROOT / "reports/negatives_test_*.json")))
         status.append(f"Final values below come from the official Stanford Cars test split (8,041 images), evaluated once "
                       f"end to end for this bundle after its freeze. The same split was used earlier: {len(earlier_e2e)} "
                       f"end-to-end run(s) of superseded iterations"
                       + (f" and {len(earlier_orc)} ground-truth-crop run(s) of a superseded frozen bundle" if earlier_orc else "")
-                      + " (files `reports/e2e_test_*.json`, `reports/oracle_test_*.json`; see Model iterations).")
+                      + " (files `reports/e2e_test_*.json`, `reports/oracle_test_*.json`; see Model iterations)."
+                      + f" The 392-image test stress subset has been run for {n_stress} bundle(s) and the 40 held-out negatives "
+                        f"for {n_neg} (`reports/robustness_stress_test_*.json`, `reports/negatives_test_*.json`). A few "
+                        f"test images are also posted by smoke checks (`scripts/check_container.py`, two pytest tests) and "
+                        f"re-scored for the failure cases (`scripts/analyze_results.py`); none of these informs a decision.")
     else:
         status.append("Final values read *pending* until the official test run.")
     status.append("Tune-split numbers are selection-set diagnostics and are optimistic.")
@@ -214,15 +223,19 @@ def main() -> None:
         if old and rc_old["bundle_id"] != bundle:
             hist.append((Path(f).parent.name, rc_old, old, old_f))
     if final and hist:
+        head_label = {"sklearn": "sklearn FP32", "onnx_int8": "ONNX INT8 (row-wise)"}
+        cur_name = "r3-int8" if rel_cfg.get("hybrid_head_runtime") == "onnx_int8" else "current"
         L += ["## Model iterations (each evaluated once on test after its own freeze)", "",
-              "| Iteration | Backbone | Production mode | Hybrid E2E top-1 | Deep E2E top-1 | Hybrid E2E top-5 | Source |",
-              "|---|---|---|---|---|---|---|"]
+              "| Iteration | Backbone | Hybrid head | Production mode | Hybrid E2E top-1 | Deep E2E top-1 | Hybrid E2E top-5 | Source |",
+              "|---|---|---|---|---|---|---|---|"]
         for name, rc_old, old, old_f in hist:
             fz_old = read(f"artifacts/history/{name}/production_freeze.json") or {}
-            L.append(f"| {name} (superseded) | {rc_old['backbone_status']} | {fz_old.get('production_mode', '?')} | "
+            L.append(f"| {name} (superseded) | {rc_old['backbone_status']} | "
+                     f"{head_label[fz_old.get('hybrid_head_runtime', 'sklearn')]} | {fz_old.get('production_mode', '?')} | "
                      f"{pct(old['modes']['hybrid']['end_to_end_top1']['value'])} | {pct(old['modes']['deep']['end_to_end_top1']['value'])} | "
                      f"{pct(old['modes']['hybrid']['end_to_end_top5']['value'])} | `reports/{old_f}` |")
-        L.append(f"| current | {rel_cfg.get('backbone_status')} | {(freeze or {}).get('production_mode', '?')} | "
+        L.append(f"| {cur_name} (current) | {rel_cfg.get('backbone_status')} | "
+                 f"{head_label[(freeze or {}).get('hybrid_head_runtime', 'sklearn')]} | {(freeze or {}).get('production_mode', '?')} | "
                  f"{pct(test['modes']['hybrid']['end_to_end_top1']['value'])} | {pct(test['modes']['deep']['end_to_end_top1']['value'])} | "
                  f"{pct(test['modes']['hybrid']['end_to_end_top5']['value'])} | `reports/{test_f}` |")
         fz_rules = []
@@ -240,6 +253,12 @@ def main() -> None:
               "r3 decision record\") was written before r3 was trained and released r3 only if its tune end-to-end hybrid "
               "top-1 beat r2's by at least one point; otherwise r3 would never have touched the test split. The outcome was "
               "recorded before the test run (`reports/e2e_tune_<r3 bundle at freeze>.json`).",
+              *(["* r3-int8: r3 with one change, the hybrid head's final linear layer served as a row-wise ONNX INT8 graph "
+                 "derived from the released joblib (PS5 item 4.6). Its decision record (\"Iteration r3-int8 decision "
+                 "record\") was committed before any per-image, end-to-end, calibration or test INT8 number existed and "
+                 "releases it whatever its test result once five pipeline checks pass; temperature, reject threshold "
+                 "and conformal q were re-derived from INT8 logits on tune and calibration data only."]
+                if cur_name == "r3-int8" else []),
               "* The reject rule changed across iterations (from the freeze files: " + "; ".join(fz_rules) + ").",
               "", f"Heads, calibration and freeze were redone on tune/calibration data for every iteration before its single "
               f"end-to-end test run. All {len(hist) + 1} test results are reported; all numbers below are for the current "
@@ -250,8 +269,16 @@ def main() -> None:
     if final:
         L += ["Final, official test:", ""] + classification_table(test) + [""]
         orc, orc_f = find(f"oracle_test_{bundle}.json")
+        orc_note = "the same frozen model"
+        if not orc and rel_cfg.get("hybrid_head_runtime") == "onnx_int8":
+            # pre-registered: the oracle study is not re-run for r3-int8; show r3 FP32's, labelled as such
+            r3 = read("artifacts/history/r3/release_config.json")
+            if r3 and r3.get("backbone_tag") == tag:
+                orc, orc_f = find(f"oracle_test_{r3['bundle_id']}.json")
+                orc_note = ("the same backbone and heads with the FP32 hybrid head (r3; not re-run for r3-int8, as "
+                            "pre-registered; deep and classical are unchanged)")
         if orc:
-            L += [f"Standard Stanford Cars protocol on the same frozen model (classify the ground-truth car region, no "
+            L += [f"Standard Stanford Cars protocol on {orc_note} (classify the ground-truth car region, no "
                   f"detector; the usual way published results are reported; `reports/{orc_f}`):", "",
                   "| Mode | Top-1 (ground-truth crop) | Top-5 (ground-truth crop) |", "|---|---|---|"]
             L += [f"| {m} | {frac(orc['modes'][m]['top1'])} | {frac(orc['modes'][m]['top5'])} |" for m in MODES] + [""]
@@ -352,13 +379,37 @@ def main() -> None:
               f"only part of the time (detector, features and Passport also run; see `docs/checkpoints/P5_dev.md`), and "
               f"switching runtime would change the frozen model fingerprint, so it would need a new freeze.", ""]
     if opth:
-        L += [f"INT8 linear head (`reports/{opth_f}`): the hybrid head's final linear layer exported to ONNX, "
+        deployed = (freeze or {}).get("hybrid_head_runtime") == "onnx_int8"
+        lh = opth["latency_single_row_head_only"]
+        L += [f"INT8 linear head (`reports/{opth_f}`, {opth.get('inference', 'batch')} scoring of {opth['population']['count']} "
+              f"tune annotation crops): the hybrid head's final linear layer as an ONNX graph, "
               f"{opth['size_bytes']['onnx_fp32'] / 1e6:.2f} MB (FP32) -> {opth['size_bytes']['onnx_int8'] / 1e6:.2f} MB (INT8), "
-              f"tune top-1 {pct(opth['accuracy']['onnx_fp32']['tune_top1'])} -> {pct(opth['accuracy']['onnx_int8']['tune_top1'])} "
-              f"(passes the policy: {opth.get('int8_passes_policy')}). {opth.get('note', '')}", ""]
+              f"tune top-1 {pct(opth['accuracy']['sklearn_fp32']['tune_top1'])} (sklearn FP32) -> "
+              f"{pct(opth['accuracy']['onnx_int8']['tune_top1'])} (INT8), top-1 agreement with FP32 "
+              f"{pct(opth['int8_vs_fp32']['top1_agreement'])}, max centred logit difference "
+              f"{opth['int8_vs_fp32']['max_abs_centered_logit_diff']:.3f}; head-only latency p50 "
+              f"{lh['onnx_fp32']['p50_ms'] * 1000:.0f} us (ONNX FP32) vs {lh['onnx_int8']['p50_ms'] * 1000:.0f} us (INT8) "
+              f"(passes the policy: {opth.get('int8_passes_policy')}). {opth.get('note', '')}"
+              + (" **Deployed:** the released bundle serves this INT8 graph for the hybrid (production) head; it is derived "
+                 "from the published joblib at build time and pinned by sha256 "
+                 f"(`{opth.get('int8_sha256', '')[:12]}`); calibration, reject threshold and the test results above are for "
+                 "the INT8 head." if deployed else ""), ""]
+        cmp_, cmp_f = find(f"int8_vs_fp32_test_{bundle}.json")
+        if deployed and cmp_:
+            h, ctl = cmp_["modes"]["hybrid"], cmp_["modes"]["deep"]
+            L += [f"INT8 vs FP32 hybrid head on the same {h['n']:,} test images (the r3 FP32 and r3-int8 test prediction files; "
+                  f"no extra test run; `reports/{cmp_f}`): end-to-end top-1 {pct(h['a_top1'])} (FP32) vs {pct(h['b_top1'])} "
+                  f"(INT8), difference {100 * h['diff']:+.2f} pt (paired bootstrap 95% CI {100 * h['ci'][0]:+.2f} to "
+                  f"{100 * h['ci'][1]:+.2f}); top-1 answers agree on {pct(h['top1_agreement'])} of images; images correct "
+                  f"under only one head: {h['only_a']} FP32-only vs {h['only_b']} INT8-only (exact McNemar p = {h['mcnemar_p']:.3g}). "
+                  f"Control: the unchanged deep head agrees on {pct(ctl['top1_agreement'])} (max logit difference "
+                  f"{ctl['max_abs_logit_diff']:.2g}), the run-to-run floor.", ""]
     if freeze:
-        L += [f"Released and frozen runtime: encoder `{freeze.get('encoder_runtime')}`, precision `{freeze.get('precision')}` "
-              f"(the optimized variants above are measured, not deployed).", ""]
+        hr = freeze.get("hybrid_head_runtime", "sklearn")
+        L += [f"Released and frozen runtime: encoder `{freeze.get('encoder_runtime')}`, precision `{freeze.get('precision')}`, "
+              f"hybrid head `{hr}`" + (" (deployed optimisation); the ONNX FP32 and INT8 encoder variants above are measured, "
+                                       "not deployed." if hr != "sklearn" else
+                                       " (the optimized variants above are measured, not deployed)."), ""]
     acc = read("reports/release_acceptance.json")
     if acc and acc.get("passed"):
         fu, cc = acc["fresh_uploads"], acc["concurrent"]
