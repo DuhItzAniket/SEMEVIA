@@ -1,16 +1,18 @@
 # NEXT: SEMEVIA handoff
 
-## When you wake up (status 2026-11-07 ~06:30 IST)
-* **Released model: r3** (320 px full fine-tuning, bundle `ft_ckpt_98b1fb55cc6e_5d755416fd`), live behind the
-  same URL <https://readings-agency-respond-bacteria.trycloudflare.com>; all results in `eval_P5_T35.md`
-  (r1 and r2 listed under "Model iterations").
-* **Needs your OK:** publish r3's model files as GitHub Release `model-v3` (the safety check requires your
-  approval). Until then the r3 commits are local on `semevia/implementation` (the `r3-experiment` branch with
-  all r3 evidence is already on GitHub); pushing without the release would make CI's clean-build job fail.
-* **Demo video (silent, captioned, ~2:52):** `C:\Users\Luikz\Downloads\SEMEVIA_demo\semevia_demo_silent.webm`.
-  Add your voice-over and face circle in any editor (e.g. Clipchamp). Script: `docs/demo.md`.
-* **Report:** write it yourselves (AI-content limit 30%); outline, sources and figures in `docs/report_kit.md`
-  and `reports/figures/`. Fill in each member's section in the submission form.
+## Current status (2026-11-07 ~09:55 IST)
+* **Released model: r3** (bundle `ft_ckpt_98b1fb55cc6e_5d755416fd`, GitHub Release `model-v3`), live at
+  <https://readings-agency-respond-bacteria.trycloudflare.com>; results in `eval_P5_T35.md`. Zenodo DOI
+  10.5281/zenodo.24026963 (v1.0.0).
+* **Last step (commit cf2b69e):** Reset button fixed (its id shadowed `form.reset`), upload thumbnail, shorter
+  UI text, in-app classical/deep/hybrid comparison panel (PS5 expected output 6), classical-mode whole-image
+  fallback, and eval additions (dataset, preprocessing, classical-branch role, accuracy by car size and natural
+  occlusion from saved test predictions). Tests pass; `scripts/check_release.py` passed on the public URL.
+* **PS5 audit (7 agents, 2026-11-07):** 44 of 49 items met. Still partial: 4.2 illumination/viewpoint (only
+  brightness x0.5/x1.5; viewpoint labels need team review), 4.6 optimisation is measured but not deployed
+  (INT8 head / ONNX encoder), 4.3 occlusion (synthetic only, natural sample tiny).
+* **Next:** team reviews `reports/viewpoint_labels.csv` (drop "review pending"), writes the report PDF (AI-content
+  limit 30%; kit in `docs/report_kit.md`), records voice-over on the demo video, fills the submission form.
 * **Keep running:** laptop awake and online, Docker Desktop, the `cloudflared` terminal tab.
 
 ## Iteration r3 decision record (written before r3 training starts; no r3 result exists)
