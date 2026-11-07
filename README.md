@@ -74,6 +74,22 @@ sometimes only the model family or just the brand.
 - **Clear messages** for wrong files (not an image, too large, empty) and for photos with no car.
 - **Privacy**: uploaded photos are never saved; they are kept in memory briefly and then deleted.
 
+## What Makes SEMEVIA Different
+
+Most car-recognition projects stop at "here is the model name and a confidence score". SEMEVIA also tries to
+show how far that answer can be trusted.
+
+| | A typical approach | SEMEVIA |
+|---|---|---|
+| **The answer** | One model name with a confidence % | An Evidence Passport that says when the photo only supports the model family or the brand |
+| **Explaining it** | A heatmap over the image | A six-region challenge that measures how hiding each part changes the answer |
+| **Comparing methods** | One model | Classical, deep and hybrid compared on the same photos |
+| **Testing** | Test photos often reused while tuning | Model locked first, then tested once on photos kept aside |
+| **Scoring** | Accuracy on ready-cut car images | A hit counts only if both the box and the name are right |
+| **Hard cases** | Clean photos only | Darker, blurred and partly hidden photos, plus non-car photos; known failures listed |
+| **Running it** | Works on the team's laptop | Always-on public site, one-command Docker setup, automatic tests |
+| **Sharing it** | Code on GitHub | Also archived on Zenodo with a permanent, citable DOI |
+
 
 ## The Process
 
