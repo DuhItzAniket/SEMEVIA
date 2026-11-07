@@ -19,8 +19,23 @@ def client():
     with TestClient(app) as c:
         r = c.get("/readyz").json()
         if not r.get("recognition"):
+            from src.release import verify
+
+            # a complete, verified bundle must serve recognition; only an incomplete build may skip
+            assert verify() or r.get("recognition_reason", "").startswith("recognition bundle not present"), r
             pytest.skip("recognition bundle not present in this build")
         yield c
+
+
+def test_readyz_reports_the_configured_runtimes(client):
+    from src.release import recognition_config
+
+    rc = recognition_config()
+    r = client.get("/readyz").json()
+    assert r["head_runtime"]["hybrid"] == rc.get("hybrid_head_runtime", "sklearn")
+    assert r["head_runtime"]["deep"] == r["head_runtime"]["classical"] == "sklearn"
+    assert r["encoder_precision"] == rc["precision"]
+    assert (r["head_int8_sha256"] is not None) == (rc.get("hybrid_head_runtime", "sklearn") == "onnx_int8")
 
 
 @pytest.mark.skipif(not IMG.exists(), reason="dataset not available")

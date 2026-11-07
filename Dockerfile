@@ -21,14 +21,18 @@ RUN pip install -r requirements-infer.txt \
     && pip uninstall -y opencv-python \
     && pip install --force-reinstall --no-deps opencv-python-headless==5.0.0.93 \
     && python -c "import cv2, uvicorn, torch, ultralytics, sklearn, onnxruntime; print('imports ok', cv2.__version__)"
+COPY requirements-derive.txt .
+RUN pip install -r requirements-derive.txt && python -c "import onnx, onnxruntime.quantization; print('onnx', onnx.__version__)"
 
 COPY src ./src
 COPY app ./app
 COPY configs ./configs
 COPY artifacts ./artifacts
 COPY reports ./reports
-# Fetch any release asset not present in the build context from its public URL and verify SHA256.
-RUN python -m src.release fetch && python -m src.release verify
+# Fetch any release asset not present in the build context from its public URL and verify SHA256. Derived
+# assets (the INT8 hybrid head) are rebuilt here, and check-derived always regenerates them into a temporary file
+# to prove the Linux build is byte-identical to the pinned sha256.
+RUN python -m src.release fetch && python -m src.release verify && python -m src.release check-derived
 
 RUN useradd --create-home --uid 1000 semevia && chown -R semevia /srv
 USER semevia

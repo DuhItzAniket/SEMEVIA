@@ -69,8 +69,41 @@ def final_conformal_scores(rows: list[dict], zkey: str, T: float, n_classes: int
     return s, failures
 
 
-def model_fingerprint(manifest: dict, production_mode: str, encoder_runtime: str) -> str:
-    """Hash of every asset that changes predictions (detector, backbone, heads, ONNX if used)."""
+def model_fingerprint(manifest: dict, production_mode: str, encoder_runtime: str, head_runtime: str = "sklearn") -> str:
+    """Hash of every asset that changes predictions (detector, backbone, heads, ONNX encoder if used, INT8 hybrid
+    head if used). With the default sklearn head the payload is exactly the earlier one, so older freezes verify."""
+    from src.models.head_onnx import INT8_NAME, RUNTIMES
+
+    if head_runtime not in RUNTIMES:
+        raise ValueError(f"unknown head runtime {head_runtime}")
     keep = sorted((a["name"], a["sha256"]) for a in manifest["assets"]
-                  if a["name"].endswith((".pt", ".pth", ".joblib")) or (encoder_runtime == "onnx_fp32" and a["name"].endswith(".onnx")))
-    return hashlib.sha256(json.dumps({"assets": keep, "mode": production_mode, "runtime": encoder_runtime}).encode()).hexdigest()
+                  if a["name"].endswith((".pt", ".pth", ".joblib"))
+                  or (encoder_runtime == "onnx_fp32" and a["name"].endswith(".onnx") and a["name"] != INT8_NAME))
+    payload = {"assets": keep, "mode": production_mode, "runtime": encoder_runtime}
+    if head_runtime != "sklearn":
+        int8 = [(a["name"], a["sha256"]) for a in manifest["assets"] if a["name"] == INT8_NAME]
+        if len(int8) != 1:
+            raise ValueError(f"head runtime {head_runtime} needs exactly one {INT8_NAME} asset in the manifest")
+        payload = {"assets": sorted(keep + int8), "mode": production_mode, "runtime": encoder_runtime,
+                   "head_runtime": head_runtime}
+    return hashlib.sha256(json.dumps(payload).encode()).hexdigest()
+
+
+def freeze_head_runtime(fz: dict) -> str:
+    """Hybrid head runtime a freeze (or final calibration) was made with; files older than the INT8 head say sklearn."""
+    return fz.get("hybrid_head_runtime", "sklearn")
+
+
+def check_runtime_matches(rc: dict, fz: dict) -> None:
+    """Refuse held-out work when the configured runtimes are not the frozen ones."""
+    want = (fz.get("encoder_runtime", "torch"), freeze_head_runtime(fz))
+    have = (rc.get("encoder_runtime", "torch"), rc.get("hybrid_head_runtime", "sklearn"))
+    if want != have:
+        raise SystemExit(f"configured runtime (encoder, hybrid head) {have} differs from the frozen {want}; refusing")
+
+
+def check_rows_runtime(rows: list[dict], head_runtime: str, what: str) -> None:
+    """Every row with hybrid logits must say which hybrid head produced them (rows without the field are sklearn)."""
+    bad = sum(1 for r in rows if "z_hybrid" in r and r.get("hybrid_rt", "sklearn") != head_runtime)
+    if bad:
+        raise SystemExit(f"{what}: {bad} row(s) were scored by a different hybrid head runtime than {head_runtime}")

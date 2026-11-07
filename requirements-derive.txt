@@ -1,0 +1,5 @@
+# Build-time only: derives the INT8 hybrid head from the released joblib (src/models/head_onnx.py).
+# Versions match requirements.lock so the derived file is byte-identical to the pinned sha256.
+onnx==1.23.2
+ml_dtypes==0.6.0
+protobuf==7.36.2

@@ -61,6 +61,13 @@
   that post a few test images (`check_container.py`, two pytest tests) and the failure-case re-scoring in
   `analyze_results.py` also touch test images without informing any decision; they are disclosed as well. An
   INT8-vs-FP32 per-image comparison is computed from the two saved test prediction files.
+* **Outcome of the checks (recorded before the r3-int8 test run, values copied from the files named):**
+  (1) per-row study `reports/optimization_head_hybrid_ckpt_98b1fb55cc6e.json`: FP32 parity passes (True), INT8 tune top-1 drop 0.0 pp, policy passed True, INT8 sha256 `6acf0061e332`;
+  (2) the Docker (Linux) build regenerated `head_hybrid_int8.onnx` with the manifest sha256 (`src.release check-derived`);
+  (3) `tests/test_head_int8.py::test_int8_head_parity_on_real_tune_crops` passed;
+  (4) full pytest passed; `reports/container_check.json` passed True; `/readyz` shows hybrid head onnx_int8; public `reports/release_acceptance.json` passed True;
+  (5) `reports/int8_container_parity.json`: max centred difference 0.0, argmax equal 16/16, passed True.
+  Bundle at freeze `ft_ckpt_98b1fb55cc6e_0d835360cc` (tune end-to-end hybrid top-1 759/815, `reports/e2e_tune_ft_ckpt_98b1fb55cc6e_0d835360cc.json`; tune negatives `reports/negatives_tune_ft_ckpt_98b1fb55cc6e_0d835360cc.json`). Freeze: temperature 0.6585, reject threshold 0.5, fingerprint `2ef1643c29b6`. Final calibration `cal_fd26d5eb7362`: q 0.6023 (n 815). Final bundle `ft_ckpt_98b1fb55cc6e_f3734d4f40`. Next: the single r3-int8 test run.
 * **History:** r3 FP32's release config, manifest, freeze and both calibrations are archived in
   `artifacts/history/r3/`; r3 FP32 is reported as a superseded iteration next to r3-int8.
 

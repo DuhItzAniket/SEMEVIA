@@ -1,5 +1,5 @@
 {
- "bundle_id": "ft_ckpt_98b1fb55cc6e_5d755416fd",
+ "bundle_id": "ft_ckpt_98b1fb55cc6e_f3734d4f40",
  "note": "Fine-tuned bundle: YOLO11n detector + fine-tuned EfficientNet-B0 (effb0_r3, 21 fine-tuning epoch(s), best tune top-1 0.9485) + classical/deep/hybrid heads + final calibration.",
  "assets": [
   {
@@ -53,6 +53,18 @@
    "public_storage": "GitHub Release model-v3"
   },
   {
+   "name": "head_hybrid_int8.onnx",
+   "path": "artifacts/store/release/heads/hybrid_int8.onnx",
+   "sha256": "6acf0061e332561231616b89c7f12b83d393a040bed427ff8e0ac333b0bb4c3f",
+   "bytes": 264976,
+   "url": null,
+   "optional": true,
+   "derived_from": "head_hybrid.joblib",
+   "derived_from_sha256": "696ccd3b3d4cd48496029aa1dbd9bd623c4657fdc3cf6d5ae9f322b6f64003eb",
+   "recipe": "logistic coefficients -> ONNX MatMul+Add (opset 17, IR 10); onnxruntime quantize_dynamic QInt8 per-tensor weights (MatMulInteger); onnx 1.23.2 / onnxruntime 1.31.1",
+   "source": "src/models/head_onnx.py (policy report reports/optimization_head_hybrid_ckpt_98b1fb55cc6e.json)"
+  },
+  {
    "name": "reference_index.npz",
    "path": "artifacts/store/release/reference_index.npz",
    "sha256": "f069801e03a460fd4fa1854692370998680220a2afdf0a2eb71eee3314865e35",
@@ -75,8 +87,8 @@
   {
    "name": "calibration_final.json",
    "path": "artifacts/calibration_final.json",
-   "sha256": "5b0ad7e48630ac0bbc2ba8f992ebbee70560a5739b07ebf460a9d039f08838d3",
-   "bytes": 1606,
+   "sha256": "2639fd3dfdef6f7e6596d930af9620d0787f51881a94f5b4b9862c868bf03c6e",
+   "bytes": 1732,
    "url": null,
    "optional": true,
    "in_git": true,

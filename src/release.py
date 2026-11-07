@@ -17,7 +17,8 @@ MANIFEST = ROOT / "artifacts" / "release_manifest.json"
 
 
 RELEASE_CONFIG = ROOT / "artifacts" / "release_config.json"
-OVERRIDABLE = ("backbone", "backbone_tag", "backbone_status", "calibration", "precision", "encoder_runtime")
+OVERRIDABLE = ("backbone", "backbone_tag", "backbone_status", "calibration", "precision", "encoder_runtime",
+               "hybrid_head_runtime")
 
 
 def recognition_config() -> dict:
@@ -81,6 +82,8 @@ def fetch(manifest: dict | None = None) -> None:
         if p.is_file() and sha256_file(p) == a["sha256"]:
             print(f"ok (present) {a['name']}")
             continue
+        if a.get("derived_from"):
+            continue   # built from another asset after the loop
         if not a.get("url"):
             if a.get("optional", False):
                 print(f"skip (optional, no public url) {a['name']}")
@@ -96,12 +99,62 @@ def fetch(manifest: dict | None = None) -> None:
             raise SystemExit(f"checksum mismatch for {a['name']}: {got}")
         tmp.replace(p)
         print(f"ok (fetched) {a['name']}")
+    for a in manifest["assets"]:
+        p = ROOT / a["path"]
+        if a.get("derived_from") and not (p.is_file() and sha256_file(p) == a["sha256"]):
+            if a.get("optional", False) and not _source_ok(manifest, a):
+                print(f"skip (optional, source {a['derived_from']} not present) {a['name']}")
+                continue
+            got = _derive(manifest, a, p)
+            if got != a["sha256"]:
+                p.unlink(missing_ok=True)
+                raise SystemExit(f"derived {a['name']} has sha256 {got}, manifest says {a['sha256']}")
+            print(f"ok (derived from {a['derived_from']}) {a['name']}")
+
+
+def _source_ok(manifest: dict, a: dict) -> bool:
+    src = next((s for s in manifest["assets"] if s["name"] == a["derived_from"]), None)
+    return src is not None and (ROOT / src["path"]).is_file() and sha256_file(ROOT / src["path"]) == src["sha256"]
+
+
+def _derive(manifest: dict, a: dict, out: Path) -> str:
+    """Rebuild a derived asset (the INT8 hybrid head) from its verified source asset; return the new file's sha256."""
+    from src.models.head_onnx import build_int8
+
+    src = next((s for s in manifest["assets"] if s["name"] == a["derived_from"]), None)
+    if src is None or sha256_file(ROOT / src["path"]) != src["sha256"] or src["sha256"] != a.get("derived_from_sha256"):
+        raise SystemExit(f"cannot derive {a['name']}: source {a['derived_from']} missing or not the recorded file")
+    return build_int8(ROOT / src["path"], out)["sha256"]
+
+
+def check_derived(manifest: dict | None = None) -> list[str]:
+    """Regenerate every derived asset into a temporary file and compare with the manifest (proves the build is
+    byte-identical on this platform even when the file is already present)."""
+    import tempfile
+
+    manifest = manifest or load_manifest()
+    problems = []
+    for a in manifest["assets"]:
+        if a.get("derived_from"):
+            if a.get("optional", False) and not _source_ok(manifest, a):
+                print(f"check-derived {a['name']}: skipped (optional source {a['derived_from']} not present)")
+                continue
+            with tempfile.TemporaryDirectory() as td:
+                got = _derive(manifest, a, Path(td) / a["name"])
+            print(f"check-derived {a['name']}: rebuilt {got}, manifest {a['sha256']}")
+            if got != a["sha256"]:
+                problems.append(f"derived {a['name']} is not byte-identical on this platform")
+    return problems
 
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "verify"
     if cmd == "fetch":
         fetch()
+    elif cmd == "check-derived":
+        probs = check_derived()
+        print("\n".join(probs) if probs else "derived assets reproduce exactly")
+        sys.exit(1 if probs else 0)
     else:
         probs = verify()
         print("\n".join(probs) if probs else "all release assets verified")

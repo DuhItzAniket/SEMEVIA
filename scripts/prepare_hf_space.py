@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-ITEMS = ["Dockerfile", ".dockerignore", "requirements-infer.txt", "src", "app", "configs", "artifacts", "reports"]
+ITEMS = ["Dockerfile", ".dockerignore", "requirements-infer.txt", "requirements-derive.txt", "src", "app", "configs", "artifacts", "reports"]
 SKIP = shutil.ignore_patterns("__pycache__", "*.pyc", "store", "cache")
 
 README = """---
@@ -48,7 +48,10 @@ def main() -> None:
     if out == ROOT or ROOT in out.parents:
         raise SystemExit("choose an output folder outside the repository")
     manifest = json.loads((ROOT / "artifacts/release_manifest.json").read_text(encoding="utf-8"))
-    missing = [a["name"] for a in manifest["assets"] if not a.get("url") and not a.get("in_git")]
+    by_name = {a["name"]: a for a in manifest["assets"]}
+    # a derived asset (the INT8 head) is rebuilt during the image build; its source must be downloadable
+    missing = [a["name"] for a in manifest["assets"] if not a.get("url") and not a.get("in_git")
+               and not (a.get("derived_from") and by_name.get(a["derived_from"], {}).get("url"))]
     if missing:
         raise SystemExit(f"publish these assets first (no URL): {missing}")
     out.mkdir(parents=True, exist_ok=True)

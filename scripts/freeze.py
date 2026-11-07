@@ -24,7 +24,8 @@ import yaml  # noqa: E402
 from src.evaluation.metrics import ece  # noqa: E402
 from src.models.cache_io import store_dir  # noqa: E402
 from src.models.heads import softmax  # noqa: E402
-from src.passport.calibration import choose_reject_threshold, fit_temperature, model_fingerprint, nll  # noqa: E402
+from src.passport.calibration import (check_rows_runtime, choose_reject_threshold, fit_temperature,  # noqa: E402
+                                      model_fingerprint, nll)
 from src.release import load_manifest, recognition_config, sha256_file, verify  # noqa: E402
 from src.vision.coordinates import iou  # noqa: E402
 
@@ -54,6 +55,8 @@ def main() -> None:
     rows = [json.loads(line) for line in jl.read_text(encoding="utf-8").splitlines()]
     if len(rows) != idx["partitions"]["tune"]["count"]:
         raise SystemExit("tune predictions incomplete")
+    head_rt = rc.get("hybrid_head_runtime", "sklearn")
+    check_rows_runtime(rows, head_rt, jl.name)
     from src.data.manifest import read_manifest
 
     gt = {r.image_key: r.box for r in read_manifest(ROOT / "artifacts/manifests" / idx["partitions"]["tune"]["file"])}
@@ -70,6 +73,8 @@ def main() -> None:
         neg = json.loads(Path(args.negatives).read_text(encoding="utf-8"))
         if neg.get("partition") != "tune" or neg.get("bundle_id") != bundle:
             raise SystemExit("negative results must be the TUNE negative set for this bundle")
+        if neg.get("hybrid_head_runtime", "sklearn") != head_rt:
+            raise SystemExit("negative results were scored by a different hybrid head runtime")
         # stored raw production-mode logits; an image with no detection cannot be accepted (confidence 0)
         neg_conf = np.array([softmax(np.array([x["z"]]), T)[0].max() if x.get("z") else 0.0 for x in neg["rows"]])
     rej = choose_reject_threshold(known_conf, ccfg["reject_grid"], ccfg["known_retention_target"], neg_conf)
@@ -78,9 +83,11 @@ def main() -> None:
     head_asset = next(a for a in manifest["assets"] if a["name"] == f"head_{args.mode}.joblib")
     out = {
         "kind": "frozen", "created_at": datetime.now(timezone.utc).isoformat(), "bundle_id_at_freeze": bundle,
-        "model_fingerprint": model_fingerprint(manifest, args.mode, runtime),
+        "model_fingerprint": model_fingerprint(manifest, args.mode, runtime, head_rt),
         "production_mode": args.mode, "backbone": rc["backbone_tag"], "encoder_runtime": runtime, "precision": rc["precision"],
         "head_sha256": head_asset["sha256"], "detector_sha256": by_name["yolo11n.pt"]["sha256"],
+        **({"hybrid_head_runtime": head_rt, "head_int8_sha256": by_name["head_hybrid_int8.onnx"]["sha256"]}
+           if head_rt != "sklearn" else {}),
         "detector_threshold": rt["target_policy"]["threshold"], "crop_margin": rt["crop"]["margin"],
         "temperature": T, "alpha": ccfg["alpha"],
         "temperature_fit": {"population": "tune matched-primary (runtime box IoU >= 0.5)", "n": int(len(Y)),

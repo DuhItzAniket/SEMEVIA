@@ -95,8 +95,9 @@ def main() -> None:
 
 def final_calibration() -> None:
     from src.data.manifest import read_manifest
-    from src.passport.calibration import final_conformal_scores, model_fingerprint
-    from src.release import load_manifest, sha256_file, verify
+    from src.passport.calibration import (check_rows_runtime, check_runtime_matches, final_conformal_scores,
+                                          freeze_head_runtime, model_fingerprint)
+    from src.release import load_manifest, recognition_config, sha256_file, verify
 
     manifest = load_manifest()
     if verify(manifest):
@@ -105,7 +106,9 @@ def final_calibration() -> None:
     if not fz_path.exists():
         raise SystemExit("run scripts/freeze.py first (P5 freeze)")
     fz = json.loads(fz_path.read_text(encoding="utf-8"))
-    if model_fingerprint(manifest, fz["production_mode"], fz["encoder_runtime"]) != fz["model_fingerprint"]:
+    check_runtime_matches(recognition_config(), fz)
+    head_rt = freeze_head_runtime(fz)
+    if model_fingerprint(manifest, fz["production_mode"], fz["encoder_runtime"], head_rt) != fz["model_fingerprint"]:
         raise SystemExit("the current bundle's model files differ from the frozen pipeline; re-freeze")
     idx = json.loads((ROOT / "artifacts/manifests/manifest_index.json").read_text(encoding="utf-8"))
     part = idx["partitions"]["calibration"]
@@ -116,12 +119,14 @@ def final_calibration() -> None:
     keys = {r.image_key for r in read_manifest(ROOT / "artifacts/manifests" / part["file"])}
     if len(rows) != len(keys) or {r["image_key"] for r in rows} != keys:
         raise SystemExit("calibration predictions are incomplete or contain other keys")
+    check_rows_runtime(rows, head_rt, jl.name)
     zkey = f"z_{fz['production_mode']}"
     scores, failures = final_conformal_scores(rows, zkey, fz["temperature"])
     cq = calibrate(scores, fz["alpha"])
     out = {
         "kind": "final", "warning": None, "production_mode": fz["production_mode"], "backbone": fz["backbone"],
         "head_sha256": fz["head_sha256"], "model_fingerprint": fz["model_fingerprint"],
+        **({"hybrid_head_runtime": head_rt, "head_int8_sha256": fz["head_int8_sha256"]} if head_rt != "sklearn" else {}),
         "label_order": fz["label_order"], "temperature": fz["temperature"], **cq.to_dict(),
         "score_convention": "1 - p_true with p = softmax(z / T); no-detection inputs use the uniform fallback 1 - 1/196",
         "reject": {"rule": "max calibrated probability < threshold", "threshold": fz["reject"]["threshold"],

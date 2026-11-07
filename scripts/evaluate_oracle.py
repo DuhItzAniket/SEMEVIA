@@ -44,10 +44,11 @@ def main() -> None:
         raise SystemExit("release assets do not verify")
     rc = recognition_config()
     if args.partition in ("calibration", "test"):
-        from src.passport.calibration import model_fingerprint
+        from src.passport.calibration import check_runtime_matches, freeze_head_runtime, model_fingerprint
 
         fz = json.loads((ROOT / "artifacts/production_freeze.json").read_text(encoding="utf-8"))
-        if model_fingerprint(manifest, fz["production_mode"], fz["encoder_runtime"]) != fz["model_fingerprint"]:
+        check_runtime_matches(rc, fz)
+        if model_fingerprint(manifest, fz["production_mode"], fz["encoder_runtime"], freeze_head_runtime(fz)) != fz["model_fingerprint"]:
             raise SystemExit("current model files differ from the frozen pipeline; refusing to touch held-out data")
         if args.partition == "test" and not args.confirm_frozen:
             raise SystemExit("the test partition needs --confirm-frozen")
@@ -58,7 +59,7 @@ def main() -> None:
     idx = json.loads((ROOT / "artifacts/manifests/manifest_index.json").read_text(encoding="utf-8"))
     part = idx["partitions"][args.partition]
     recs = read_manifest(ROOT / "artifacts/manifests" / part["file"])
-    pred = Predictor({m: ROOT / p for m, p in rc["heads"].items()}, ROOT / rc["backbone"], 4)
+    pred = Predictor.from_config(rc, ROOT, 4)
     data_root = Path(args.data_root)
 
     def load(r):

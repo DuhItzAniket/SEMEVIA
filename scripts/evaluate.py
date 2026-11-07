@@ -78,13 +78,14 @@ def main() -> None:
     if problems:
         raise SystemExit("; ".join(problems))
     if args.partition in ("calibration", "test"):
-        from src.passport.calibration import model_fingerprint
+        from src.passport.calibration import check_runtime_matches, freeze_head_runtime, model_fingerprint
 
         fz_path = ROOT / "artifacts/production_freeze.json"
         if not fz_path.exists():
             raise SystemExit(f"the {args.partition} partition is locked until the P5 freeze (scripts/freeze.py)")
         fz = json.loads(fz_path.read_text(encoding="utf-8"))
-        if model_fingerprint(manifest, fz["production_mode"], fz["encoder_runtime"]) != fz["model_fingerprint"]:
+        check_runtime_matches(rc, fz)
+        if model_fingerprint(manifest, fz["production_mode"], fz["encoder_runtime"], freeze_head_runtime(fz)) != fz["model_fingerprint"]:
             raise SystemExit("current model files differ from the frozen pipeline; refusing to touch held-out data")
         if args.partition == "test" and not (args.confirm_frozen and cal["kind"] == "final"
                                              and cal.get("model_fingerprint") == fz["model_fingerprint"]):
@@ -114,7 +115,8 @@ def main() -> None:
     asset = next(a for a in manifest["assets"] if a["name"] == "yolo11n.pt")
     det = VehicleDetector(ROOT / d["weights"], d["imgsz"], d["conf_floor"], d["nms_iou"], d["max_det"],
                           d["vehicle_coco_classes"], asset["sha256"])
-    pred = Predictor({m: ROOT / p for m, p in rc["heads"].items()}, ROOT / rc["backbone"], 4)
+    pred = Predictor.from_config(rc, ROOT, 4)
+    hybrid_rt = pred.head_runtime.get("hybrid", "sklearn")
     thr, margin = rt["target_policy"]["threshold"], rt["crop"]["margin"]
     bundle = manifest["bundle_id"]
     out_dir = store_dir() / "predictions"
@@ -125,6 +127,9 @@ def main() -> None:
         for line in jl.read_text(encoding="utf-8").splitlines():
             r = json.loads(line)
             done[r["image_key"]] = r
+        from src.passport.calibration import check_rows_runtime
+
+        check_rows_runtime(list(done.values()), hybrid_rt, f"resume of {jl.name}")
     elif jl.exists():
         raise SystemExit(f"{jl.name} exists; pass --resume or delete it")
     todo = [r for r in recs if r.image_key not in done]
@@ -168,6 +173,8 @@ def main() -> None:
                 for (i, _), a, b in zip(yolo_crops, zd, zh):
                     rows[i]["z_deep"] = [round(float(v), 5) for v in a]
                     rows[i]["z_hybrid"] = [round(float(v), 5) for v in b]
+                    if hybrid_rt != "sklearn":
+                        rows[i]["hybrid_rt"] = hybrid_rt
                     rows[i]["feat_ms_per_crop"] = round(ms, 1)
             if cls_crops:
                 cins = [c for _, c in cls_crops]
@@ -185,6 +192,9 @@ def main() -> None:
         raise SystemExit("incomplete population; rerun with --resume")
     report = build_report(rows, recs, pop_name, part, bundle, cal, rt, jl.name)
     report["condition"] = {"name": args.condition, **cond}
+    int8 = next((a["sha256"] for a in manifest["assets"] if a["name"] == "head_hybrid_int8.onnx"), None)
+    report["runtime"] = {"encoder": pred.encoder_runtime, "encoder_precision": rc["precision"], "head_runtime": pred.head_runtime,
+                         "head_int8_sha256": int8 if hybrid_rt == "onnx_int8" else None}
     report["wall_seconds_this_run"] = round(time.time() - t_all, 1)
     name = f"e2e_{pop_name}_{bundle}.json" if not args.subset else f"e2e_{pop_name}_{args.condition}_{bundle}.json"
     (ROOT / "reports" / name).write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8", newline="\n")

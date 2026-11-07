@@ -91,7 +91,8 @@ def _load_recognition(manifest: dict, status: dict) -> None:
     rc = recognition_config()
     STATE["rc"] = rc
     by_path = {a["path"]: a for a in manifest["assets"]}
-    needed = [rc["backbone"], *rc["heads"].values(), rc["calibration"]]
+    head_rt = rc.get("hybrid_head_runtime", "sklearn")
+    needed = [rc["backbone"], *rc["heads"].values(), rc["calibration"]] + ([rc["head_int8"]] if head_rt != "sklearn" else [])
     missing = [p for p in needed if p not in by_path or status.get(by_path[p]["name"]) != "ok"]
     if missing:
         STATE["recognition_reason"] = "recognition bundle not present in this build: " + ", ".join(Path(m).name for m in missing)
@@ -101,12 +102,23 @@ def _load_recognition(manifest: dict, status: dict) -> None:
     if cal["head_sha256"] != head_sha:
         STATE["recognition_reason"] = "calibration does not match the production head; recognition disabled"
         return
+    if cal.get("kind") == "final" and cal.get("hybrid_head_runtime", "sklearn") != head_rt:
+        STATE["recognition_reason"] = "calibration was made for a different hybrid head runtime; recognition disabled"
+        return
+    if head_rt != "sklearn" and cal.get("kind") == "final" and cal.get("head_int8_sha256") != by_path[rc["head_int8"]]["sha256"]:
+        STATE["recognition_reason"] = "calibration does not match the INT8 hybrid head; recognition disabled"
+        return
     runtime = os.environ.get("SEMEVIA_ENCODER_RUNTIME", rc.get("encoder_runtime", "torch"))
     if runtime == "onnx_fp32" and (rc["onnx_encoder"] not in by_path or status.get(by_path[rc["onnx_encoder"]]["name"]) != "ok"):
         runtime = "torch"   # optimized encoder not in this build; fall back to the verified PyTorch encoder
-    pred = Predictor({m: ROOT / p for m, p in rc["heads"].items()}, ROOT / rc["backbone"],
-                     int(os.environ.get("SEMEVIA_TORCH_THREADS", CFG["server"]["torch_threads"])),
-                     encoder_runtime=runtime, onnx_encoder=ROOT / rc["onnx_encoder"])
+    if cal.get("kind") == "final" and cal.get("model_fingerprint"):
+        from src.passport.calibration import model_fingerprint
+
+        if model_fingerprint(manifest, cal["production_mode"], runtime, head_rt) != cal["model_fingerprint"]:
+            STATE["recognition_reason"] = "model files or runtimes differ from the calibrated pipeline; recognition disabled"
+            return
+    pred = Predictor.from_config(rc, ROOT, int(os.environ.get("SEMEVIA_TORCH_THREADS", CFG["server"]["torch_threads"])),
+                                 encoder_runtime=runtime)
     from src.models.inference import CropInput
 
     dummy = np.full((160, 240, 3), 110, np.uint8)
@@ -203,7 +215,8 @@ def _envelope(rid: str, status: str, mode: str, error: dict | None = None) -> di
                          "calibration_warning": cal.get("warning") if cal else None},
         "provenance": {"bundle_id": STATE["bundle"], "app_version": VERSION,
                        "detector": STATE["detector"].version if STATE["detector"] else None,
-                       "assets": STATE["asset_sha"], "calibration_bundle": cal["bundle_id"] if cal else None},
+                       "assets": STATE["asset_sha"], "calibration_bundle": cal["bundle_id"] if cal else None,
+                       "head_runtime": STATE["predictor"].head_runtime if recog else None},
         "timings": {},
     }
 
@@ -400,7 +413,12 @@ def readyz():
                 "calibration_kind": cal["kind"] if cal else None,
                 "backbone": STATE["rc"]["backbone_status"] if STATE["predictor"] else None,
                 "references": STATE["references"] is not None, "references_reason": STATE["references_reason"],
-                "encoder_runtime": STATE["predictor"].encoder_runtime if STATE["predictor"] else None}
+                "encoder_runtime": STATE["predictor"].encoder_runtime if STATE["predictor"] else None,
+                "encoder_precision": STATE["rc"]["precision"] if STATE["predictor"] else None,
+                "head_runtime": STATE["predictor"].head_runtime if STATE["predictor"] else None,
+                "head_int8_sha256": (STATE["asset_sha"].get("head_hybrid_int8.onnx")
+                                     if STATE["predictor"] and STATE["predictor"].int8_session is not None else None),
+                "model_fingerprint": cal["model_fingerprint"][:12] if cal and cal.get("model_fingerprint") else None}
     return JSONResponse(status_code=503, content={"ready": False, "reasons": STATE["reasons"]})
 
 
@@ -464,7 +482,7 @@ def benchmarks():
 
     tag = recognition_config().get("backbone_tag") or ""
     names = [f"e2e_test_{bundle}.json", f"robustness_stress_test_{bundle}.json", f"heads_tune_{tag}.json",
-             "classical_tune.json", "detector_tune.json"]
+             "classical_tune.json", "detector_tune.json", f"optimization_head_hybrid_{tag}.json"]
     out = {"bundle_id": bundle, "note": "Official test results exist only for the bundle frozen before the test run; "
                                          "tune files are selection-set diagnostics. Full write-up: eval_P5_T35.md in the repository.",
            "reports": {}}

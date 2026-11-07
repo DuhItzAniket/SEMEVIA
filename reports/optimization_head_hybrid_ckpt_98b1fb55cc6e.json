@@ -7,6 +7,7 @@
   "crops": "annotation"
  },
  "method": "logistic coefficients copied to ONNX MatMul+Add after the unchanged FP32 fusion transform; onnxruntime quantize_dynamic, INT8 weights (MatMulInteger)",
+ "inference": "row_wise",
  "int8_graph_ops": [
   "Add",
   "Cast",
@@ -14,6 +15,9 @@
   "MatMulInteger",
   "Mul"
  ],
+ "int8_sha256": "6acf0061e332561231616b89c7f12b83d393a040bed427ff8e0ac333b0bb4c3f",
+ "source_head_sha256": "696ccd3b3d4cd48496029aa1dbd9bd623c4657fdc3cf6d5ae9f322b6f64003eb",
+ "recipe": "logistic coefficients -> ONNX MatMul+Add (opset 17, IR 10); onnxruntime quantize_dynamic QInt8 per-tensor weights (MatMulInteger); onnx 1.23.2 / onnxruntime 1.31.1",
  "fp32_parity_vs_sklearn": {
   "max_abs_centered_logit_diff": 3.123356933087962e-06,
   "max_abs_prob_diff": 6.190814870188355e-07,
@@ -35,9 +39,11 @@
   }
  },
  "int8_vs_fp32": {
-  "top1_agreement": 1.0,
-  "max_abs_centered_logit_diff": 0.046979469711588284
+  "top1_agreement": 0.9987730061349693,
+  "max_abs_centered_logit_diff": 0.03687965050860642,
+  "mean_abs_centered_logit_diff": 0.006217334386122552
  },
+ "row_vs_batch_int8_max_abs_centered_logit_diff": 0.043067413805128574,
  "size_bytes": {
   "onnx_fp32": 1054647,
   "onnx_int8": 264976,
@@ -45,19 +51,47 @@
  },
  "latency_single_row_head_only": {
   "onnx_fp32": {
-   "p50_ms": 0.0382999987778021,
-   "p95_ms": 0.054799999088572804,
+   "p50_ms": 0.01649999467190355,
+   "p95_ms": 0.017400001524947584,
    "runs": 200
   },
   "onnx_int8": {
-   "p50_ms": 0.030400002287933603,
-   "p95_ms": 0.031299998408940155,
+   "p50_ms": 0.014199998986441642,
+   "p95_ms": 0.014804996317252515,
+   "runs": 200
+  },
+  "sklearn_fp32_linear": {
+   "p50_ms": 0.11305000225547701,
+   "p95_ms": 0.16628000266791768,
    "runs": 200
   },
   "threads": 2,
   "hardware": "Intel(R) Core(TM) i7-14650HX CPU, 2 torch threads, 24 logical cores"
  },
- "note": "The head is a tiny part of end-to-end time; no meaningful end-to-end speed gain is claimed from it.",
+ "note": "The head is a tiny part of end-to-end time; no meaningful end-to-end speed gain is claimed from it. INT8 results depend on the CPU instruction set; measured on the hardware above.",
+ "superseded_batchwise": {
+  "accuracy": {
+   "sklearn_fp32": {
+    "tune_top1": 0.9423312883435583,
+    "tune_top5": 0.9877300613496932
+   },
+   "onnx_fp32": {
+    "tune_top1": 0.9423312883435583,
+    "tune_top5": 0.9877300613496932
+   },
+   "onnx_int8": {
+    "tune_top1": 0.9423312883435583,
+    "tune_top5": 0.9889570552147239
+   }
+  },
+  "int8_vs_fp32": {
+   "top1_agreement": 1.0,
+   "max_abs_centered_logit_diff": 0.046979469711588284
+  },
+  "int8_top1_drop_pp": 0.0,
+  "int8_passes_policy": true,
+  "note": "earlier run scored all 815 rows as one tensor (one shared activation scale); superseded by the row-wise run above"
+ },
  "int8_top1_drop_pp": 0.0,
  "int8_passes_policy": true
 }

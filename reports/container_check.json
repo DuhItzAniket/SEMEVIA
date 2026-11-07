@@ -1,13 +1,13 @@
 {
- "created_at": "2026-11-07T02:50:19.616645+00:00",
+ "created_at": "2026-11-07T04:44:55.588192+00:00",
  "image": "semevia:local",
- "image_size": "3.19GB",
+ "image_size": "3.24GB",
  "host": "Intel(R) Core(TM) i7-14650HX CPU, 24 logical cores",
  "note": "local Docker Desktop checks; not the public-host release acceptance",
  "online_readyz": {
   "ready": true,
-  "bundle_id": "ft_ckpt_98b1fb55cc6e_5d755416fd",
-  "warmup_ms": 3139.6,
+  "bundle_id": "ft_ckpt_98b1fb55cc6e_f3734d4f40",
+  "warmup_ms": 3777.2,
   "detector": "yolo11n:0ebbc80d4a76",
   "recognition": true,
   "recognition_reason": null,
@@ -21,37 +21,45 @@
   "backbone": "fine-tuned EfficientNet-B0 (effb0_r3, 21 fine-tuning epoch(s), best tune top-1 0.9485)",
   "references": true,
   "references_reason": null,
-  "encoder_runtime": "torch"
+  "encoder_runtime": "torch",
+  "encoder_precision": "fp32",
+  "head_runtime": {
+   "classical": "sklearn",
+   "deep": "sklearn",
+   "hybrid": "onnx_int8"
+  },
+  "head_int8_sha256": "6acf0061e332",
+  "model_fingerprint": "2ef1643c29b6"
  },
  "predict_samples": [
   {
    "file": "cars_test/00001.jpg",
    "status": "ok",
-   "ms_client": 86.7,
+   "ms_client": 130.5,
    "detection_state": "detected"
   },
   {
    "file": "cars_test/00002.jpg",
    "status": "ok",
-   "ms_client": 103.6,
+   "ms_client": 173.2,
    "detection_state": "detected"
   },
   {
    "file": "cars_test/00003.jpg",
    "status": "ok",
-   "ms_client": 165.0,
+   "ms_client": 261.7,
    "detection_state": "detected"
   },
   {
    "file": "cars_test/00004.jpg",
    "status": "ok",
-   "ms_client": 115.4,
+   "ms_client": 195.1,
    "detection_state": "detected"
   },
   {
    "file": "cars_test/00005.jpg",
    "status": "ok",
-   "ms_client": 101.5,
+   "ms_client": 215.0,
    "detection_state": "detected"
   }
  ],
@@ -59,8 +67,8 @@
   "network_mode": "none",
   "readyz": {
    "ready": true,
-   "bundle_id": "ft_ckpt_98b1fb55cc6e_5d755416fd",
-   "warmup_ms": 1750.6,
+   "bundle_id": "ft_ckpt_98b1fb55cc6e_f3734d4f40",
+   "warmup_ms": 2303.8,
    "detector": "yolo11n:0ebbc80d4a76",
    "recognition": true,
    "recognition_reason": null,
@@ -74,7 +82,15 @@
    "backbone": "fine-tuned EfficientNet-B0 (effb0_r3, 21 fine-tuning epoch(s), best tune top-1 0.9485)",
    "references": true,
    "references_reason": null,
-   "encoder_runtime": "torch"
+   "encoder_runtime": "torch",
+   "encoder_precision": "fp32",
+   "head_runtime": {
+    "classical": "sklearn",
+    "deep": "sklearn",
+    "hybrid": "onnx_int8"
+   },
+   "head_int8_sha256": "6acf0061e332",
+   "model_fingerprint": "2ef1643c29b6"
   },
   "outbound_curl_exit_code": 6,
   "outbound_error": "curl: (6) Could not resolve host: github.com"

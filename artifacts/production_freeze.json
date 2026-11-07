@@ -1,26 +1,28 @@
 {
  "kind": "frozen",
- "created_at": "2026-11-06T23:46:30.385619+00:00",
- "bundle_id_at_freeze": "ft_ckpt_98b1fb55cc6e_f99e386191",
- "model_fingerprint": "5d97761f5b6c726d1b246f48222a1ff9c8491259ca3f76cb33c9824235ff205c",
+ "created_at": "2026-11-07T04:37:19.161521+00:00",
+ "bundle_id_at_freeze": "ft_ckpt_98b1fb55cc6e_0d835360cc",
+ "model_fingerprint": "2ef1643c29b6f0f987556aba870db4fa814d7c2cf3789631b53ff71030423cae",
  "production_mode": "hybrid",
  "backbone": "ckpt_98b1fb55cc6e",
  "encoder_runtime": "torch",
  "precision": "fp32",
  "head_sha256": "696ccd3b3d4cd48496029aa1dbd9bd623c4657fdc3cf6d5ae9f322b6f64003eb",
  "detector_sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+ "hybrid_head_runtime": "onnx_int8",
+ "head_int8_sha256": "6acf0061e332561231616b89c7f12b83d393a040bed427ff8e0ac333b0bb4c3f",
  "detector_threshold": 0.25,
  "crop_margin": 0.05,
- "temperature": 0.6586010758968961,
+ "temperature": 0.6584768106219611,
  "alpha": 0.1,
  "temperature_fit": {
   "population": "tune matched-primary (runtime box IoU >= 0.5)",
   "n": 809,
   "excluded": 6,
-  "nll_raw": 0.4569074522878734,
-  "nll_T": 0.3376628000624993,
-  "ece_raw": 0.13825634217408336,
-  "ece_T": 0.04344325124001366,
+  "nll_raw": 0.4566994023148013,
+  "nll_T": 0.3374327970472546,
+  "ece_raw": 0.13819474701658768,
+  "ece_T": 0.04345540631849275,
   "note": "in-sample on the tune split"
  },
  "reject": {
@@ -74,8 +76,8 @@
   "known_retention_target": 0.9
  },
  "tune_predictions": {
-  "file": "e2e_tune_clean_0f54c77a26_ft_ckpt_98b1fb55cc6e_f99e386191.jsonl",
-  "sha256": "5ed45da7a58f218ada9040e367003275d1b62ed76393bfcd91a415a599a09083",
+  "file": "e2e_tune_clean_0f54c77a26_ft_ckpt_98b1fb55cc6e_0d835360cc.jsonl",
+  "sha256": "126f760394cf2b42caf756facc616e71fcdfa1eb53961384e0cd3478a35d4ce1",
   "count": 815
  },
  "label_order": "class_id 0..195 (original_class_id - 1)",

@@ -26,7 +26,8 @@ class CropInput:
 
 class Predictor:
     def __init__(self, heads: dict[str, Path], backbone: str | Path, torch_threads: int = 2,
-                 encoder_runtime: str = "torch", onnx_encoder: str | Path | None = None):
+                 encoder_runtime: str = "torch", onnx_encoder: str | Path | None = None,
+                 hybrid_head_runtime: str = "sklearn", head_int8: str | Path | None = None):
         import joblib
         import torch
 
@@ -37,6 +38,18 @@ class Predictor:
             raise ValueError(f"unknown modes {unknown}")
         if encoder_runtime not in ("torch", "onnx_fp32"):
             raise ValueError("encoder_runtime must be torch or onnx_fp32")
+        from src.models.head_onnx import RUNTIMES
+
+        if hybrid_head_runtime not in RUNTIMES:
+            raise ValueError(f"hybrid_head_runtime must be one of {RUNTIMES}")
+        self.int8_session = None
+        if hybrid_head_runtime == "onnx_int8":
+            if "hybrid" not in self.heads or head_int8 is None or not Path(head_int8).is_file():
+                raise ValueError("onnx_int8 hybrid head needs the hybrid joblib (fusion transform) and the INT8 ONNX file")
+            from src.models.head_onnx import session
+
+            self.int8_session = session(Path(head_int8), torch_threads)
+        self.hybrid_head_runtime = hybrid_head_runtime
         self.backbone_spec = str(backbone)
         self.encoder_runtime = encoder_runtime
         self.input_size = 224
@@ -54,6 +67,26 @@ class Predictor:
                 self.session = ort.InferenceSession(str(onnx_encoder), so, providers=["CPUExecutionProvider"])
             else:
                 self.model = _load_backbone(backbone)
+
+    @classmethod
+    def from_config(cls, rc: dict, root: Path, torch_threads: int, encoder_runtime: str | None = None) -> "Predictor":
+        """The release's predictor as configured (recognition_config): one place that resolves both runtimes."""
+        return cls({m: Path(root) / p for m, p in rc["heads"].items()}, Path(root) / rc["backbone"], torch_threads,
+                   encoder_runtime=encoder_runtime or rc.get("encoder_runtime", "torch"),
+                   onnx_encoder=Path(root) / rc["onnx_encoder"] if rc.get("onnx_encoder") else None,
+                   hybrid_head_runtime=rc.get("hybrid_head_runtime", "sklearn"),
+                   head_int8=Path(root) / rc["head_int8"] if rc.get("head_int8") else None)
+
+    @property
+    def head_runtime(self) -> dict[str, str]:
+        return {m: (self.hybrid_head_runtime if m == "hybrid" else "sklearn") for m in self.modes}
+
+    def _logits(self, mode: str, X: np.ndarray) -> np.ndarray:
+        if mode == "hybrid" and self.int8_session is not None:
+            from src.models.head_onnx import row_wise_logits
+
+            return row_wise_logits(self.int8_session, self.heads["hybrid"][:-1].transform(X))
+        return canonical_logits(self.heads[mode], X)
 
     @property
     def has_encoder(self) -> bool:
@@ -81,7 +114,7 @@ class Predictor:
     def score_features(self, mode: str, learned: np.ndarray | None, hc: np.ndarray) -> np.ndarray:
         """Score precomputed branch features (used by batch evaluation to avoid recomputing)."""
         X = hc if mode == "classical" else np.concatenate([learned, hc], axis=1)
-        z = canonical_logits(self.heads[mode], X)
+        z = self._logits(mode, X)
         if not np.isfinite(z).all():
             raise RuntimeError("non-finite logits")
         return z
@@ -94,7 +127,7 @@ class Predictor:
             X = hc
         else:
             X = np.concatenate([self.learned(crops), hc], axis=1)
-        z = canonical_logits(self.heads[mode], X)
+        z = self._logits(mode, X)
         if not np.isfinite(z).all():
             raise RuntimeError("non-finite logits")
         return z, hc_res

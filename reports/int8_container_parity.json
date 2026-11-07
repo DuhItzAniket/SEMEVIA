@@ -1,0 +1,13 @@
+{
+ "check": "r3-int8 decision record check 5: container vs host INT8 hybrid logits on identical fused features",
+ "population": "tune[0:16] annotation crops (features computed once on the host)",
+ "bundle_id": "ft_ckpt_98b1fb55cc6e_f3734d4f40",
+ "head_int8_sha256": "6acf0061e332561231616b89c7f12b83d393a040bed427ff8e0ac333b0bb4c3f",
+ "docker_image": "sha256:f3c7f12ca70a78d21a587d12efaab2b19a01b25241b331d772db9ba889755e9e",
+ "max_abs_centered_logit_diff": 0.0,
+ "argmax_equal": 16,
+ "n": 16,
+ "tolerance": 0.001,
+ "passed": true,
+ "scripts": "scripts/int8_parity_host.py (host, writes X.npy and z_host.npy) then scripts/int8_parity_container.py inside the image"
+}

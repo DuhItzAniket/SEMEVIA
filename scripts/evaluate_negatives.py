@@ -40,13 +40,14 @@ def main() -> None:
     manifest = load_manifest()
     if verify(manifest):
         raise SystemExit("release assets do not verify")
+    rc = recognition_config()
     if args.partition == "test":
-        from src.passport.calibration import model_fingerprint
+        from src.passport.calibration import check_runtime_matches, freeze_head_runtime, model_fingerprint
 
         fz = json.loads((ROOT / "artifacts/production_freeze.json").read_text(encoding="utf-8"))
-        if model_fingerprint(manifest, fz["production_mode"], fz["encoder_runtime"]) != fz["model_fingerprint"]:
+        check_runtime_matches(rc, fz)
+        if model_fingerprint(manifest, fz["production_mode"], fz["encoder_runtime"], freeze_head_runtime(fz)) != fz["model_fingerprint"]:
             raise SystemExit("current model files differ from the frozen pipeline; refusing to touch held-out negatives")
-    rc = recognition_config()
     rt = yaml.safe_load((ROOT / "configs/runtime.yaml").read_text(encoding="utf-8"))
     cal = json.loads((ROOT / rc["calibration"]).read_text(encoding="utf-8"))
     mpath = ROOT / f"artifacts/negative_manifests/negatives_{args.partition}.csv"
@@ -64,7 +65,7 @@ def main() -> None:
     det_asset = next(a for a in manifest["assets"] if a["name"] == "yolo11n.pt")
     det = VehicleDetector(ROOT / d["weights"], d["imgsz"], d["conf_floor"], d["nms_iou"], d["max_det"],
                           d["vehicle_coco_classes"], det_asset["sha256"])
-    pred = Predictor({m: ROOT / p for m, p in rc["heads"].items()}, ROOT / rc["backbone"], 2)
+    pred = Predictor.from_config(rc, ROOT, 2)
     pm, T, thr = cal["production_mode"], cal["temperature"], cal["reject"]["threshold"]
     up = rt["upload"]
     rows = []
@@ -92,6 +93,7 @@ def main() -> None:
                     "rejected_by_detector": sum(not r["detected"] for r in rs),
                     "reached_classifier": sum(r["detected"] for r in rs)}
     out = {"partition": args.partition, "bundle_id": manifest["bundle_id"], "calibration_kind": cal["kind"],
+           "hybrid_head_runtime": pred.head_runtime.get("hybrid", "sklearn"),
            "production_mode": pm, "temperature": T, "reject_threshold": thr, "count": len(rows),
            "bucket_counts": dict(Counter(r["bucket"] for r in rows)), "per_bucket": per,
            "overall_false_acceptance": {"numerator": sum(r["accepted"] for r in rows), "denominator": len(rows)},

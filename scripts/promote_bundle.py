@@ -41,8 +41,15 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--backbone", default="imagenet_frozen", help="imagenet_frozen or a training checkpoint path")
     ap.add_argument("--calibration", default=None, help="calibration JSON for the production mode (default: development)")
+    ap.add_argument("--hybrid-head", required=True, choices=["sklearn", "onnx_int8"],
+                    help="hybrid head runtime of this release (onnx_int8 = INT8 graph derived from the hybrid joblib)")
     args = ap.parse_args()
     rc = yaml.safe_load((ROOT / "configs/runtime.yaml").read_text(encoding="utf-8"))["recognition"]
+    # Check the calibration's runtime before anything is copied or written (a refused promote must change nothing).
+    _cal = json.loads((ROOT / Path(args.calibration or rc["calibration"]).as_posix()).read_text(encoding="utf-8"))
+    if _cal.get("kind") == "final" and _cal.get("hybrid_head_runtime", "sklearn") != args.hybrid_head:
+        raise SystemExit(f"final calibration was made for hybrid head {_cal.get('hybrid_head_runtime', 'sklearn')}, "
+                         f"not {args.hybrid_head}")
     release = ROOT / "artifacts/store/release"
     release.mkdir(parents=True, exist_ok=True)
     entries = []
@@ -95,6 +102,28 @@ def main() -> None:
                         "source": f"{art['path'].replace(chr(92), '/')} (fit_heads.py, backbone {tag})",
                         "public_storage": "not yet published; clean builds run detection-only until a public URL is added"})
 
+    # --- INT8 hybrid head: derived deterministically from the hybrid joblib above, pinned by sha256; never uploaded
+    #     separately (src.release fetch rebuilds it and check-derived proves the rebuild is byte-identical).
+    if args.hybrid_head == "onnx_int8":
+        from src.models.head_onnx import INT8_NAME, build_int8
+
+        hyb = next(e for e in entries if e["name"] == "head_hybrid.joblib")
+        side_p = store_dir() / "optimized" / f"head_hybrid_{tag}_int8.json"
+        if not side_p.exists():
+            raise SystemExit(f"missing {side_p}; run scripts/optimize_head.py --mode hybrid --backbone {tag} first")
+        side = json.loads(side_p.read_text(encoding="utf-8"))
+        if not (side.get("int8_passes_policy") and side.get("fp32_parity_ok")):
+            raise SystemExit("the INT8 head did not pass the optimisation policy; it cannot be released")
+        if side["source_head_sha256"] != hyb["sha256"]:
+            raise SystemExit("the INT8 study was made from a different hybrid head")
+        dst = ROOT / rc["head_int8"]
+        built = build_int8(ROOT / hyb["path"], dst)
+        if built["sha256"] != side["sha256"]:
+            raise SystemExit(f"INT8 rebuild {built['sha256'][:12]} differs from the studied file {side['sha256'][:12]}")
+        entries.append({"name": INT8_NAME, "path": rc["head_int8"], "sha256": built["sha256"], "bytes": built["bytes"],
+                        "url": None, "optional": True, "derived_from": hyb["name"], "derived_from_sha256": hyb["sha256"],
+                        "recipe": built["recipe"], "source": f"src/models/head_onnx.py (policy report reports/{side['report']})"})
+
     # --- optional ONNX encoder (must be exported from this exact backbone)
     onnx_enc = ROOT / rc["onnx_encoder"]
     if onnx_enc.exists():
@@ -127,14 +156,38 @@ def main() -> None:
     mpath = ROOT / "artifacts/release_manifest.json"
     manifest = json.loads(mpath.read_text(encoding="utf-8"))
     keep = [a for a in manifest["assets"] if a["name"] == "yolo11n.pt"]
+    # Re-promoting the same file keeps its public download details (url, licence, storage note).
+    prev = {(a["name"], a["sha256"]): a for a in manifest["assets"]}
+    for e in entries:
+        old = prev.get((e["name"], e["sha256"]))
+        if old and old.get("url"):
+            for k in ("url", "license", "public_storage"):
+                if k in old:
+                    e[k] = old[k]
+                elif k in e and k != "url":
+                    del e[k]
     manifest["assets"] = keep + entries
-    manifest["bundle_id"] = f"{prefix}_{tag}_" + hashlib.sha256(json.dumps([a["sha256"] for a in manifest["assets"]]).encode()).hexdigest()[:10]
+    ids = [a["sha256"] for a in manifest["assets"]] + (["hybrid_head_runtime=onnx_int8"] if args.hybrid_head == "onnx_int8" else [])
+    manifest["bundle_id"] = f"{prefix}_{tag}_" + hashlib.sha256(json.dumps(ids).encode()).hexdigest()[:10]
     manifest["note"] = (f"{'Development' if prefix == 'dev' else 'Fine-tuned'} bundle: YOLO11n detector + {status} + "
                         f"classical/deep/hybrid heads + {cal.get('kind')} calibration.")
-    mpath.write_text(json.dumps(manifest, indent=1) + "\n", encoding="utf-8", newline="\n")
-    release_cfg = {"bundle_id": manifest["bundle_id"], "backbone": bb_rel, "backbone_tag": tag, "backbone_status": status,
+    if cal.get("kind") == "final" and cal.get("model_fingerprint"):
+        from src.passport.calibration import model_fingerprint
+
+        if args.hybrid_head == "onnx_int8" and cal.get("head_int8_sha256") != built["sha256"]:
+            raise SystemExit("final calibration was made with a different INT8 head file; nothing written")
+        if model_fingerprint(manifest, cal["production_mode"], rc.get("encoder_runtime", "torch"),
+                             args.hybrid_head) != cal["model_fingerprint"]:
+            raise SystemExit("final calibration does not match this bundle's model files; nothing written")
+    release_cfg ={"bundle_id": manifest["bundle_id"], "backbone": bb_rel, "backbone_tag": tag, "backbone_status": status,
                    "calibration": cal_rel, "calibration_kind": cal.get("kind"), "precision": rc["precision"]}
-    (ROOT / "artifacts/release_config.json").write_text(json.dumps(release_cfg, indent=1) + "\n", encoding="utf-8", newline="\n")
+    if args.hybrid_head != "sklearn":
+        release_cfg["hybrid_head_runtime"] = args.hybrid_head
+    # Write both files only after every check has passed, each through a temporary file.
+    for path, obj in ((mpath, manifest), (ROOT / "artifacts/release_config.json", release_cfg)):
+        tmp = path.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(obj, indent=1) + "\n", encoding="utf-8", newline="\n")
+        tmp.replace(path)
     print(json.dumps({"bundle_id": manifest["bundle_id"], "assets": [(a["name"], a["sha256"][:12]) for a in manifest["assets"]]}, indent=1))
 
 

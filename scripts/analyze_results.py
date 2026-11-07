@@ -74,7 +74,7 @@ def main() -> None:
     import yaml
 
     margin = yaml.safe_load((ROOT / "configs/features.yaml").read_text(encoding="utf-8"))["crops"]["margin"]
-    pred = Predictor({m: ROOT / p for m, p in rc["heads"].items()}, ROOT / rc["backbone"], 2)
+    pred = Predictor.from_config(rc, ROOT, 2)
     failures = []
     for f in picks:
         r = f["row"]
