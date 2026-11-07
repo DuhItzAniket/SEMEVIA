@@ -1,5 +1,5 @@
 {
- "created_at": "2026-11-07T00:15:51.759923+00:00",
+ "created_at": "2026-11-07T02:50:19.616645+00:00",
  "image": "semevia:local",
  "image_size": "3.19GB",
  "host": "Intel(R) Core(TM) i7-14650HX CPU, 24 logical cores",
@@ -7,7 +7,7 @@
  "online_readyz": {
   "ready": true,
   "bundle_id": "ft_ckpt_98b1fb55cc6e_5d755416fd",
-  "warmup_ms": 3204.1,
+  "warmup_ms": 3139.6,
   "detector": "yolo11n:0ebbc80d4a76",
   "recognition": true,
   "recognition_reason": null,
@@ -27,31 +27,31 @@
   {
    "file": "cars_test/00001.jpg",
    "status": "ok",
-   "ms_client": 117.7,
+   "ms_client": 86.7,
    "detection_state": "detected"
   },
   {
    "file": "cars_test/00002.jpg",
    "status": "ok",
-   "ms_client": 113.3,
+   "ms_client": 103.6,
    "detection_state": "detected"
   },
   {
    "file": "cars_test/00003.jpg",
    "status": "ok",
-   "ms_client": 157.7,
+   "ms_client": 165.0,
    "detection_state": "detected"
   },
   {
    "file": "cars_test/00004.jpg",
    "status": "ok",
-   "ms_client": 119.0,
+   "ms_client": 115.4,
    "detection_state": "detected"
   },
   {
    "file": "cars_test/00005.jpg",
    "status": "ok",
-   "ms_client": 117.5,
+   "ms_client": 101.5,
    "detection_state": "detected"
   }
  ],
@@ -60,7 +60,7 @@
   "readyz": {
    "ready": true,
    "bundle_id": "ft_ckpt_98b1fb55cc6e_5d755416fd",
-   "warmup_ms": 1754.9,
+   "warmup_ms": 1750.6,
    "detector": "yolo11n:0ebbc80d4a76",
    "recognition": true,
    "recognition_reason": null,

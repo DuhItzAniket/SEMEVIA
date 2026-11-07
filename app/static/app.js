@@ -1,7 +1,7 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const form = $('form'), file = $('file'), analyze = $('analyze'), reset = $('reset'), status = $('status');
-  const cards = ['result', 'pred-card', 'passport-card', 'challenge-card', 'ref-card', 'proc-card', 'record-card'];
+  const cards = ['result', 'verdict', 'pred-card', 'passport-card', 'challenge-card', 'ref-card', 'proc-card', 'record-card'];
   let generation = 0, current = null, challenge = null, showAll = false, challengeBusy = false;
 
   const setStatus = (el, text, kind) => { el.textContent = text; el.className = 'status' + (kind ? ' ' + kind : ''); };
@@ -10,8 +10,9 @@
   const pct = (v) => (100 * v).toFixed(1) + '%';
 
   fetch('/readyz').then(r => r.json()).then(d => {
-    if (!d.ready) { $('ready').textContent = 'Service not ready: ' + (d.reasons || []).join('; '); return; }
-    $('ready').textContent = `Service ready. Detector ${d.detector}. ` + (d.recognition ? `Modes: ${d.modes.join(', ')}.` : '');
+    if (!d.ready) { $('ready').textContent = 'Service not ready: ' + (d.reasons || []).join('; '); $('ready').className = 'ready off'; return; }
+    $('ready').textContent = `Service ready · ${d.detector} · ` + (d.recognition ? `modes ${d.modes.join(', ')}` : 'detection only');
+    $('ready').className = 'ready on';
     const note = $('build-note');
     note.hidden = false;
     note.textContent = d.recognition
@@ -20,10 +21,25 @@
           : ' Development calibration: this is not the final release.')
       : `Development build: vehicle detection only. ${d.recognition_reason || ''}`;
     if (!d.recognition) $('modes').hidden = true;
-  }).catch(() => { $('ready').textContent = 'Service unreachable.'; });
+  }).catch(() => { $('ready').textContent = 'Service unreachable.'; $('ready').className = 'ready off'; });
 
-  file.addEventListener('change', () => { generation++; analyze.disabled = !file.files.length; setStatus(status, ''); });
-  reset.addEventListener('click', () => { generation++; form.reset(); analyze.disabled = true; hideAll(); setStatus(status, ''); current = null; challenge = null; });
+  const drop = $('drop'), dropName = $('drop-name'), dropHint = dropName.textContent;
+  const showFile = () => {
+    const f = file.files[0];
+    drop.classList.toggle('has-file', !!f);
+    dropName.textContent = f ? `${f.name} · ${(f.size / 1048576).toFixed(1)} MB` : dropHint;
+  };
+  file.addEventListener('change', () => { generation++; analyze.disabled = !file.files.length; setStatus(status, ''); showFile(); });
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, () => drop.classList.remove('over')));
+  drop.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!f) return;
+    const dt = new DataTransfer(); dt.items.add(f); file.files = dt.files;
+    file.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  reset.addEventListener('click', () => { generation++; form.reset(); analyze.disabled = true; hideAll(); setStatus(status, ''); current = null; challenge = null; showFile(); });
   document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', () => { generation++; }));
 
   const drawBoxes = (resp) => {
@@ -48,6 +64,8 @@
     const base = `vehicle ${(detScore * 100).toFixed(0)}% det`;
     if (!p.available || !p.top5.length) return base;
     const top = p.top5[0];
+    const st = resp.passport && resp.passport.decision_state;
+    if (st === 'rejected' || st === 'inadequate') return `not verified (best guess ${top.name}) | ${base}`;
     return `${top.name} (${pct(top.score)} cls) | ${base}`;
   };
 
@@ -56,11 +74,12 @@
     $('pred-card').hidden = !p.available;
     if (!p.available) return;
     const rejected = pp.decision_state === 'rejected';
-    $('pred-h').textContent = rejected ? '2. Diagnostic guesses, unverified' : '2. Best guess (ordinary prediction)';
+    $('pred-h').textContent = rejected ? 'Diagnostic guesses, unverified' : 'Best guess (ordinary prediction)';
     $('pred-label').textContent = `${p.score_type}. Classification score is separate from the detector score.`;
     const ol = $('top5'); ol.replaceChildren();
     p.top5.forEach(c => {
       const li = el('li');
+      li.style.setProperty('--p', Math.max(0, Math.min(1, c.score)));
       li.appendChild(el('span', `${c.make} ${c.model}, ${c.year}`));
       li.appendChild(el('span', pct(c.score), 'score'));
       ol.appendChild(li);
@@ -104,6 +123,7 @@
     const ol = $('cands'); ol.replaceChildren();
     (showAll ? cands : cands.slice(0, 5)).forEach(c => {
       const li = el('li');
+      li.style.setProperty('--p', Math.max(0, Math.min(1, c.score)));
       li.appendChild(el('span', `${c.make} ${c.model}, ${c.year}`));
       li.appendChild(el('span', pct(c.score), 'score'));
       ol.appendChild(li);
@@ -112,6 +132,53 @@
     $('show-all').textContent = showAll ? 'Show first 5' : `Show all ${cands.length}`;
   };
   $('show-all').addEventListener('click', () => { showAll = !showAll; if (current) renderPassport(current); });
+
+  const VERDICT = {
+    exact_candidate: ['ok', 'Identified'],
+    ambiguous: ['partial', 'Narrowed down'],
+    inadequate: ['partial', 'Not enough evidence'],
+    rejected: ['bad', 'Not verified'],
+    detection_failed: ['bad', 'No vehicle found'],
+    comparison_only: ['info', 'Comparison mode'],
+    unavailable: ['info', 'Detection only'],
+  };
+  const renderVerdict = (resp) => {
+    const v = $('verdict'), pp = resp.passport || {}, p = resp.prediction || {};
+    const state = resp.status === 'no_vehicle' ? 'detection_failed' : pp.decision_state;
+    const [kind, chip] = VERDICT[state] || ['info', state || 'Result'];
+    const top = p.available && p.top5 && p.top5.length ? p.top5[0] : null;
+    let title = '', sub = '', meter = top ? top.score : 0;
+    const spec = pp.specificity;
+    if (state === 'exact_candidate' && pp.accepted_identity) {
+      title = pp.accepted_identity.name;
+      sub = `Calibrated score ${pct(top ? top.score : 0)}. The candidate set holds this category only; it can still be wrong.`;
+    } else if (state === 'ambiguous' && spec) {
+      title = spec.level === 'family' ? `${spec.label}` : `Make: ${spec.label}`;
+      sub = `${pp.candidate_count} categories remain` + (spec.unresolved && spec.unresolved.length ? ` (${spec.unresolved.join('; ')})` : '') + '. The answer stops where the evidence does.';
+    } else if (state === 'inadequate') {
+      title = 'Several makes remain';
+      sub = top ? `Best guess ${top.name} (${pct(top.score)}) is not supported by the candidate set.` : 'The candidate set spans more than one make.';
+    } else if (state === 'rejected') {
+      title = 'Could not verify a supported category';
+      sub = top ? `Best guess ${top.name} scored ${pct(top.score)}, below the reject threshold. It may be a model outside the 196 categories.` : '';
+    } else if (state === 'detection_failed') {
+      title = 'No car, bus or truck detected';
+      sub = 'Try a clearer photo with the whole vehicle visible.'; meter = 0;
+    } else if (state === 'comparison_only' && top) {
+      title = top.name;
+      sub = `Comparison mode (${resp.active_mode}): uncalibrated score ${pct(top.score)}. Switch to Hybrid for the Passport.`;
+    } else if (top) {
+      title = top.name; sub = `Score ${pct(top.score)}.`;
+    } else {
+      title = 'Vehicle detected'; sub = p.unavailable_reason || ''; meter = 0;
+    }
+    v.dataset.kind = kind;
+    $('v-chip').textContent = chip;
+    $('v-title').textContent = title;
+    $('v-sub').textContent = sub;
+    $('v-meter').style.width = `${Math.round(100 * Math.max(0, Math.min(1, meter)))}%`;
+    v.hidden = false;
+  };
 
   const renderProcessing = (resp) => {
     const imgs = resp.processing.images || {};
@@ -154,7 +221,8 @@
       $('summary').textContent = 'No supported vehicle target found. Try a clearer photo with the whole car visible.';
     } else if (p.available && p.top5.length) {
       const t = p.top5[0];
-      $('summary').textContent = `${t.make} ${t.model}, ${t.year}: classification score ${pct(t.score)}` +
+      const unver = ['rejected', 'inadequate'].includes(resp.passport && resp.passport.decision_state);
+      $('summary').textContent = (unver ? `Not verified. Best guess ${t.make} ${t.model}, ${t.year} at ${pct(t.score)}` : `${t.make} ${t.model}, ${t.year}: classification score ${pct(t.score)}`) +
         (det.detector_score != null ? `; detector score ${det.detector_score.toFixed(2)}` : '') + '.';
     } else {
       $('summary').textContent = `Vehicle detected (detector score ${det.detector_score.toFixed(2)}). ${p.unavailable_reason || ''}`;
@@ -170,7 +238,8 @@
       ['Server time', `${t.total_ms} ms` + Object.entries(t).filter(([k]) => k !== 'total_ms').map(([k, v]) => `, ${k.replace('_ms', '')} ${v}`).join('')],
     ];
     $('facts').replaceChildren(...facts.flatMap(([k, v]) => [el('dt', k), el('dd', v)]));
-    renderPrediction(resp); renderPassport(resp); renderRefs(resp); renderProcessing(resp);
+    renderVerdict(resp); renderPrediction(resp); renderPassport(resp); renderRefs(resp); renderProcessing(resp);
+    if (window.innerWidth < 960) $('verdict').scrollIntoView({ behavior: 'smooth', block: 'start' });
     const chAvail = resp.challenge && resp.challenge.state === 'not_requested';
     $('challenge-card').hidden = !chAvail;
     $('ch-result').hidden = true; setStatus($('ch-status'), ''); $('run-challenge').disabled = false;

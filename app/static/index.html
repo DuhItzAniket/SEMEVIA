@@ -3,89 +3,154 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SEMEVIA</title>
-  <link rel="stylesheet" href="/static/style.css?v=5">
+  <title>SEMEVIA · Vehicle identity through evidence</title>
+  <meta name="description" content="Upload a car photo: SEMEVIA finds the vehicle, names make, model and year among 196 categories, and shows how much of that answer the evidence supports.">
+  <meta name="theme-color" content="#f4f1ea">
+  <link rel="icon" type="image/svg+xml" href="/static/brand/favicon.svg?v=6">
+  <link rel="stylesheet" href="/static/style.css?v=6">
 </head>
 <body>
-  <header class="top">
-    <div class="wrap">
-      <h1>SEMEVIA</h1>
-      <p class="sub">Vehicle identity through evidence</p>
+  <header class="masthead">
+    <div class="wrap mast-row">
+      <a class="brand" href="/" aria-label="SEMEVIA home">
+        <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
+          <g fill="none" stroke-width="3" stroke-linecap="square" stroke-linejoin="round">
+            <path d="M4 14V4h10M34 4h10v10M14 44H4V34" stroke="currentColor"/>
+            <path d="M44 34v10H34" stroke="var(--signal)"/>
+          </g>
+          <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.5 29.5v-1.6c0-1 .7-1.9 1.7-2.1l7.3-1.5 4.6-3.6c1-.8 2.2-1.2 3.5-1.2h4.6c1.6 0 3.1.7 4.1 2l2.6 3.2 1.9.5c1.1.3 1.9 1.3 1.9 2.4v1.9"/>
+            <path d="M9.5 29.5h3.4M20.4 29.5h9.1M36.7 29.5h1.5"/>
+            <circle cx="16.6" cy="29.5" r="3.3"/><circle cx="33" cy="29.5" r="3.3"/>
+            <path d="M23.4 24.3h12"/>
+          </g>
+        </svg>
+        <span class="wordmark">SEMEVIA</span>
+      </a>
+      <p class="tagline">Vehicle identity through evidence</p>
+      <nav class="mast-links" aria-label="Project links">
+        <a href="https://github.com/DuhItzAniket/SEMEVIA/blob/semevia/implementation/eval_P5_T35.md" target="_blank" rel="noopener">Results</a>
+        <a href="https://github.com/DuhItzAniket/SEMEVIA/blob/semevia/implementation/docs/architecture.md" target="_blank" rel="noopener">How it works</a>
+        <a href="https://github.com/DuhItzAniket/SEMEVIA" target="_blank" rel="noopener">GitHub</a>
+      </nav>
     </div>
   </header>
 
   <main class="wrap">
-    <p id="build-note" class="note" hidden></p>
+    <p id="build-note" class="model-line" hidden></p>
 
-    <section class="card" aria-labelledby="upload-h">
-      <h2 id="upload-h">Analyze a vehicle photo</h2>
-      <form id="form">
-        <label class="file">
-          <span>Choose or take a photo (JPEG, PNG, WEBP, BMP; up to 10 MB)</span>
-          <input id="file" name="file" type="file" accept="image/*" required>
-        </label>
-        <fieldset id="modes" class="modes">
-          <legend>Model</legend>
-          <label><input type="radio" name="mode" value="hybrid" checked> Hybrid (classical + deep)</label>
-          <label><input type="radio" name="mode" value="deep"> Deep</label>
-          <label><input type="radio" name="mode" value="classical"> Classical</label>
-        </fieldset>
-        <div class="row">
-          <button id="analyze" type="submit" disabled>Analyze</button>
-          <button id="reset" type="button" class="secondary">Reset</button>
-        </div>
-      </form>
-      <p id="status" class="status" role="status" aria-live="polite"></p>
-      <div class="examples" aria-labelledby="ex-h">
-        <p id="ex-h" class="ex-h">No photo at hand? Try an example:</p>
+    <section class="intake" aria-labelledby="upload-h">
+      <div class="intake-main">
+        <p class="eyebrow">Case intake</p>
+        <h1 id="upload-h">Which car is this, and how sure can we be?</h1>
+        <p class="lede">Upload a photo. SEMEVIA finds the vehicle, names its make, model and year among 196 categories,
+          and reports only as much identity as the evidence supports.</p>
+        <form id="form">
+          <label class="drop" id="drop">
+            <input id="file" name="file" type="file" accept="image/*" required>
+            <span class="drop-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 8v8M8.5 11.5 12 8l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="drop-text"><strong>Choose or take a photo</strong>, or drop it here</span>
+            <span class="drop-hint" id="drop-name">JPEG, PNG, WEBP or BMP · up to 10 MB</span>
+          </label>
+          <fieldset id="modes" class="segmented">
+            <legend>Model</legend>
+            <label><input type="radio" name="mode" value="hybrid" checked><span>Hybrid <small>classical + deep</small></span></label>
+            <label><input type="radio" name="mode" value="deep"><span>Deep</span></label>
+            <label><input type="radio" name="mode" value="classical"><span>Classical</span></label>
+          </fieldset>
+          <div class="actions">
+            <button id="analyze" type="submit" class="primary" disabled>Analyze photo</button>
+            <button id="reset" type="button" class="ghost">Reset</button>
+          </div>
+        </form>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </div>
+
+      <aside class="examples" aria-labelledby="ex-h">
+        <p id="ex-h" class="eyebrow">No photo at hand? Try one</p>
         <div class="ex-row">
-          <button type="button" class="ex" data-ex="audi_r8"><img src="/static/examples/audi_r8_thumb.jpg" alt="" width="120" height="80"><span>Audi R8 (supported)</span></button>
-          <button type="button" class="ex" data-ex="aventador"><img src="/static/examples/aventador_thumb.jpg" alt="" width="120" height="80"><span>Lamborghini Aventador (supported)</span></button>
-          <button type="button" class="ex" data-ex="kia_ev6"><img src="/static/examples/kia_ev6_thumb.jpg" alt="" width="120" height="80"><span>Unsupported: 2021 Kia EV6</span></button>
-          <button type="button" class="ex" data-ex="motorcycle"><img src="/static/examples/motorcycle_thumb.jpg" alt="" width="120" height="80"><span>Unsupported: motorcycle</span></button>
+          <button type="button" class="ex" data-ex="audi_r8"><img src="/static/examples/audi_r8_thumb.jpg" alt="" width="120" height="80"><span>Audi R8</span><em>supported</em></button>
+          <button type="button" class="ex" data-ex="aventador"><img src="/static/examples/aventador_thumb.jpg" alt="" width="120" height="80"><span>Lamborghini Aventador</span><em>supported</em></button>
+          <button type="button" class="ex" data-ex="kia_ev6"><img src="/static/examples/kia_ev6_thumb.jpg" alt="" width="120" height="80"><span>2021 Kia EV6</span><em class="un">not in the 196</em></button>
+          <button type="button" class="ex" data-ex="motorcycle"><img src="/static/examples/motorcycle_thumb.jpg" alt="" width="120" height="80"><span>Motorcycle</span><em class="un">not a car</em></button>
         </div>
-        <p class="credits">Example photos from Wikimedia Commons, resized: <a href="https://commons.wikimedia.org/wiki/File:Audi_R8_Coup%C3%A9_5.2_FSI_quattro_(2012)_(52338542581).jpg" target="_blank" rel="noopener">Audi R8</a> by Charles from Port Chester, New York (CC BY 2.0); <a href="https://commons.wikimedia.org/wiki/File:Lamborghini_Aventador_LP700-4_-_Flickr_-_Supermac1961.jpg" target="_blank" rel="noopener">Aventador</a> by Supermac1961 from Chafford Hundred, England (CC BY 2.0); <a href="https://commons.wikimedia.org/wiki/File:Kia_EV6_GT-Line_Snow_White_Pearl_-_front.jpg" target="_blank" rel="noopener">Kia EV6</a> by Ethan Llamas (CC BY-SA 4.0); <a href="https://commons.wikimedia.org/wiki/File:Ducati_955_Panigale_V2_(IMG_9845).jpg" target="_blank" rel="noopener">motorcycle</a> by Terragio67 (CC BY-SA 4.0).</p>
+        <p class="credits">Photos from Wikimedia Commons, resized: <a href="https://commons.wikimedia.org/wiki/File:Audi_R8_Coup%C3%A9_5.2_FSI_quattro_(2012)_(52338542581).jpg" target="_blank" rel="noopener">Audi R8</a> by Charles from Port Chester, New York (CC BY 2.0); <a href="https://commons.wikimedia.org/wiki/File:Lamborghini_Aventador_LP700-4_-_Flickr_-_Supermac1961.jpg" target="_blank" rel="noopener">Aventador</a> by Supermac1961 from Chafford Hundred, England (CC BY 2.0); <a href="https://commons.wikimedia.org/wiki/File:Kia_EV6_GT-Line_Snow_White_Pearl_-_front.jpg" target="_blank" rel="noopener">Kia EV6</a> by Ethan Llamas (CC BY-SA 4.0); <a href="https://commons.wikimedia.org/wiki/File:Ducati_955_Panigale_V2_(IMG_9845).jpg" target="_blank" rel="noopener">motorcycle</a> by Terragio67 (CC BY-SA 4.0).</p>
+      </aside>
+    </section>
+
+    <ol class="steps" aria-label="How SEMEVIA works">
+      <li><span class="step-n">1</span><div><strong>Detect</strong><p>YOLO11n finds cars, buses and trucks; the largest one is the case.</p></div></li>
+      <li><span class="step-n">2</span><div><strong>Identify</strong><p>A fine-tuned EfficientNet-B0 plus classical shape, edge, colour and texture features score 196 categories.</p></div></li>
+      <li><span class="step-n">3</span><div><strong>Evidence</strong><p>A calibrated Passport keeps every category the evidence cannot rule out, and stops at family or make when it must.</p></div></li>
+    </ol>
+
+    <section id="verdict" class="verdict" hidden aria-live="polite" aria-label="Verdict">
+      <p class="v-state"><span id="v-chip" class="chip"></span></p>
+      <p id="v-title" class="v-title"></p>
+      <p id="v-sub" class="v-sub"></p>
+      <div class="meter" aria-hidden="true"><span id="v-meter"></span></div>
+    </section>
+
+    <div class="report">
+      <div class="report-figure">
+        <section id="result" class="panel" hidden aria-labelledby="result-h">
+          <p class="eyebrow">01 · Detection</p>
+          <h2 id="result-h">Image and selected vehicle</h2>
+          <p id="summary" class="summary"></p>
+          <div class="figure">
+            <div id="stage" class="stage">
+              <img id="display" alt="Uploaded image with detected vehicle boxes">
+            </div>
+            <p id="caption" class="caption"></p>
+          </div>
+          <dl id="facts" class="facts"></dl>
+        </section>
       </div>
-    </section>
 
-    <section id="result" class="card" hidden aria-labelledby="result-h">
-      <h2 id="result-h">1. Image and selected vehicle</h2>
-      <p id="summary" class="summary"></p>
-      <div class="figure">
-        <div id="stage" class="stage">
-          <img id="display" alt="Uploaded image with detected vehicle boxes">
-        </div>
-        <p id="caption" class="caption"></p>
+      <div class="report-body">
+
+        <section id="pred-card" class="panel" hidden aria-labelledby="pred-h">
+          <p class="eyebrow">02 · Prediction</p>
+          <h2 id="pred-h">Best guess (ordinary prediction)</h2>
+          <p id="pred-label" class="muted small"></p>
+          <ol id="top5" class="ranked"></ol>
+        </section>
+
+        <section id="passport-card" class="panel passport" hidden aria-labelledby="pp-h">
+          <p class="eyebrow">03 · Identity Evidence Passport</p>
+          <h2 id="pp-h">What the evidence supports</h2>
+          <p id="pp-state" class="pp-state"></p>
+          <p id="pp-reason" class="muted small"></p>
+          <div id="cand-wrap">
+            <h3 id="cand-h">Candidate set</h3>
+            <ol id="cands" class="ranked"></ol>
+            <button id="show-all" type="button" class="ghost small-btn" hidden>Show all</button>
+          </div>
+          <p id="pp-dev" class="fineprint"></p>
+        </section>
+
+        <section id="ref-card" class="panel" hidden aria-labelledby="ref-h">
+          <p class="eyebrow">Library</p>
+          <h2 id="ref-h">Nearest training references</h2>
+          <p class="muted small">The three nearest of 588 curated training photos (3 per category), by cosine similarity of the
+            model's embedding. Similarity is not a probability, and a neighbour is not proof of identity.</p>
+          <ol id="refs" class="ranked plain"></ol>
+          <p id="ref-note" class="fineprint"></p>
+        </section>
       </div>
-      <dl id="facts" class="facts"></dl>
-    </section>
+    </div>
 
-    <section id="pred-card" class="card" hidden aria-labelledby="pred-h">
-      <h2 id="pred-h">2. Best guess (ordinary prediction)</h2>
-      <p id="pred-label" class="muted"></p>
-      <ol id="top5" class="top5"></ol>
-    </section>
-
-    <section id="passport-card" class="card" hidden aria-labelledby="pp-h">
-      <h2 id="pp-h">3. Identity Evidence Passport</h2>
-      <p id="pp-dev" class="note small"></p>
-      <p id="pp-state" class="pp-state"></p>
-      <p id="pp-reason" class="muted"></p>
-      <div id="cand-wrap">
-        <h3 id="cand-h">Candidate set</h3>
-        <ol id="cands" class="top5"></ol>
-        <button id="show-all" type="button" class="secondary small-btn" hidden>Show all</button>
-      </div>
-    </section>
-
-    <section id="challenge-card" class="card" hidden aria-labelledby="ch-h">
-      <h2 id="ch-h">4. Evidence Challenge</h2>
+    <section id="challenge-card" class="panel wide" hidden aria-labelledby="ch-h">
+      <p class="eyebrow">04 · Evidence Challenge</p>
+      <h2 id="ch-h">Which part of the photo is the model relying on?</h2>
       <p class="muted">Blurs one of six regions of the crop at a time and measures how the margin between the
         two leading categories changes. This tests the model's sensitivity, not which car part identifies the make.</p>
-      <button id="run-challenge" type="button">Run six-region challenge</button>
+      <button id="run-challenge" type="button" class="primary">Run six-region challenge</button>
       <p id="ch-status" class="status" role="status" aria-live="polite"></p>
       <div id="ch-result" hidden>
-        <p id="ch-pair" class="small"></p>
+        <p id="ch-pair" class="small mono"></p>
         <p id="ch-summary" class="summary"></p>
         <div class="ch-grid-wrap">
           <div class="ch-view">
@@ -94,43 +159,37 @@
           </div>
           <div>
             <div id="ch-buttons" class="ch-buttons" role="group" aria-label="Challenge regions"></div>
-            <button id="ch-restore" type="button" class="secondary small-btn">Restore original</button>
+            <button id="ch-restore" type="button" class="ghost small-btn">Restore original</button>
           </div>
         </div>
         <table class="ch-table">
-          <caption class="muted">Margin change per region (raw logit units). Positive = hiding it reduced A's lead over B.</caption>
+          <caption class="muted small">Margin change per region (raw logit units). Positive = hiding it reduced A's lead over B.</caption>
           <thead><tr><th>Region</th><th>Margin after</th><th>Change</th><th>New top-1</th></tr></thead>
           <tbody id="ch-rows"></tbody>
         </table>
-        <p class="muted small" id="ch-label"></p>
+        <p class="fineprint" id="ch-label"></p>
       </div>
     </section>
 
-    <section id="ref-card" class="card" hidden aria-labelledby="ref-h">
-      <h2 id="ref-h">References from the training library</h2>
-      <p class="muted">The three nearest of 588 curated training photos (3 per category), by cosine similarity of the
-        model's embedding. Similarity is not a probability, and a neighbour is not proof of identity.</p>
-      <ol id="refs" class="top5"></ol>
-      <p id="ref-note" class="muted small"></p>
-    </section>
-
-    <section id="proc-card" class="card" hidden aria-labelledby="proc-h">
-      <h2 id="proc-h">5. Intermediate image processing</h2>
+    <section id="proc-card" class="panel wide" hidden aria-labelledby="proc-h">
+      <p class="eyebrow">05 · Classical computer vision</p>
+      <h2 id="proc-h">Intermediate image processing</h2>
       <div class="views">
         <figure><img id="v-crop" alt="Selected crop" loading="lazy"><figcaption>Crop</figcaption></figure>
         <figure><img id="v-gray" alt="Grayscale" loading="lazy"><figcaption>Grayscale</figcaption></figure>
         <figure><img id="v-edges" alt="Canny edges" loading="lazy"><figcaption>Canny edges</figcaption></figure>
-        <figure><img id="v-contours" alt="Contours, largest highlighted" loading="lazy"><figcaption>Contours (largest in red)</figcaption></figure>
+        <figure><img id="v-contours" alt="Contours, largest highlighted" loading="lazy"><figcaption>Contours, largest in red</figcaption></figure>
       </div>
-      <dl id="measurements" class="facts"></dl>
+      <dl id="measurements" class="facts cols"></dl>
     </section>
 
-    <section id="record-card" class="card" hidden aria-labelledby="rec-h">
-      <h2 id="rec-h">6. Record</h2>
+    <section id="record-card" class="panel wide" hidden aria-labelledby="rec-h">
+      <p class="eyebrow">06 · Record</p>
+      <h2 id="rec-h">Reproducibility record</h2>
       <p class="muted">The Passport is a reproducibility record, not a certificate. It contains hashes, not your image.</p>
-      <div class="row">
-        <button id="download" type="button" class="secondary">Download Passport JSON</button>
-        <a href="/benchmarks" target="_blank" rel="noopener">Evaluation data (test and tune reports)</a>
+      <div class="actions">
+        <button id="download" type="button" class="ghost">Download Passport JSON</button>
+        <a class="textlink" href="/benchmarks" target="_blank" rel="noopener">Evaluation data (test and tune reports)</a>
       </div>
       <details>
         <summary>Response details (JSON)</summary>
@@ -138,7 +197,13 @@
       </details>
     </section>
   </main>
-  <footer class="wrap foot"><span id="ready">Checking service...</span></footer>
-  <script src="/static/app.js?v=5"></script>
+
+  <footer class="foot">
+    <div class="wrap foot-row">
+      <span id="ready" class="ready">Checking service…</span>
+      <span>Team Hypermetropia · Computer Vision Hackathon 2026 · PS5 · Stanford Cars (196 categories, model years 1991–2012)</span>
+    </div>
+  </footer>
+  <script src="/static/app.js?v=6"></script>
 </body>
 </html>
