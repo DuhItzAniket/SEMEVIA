@@ -10,16 +10,19 @@ Collection was done by four AI agents (one per bucket) that checked licences thr
 every image, and confirmed the `unlisted_car_model` cars are not among the 196 classes; tune and test use
 different photos and mostly different subjects. Images are stored outside Git (`SEMEVIA_NEG_ROOT`, on the team
 laptop `C:\semevia\negatives`). The tune half fed `scripts/freeze.py --negatives`, which chose the reject
-threshold at the freeze of the released iteration r3
-([reports/negatives_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json](../reports/negatives_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json));
+threshold from INT8 hybrid-head logits at the freeze of the released iteration r3-int8
+([reports/negatives_tune_ft_ckpt_98b1fb55cc6e_0d835360cc.json](../reports/negatives_tune_ft_ckpt_98b1fb55cc6e_0d835360cc.json));
 the test half was evaluated once after that freeze
-([reports/negatives_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json](../reports/negatives_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json)),
+([reports/negatives_test_ft_ckpt_98b1fb55cc6e_f3734d4f40.json](../reports/negatives_test_ft_ckpt_98b1fb55cc6e_f3734d4f40.json)),
 and its false-acceptance table is in [eval_P5_T35.md](../eval_P5_T35.md) (section 6).
 
-History: r2 was frozen and tested the same way
-([tune](../reports/negatives_tune_ft_ckpt_4f3584f597d5_c13883508a.json),
-[test](../reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json)); r1 was frozen before the suite existed,
-without `--negatives`.
+History: r2 and r3 (FP32 hybrid head) were frozen and tested the same way (r2:
+[tune](../reports/negatives_tune_ft_ckpt_4f3584f597d5_c13883508a.json),
+[test](../reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json); r3:
+[tune](../reports/negatives_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json),
+[test](../reports/negatives_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json)); r1 was frozen before the suite existed,
+without `--negatives`. The 40 test negatives have therefore been used for three bundles (r2, r3, r3-int8;
+`reports/negatives_test_*.json`).
 
 ## Target (plan)
 
@@ -45,4 +48,5 @@ unsupported model families.
    public-domain licence (record author and licence), or the team's own photos (`license: team-owned`).
 3. Run `python scripts/evaluate_negatives.py --partition tune`, then
    `python scripts/freeze.py --mode hybrid --negatives reports/negatives_tune_<bundle>.json`.
-   The test set is evaluated only after the freeze.
+   The test set is evaluated only after the freeze. The tune run must use the same hybrid head runtime as the
+   bundle being frozen (for r3-int8, `onnx_int8`); `scripts/freeze.py` refuses a tune negatives file scored with a different runtime.

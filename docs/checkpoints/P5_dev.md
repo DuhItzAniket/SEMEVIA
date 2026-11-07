@@ -47,3 +47,23 @@ with ONNX vs 38.8 ms with PyTorch (5 warm requests, same photo, this laptop): ab
 less than the 2.6x isolated-encoder gain, because classical features and other per-request work are a
 large share. With the ONNX runtime the reference panel is disabled by design until the index is
 rebuilt with that encoder.
+
+## Later outcome on the fine-tuned backbone (added 2026-11-07)
+
+Everything above is the development backbone and stays as it was measured. The same study was re-run on the
+fine-tuned r3 backbone `ckpt_98b1fb55cc6e` (`reports/optimization_ckpt_98b1fb55cc6e.json`,
+`reports/optimization_head_hybrid_ckpt_98b1fb55cc6e.json`; values in section 4 of `eval_P5_T35.md`):
+
+* INT8 encoder: all three variants failed the policy again. The encoder is not quantised; every release runs
+  it in PyTorch FP32 (`precision: fp32`).
+* INT8 hybrid head: re-run row-wise, as served (the earlier batch-wise values are kept under
+  `superseded_batchwise` in the same report). It passed the policy: tune top-1 94.2% (sklearn FP32) -> 94.2%
+  (INT8) (`eval_P5_T35.md`). It is **deployed** since iteration r3-int8 (bundle
+  `ft_ckpt_98b1fb55cc6e_f3734d4f40`, decision record in `NEXT.md`): the hybrid head's final logistic layer is
+  served as an ONNX INT8 graph derived from the published `head_hybrid.joblib` by `src/models/head_onnx.py`,
+  pinned by sha256. Temperature, reject threshold and conformal q were re-derived from INT8 logits on
+  tune/calibration data, and the bundle was evaluated once end to end on test. The deep and classical heads stay
+  sklearn FP32.
+* The ONNX FP32 encoder is still measured, not deployed.
+* Only the INT8 head is deployed, and it is a tiny part of request time, so no end-to-end speed gain is
+  claimed from it.

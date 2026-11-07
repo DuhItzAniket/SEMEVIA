@@ -129,7 +129,7 @@ INT8 vs FP32 hybrid head on the same 8,041 test images (the r3 FP32 and r3-int8 
 
 Released and frozen runtime: encoder `torch`, precision `fp32`, hybrid head `onnx_int8` (deployed optimisation); the ONNX FP32 and INT8 encoder variants above are measured, not deployed.
 
-Deployed end-to-end latency through the public URL (`reports/release_acceptance.json`, 2026-11-07; ): 20 fresh uploads, client wall time including the network, p50 526 ms, p95 741 ms, max 770 ms; 4 simultaneous clients all answered in 1073 ms; 5 invalid files rejected with typed errors and 1 no-car image answered `no_vehicle`.
+Deployed end-to-end latency through the public URL (`reports/release_acceptance.json`, 2026-11-07; Google Cloud Run, asia-south1, 2 vCPU, 4 GiB, min 1 instance): 20 fresh uploads, client wall time including the network, p50 508 ms, p95 681 ms, max 738 ms; 4 simultaneous clients all answered in 1085 ms; 5 invalid files rejected with typed errors and 1 no-car image answered `no_vehicle`.
 
 ## 5. Robustness under varying conditions
 

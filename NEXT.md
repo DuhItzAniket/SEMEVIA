@@ -1,19 +1,20 @@
 # NEXT: SEMEVIA handoff
 
-## Current status (2026-11-07 ~09:55 IST)
-* **Released model: r3** (bundle `ft_ckpt_98b1fb55cc6e_5d755416fd`, GitHub Release `model-v3`), live at
-  <https://readings-agency-respond-bacteria.trycloudflare.com>; results in `eval_P5_T35.md`. Zenodo DOI
-  10.5281/zenodo.24026963 (v1.0.0).
-* **Last step (commit cf2b69e):** Reset button fixed (its id shadowed `form.reset`), upload thumbnail, shorter
-  UI text, in-app classical/deep/hybrid comparison panel (PS5 expected output 6), classical-mode whole-image
-  fallback, and eval additions (dataset, preprocessing, classical-branch role, accuracy by car size and natural
-  occlusion from saved test predictions). Tests pass; `scripts/check_release.py` passed on the public URL.
-* **PS5 audit (7 agents, 2026-11-07):** 44 of 49 items met. Still partial: 4.2 illumination/viewpoint (only
-  brightness x0.5/x1.5; viewpoint labels need team review), 4.6 optimisation is measured but not deployed
-  (INT8 head / ONNX encoder), 4.3 occlusion (synthetic only, natural sample tiny).
-* **Next:** team reviews `reports/viewpoint_labels.csv` (drop "review pending"), writes the report PDF (AI-content
-  limit 30%; kit in `docs/report_kit.md`), records voice-over on the demo video, fills the submission form.
-* **Keep running:** laptop awake and online, Docker Desktop, the `cloudflared` terminal tab.
+## Current status (2026-11-07 ~11:20 IST)
+* **Released model: r3-int8** (bundle `ft_ckpt_98b1fb55cc6e_f3734d4f40`): r3 with the hybrid head's final layer
+  served as row-wise ONNX INT8 (PS5 4.6 now met). Results in `eval_P5_T35.md` (r1, r2, r3 FP32 listed as superseded).
+  INT8 vs FP32 on the same test images (`reports/int8_vs_fp32_test_ft_ckpt_98b1fb55cc6e_f3734d4f40.json`): hybrid
+  end-to-end top-1 91.80% vs 91.82%. Zenodo DOI 10.5281/zenodo.24026963 (v1.0.0, r3 FP32).
+* **Hosting: Google Cloud Run** at <https://semevia-298534486429.asia-south1.run.app> (project `semevia`, region asia-south1, one warm instance;
+  `docs/hosting_lock.md`). Acceptance passed on that URL (2026-11-07T05:34 UTC, `reports/release_acceptance.json`).
+  The laptop and the Cloudflare tunnel are no longer needed. After judging, set `--min-instances 0` to save credit.
+* **Commits today:** cf2b69e (UI fixes, comparison panel), b85ddae (r3-int8 decision record), 5b0961a (INT8
+  implementation, checks passed before the test run), 2e55498 (r3-int8 test results), then docs and hosting.
+* **PS5 audit:** 44 of 49 items met before today's work; 6.6 (in-app comparison) and 4.6 (optimisation deployed) are
+  now met. Still partial: 4.2 illumination/viewpoint (brightness only; viewpoint labels need team review), 4.3
+  occlusion (synthetic only, natural sample tiny).
+* **Next (team):** review `reports/viewpoint_labels.csv` (issue #4), write the report PDF yourselves (AI-content
+  limit 30%; kit in `docs/report_kit.md`), record the demo video, fill the submission form with the Cloud Run URL.
 
 ## Iteration r3-int8 decision record (committed before any per-image, end-to-end, calibration or test INT8 number exists)
 * **What changes:** r3-int8 is r3 (`ft_ckpt_98b1fb55cc6e_5d755416fd`) with one change: the final linear layer of the
@@ -139,7 +140,7 @@
   `artifacts/release_manifest.json` (each download re-checked against its SHA256).
 * Step 7 commit: 900f483; clean-build check and Space builder: 2cebf30 (pushed).
 * Step 9 done: Hugging Face refused Docker Spaces without PRO (402), so the team chose a Cloudflare quick tunnel
-  from this laptop: **https://readings-agency-respond-bacteria.trycloudflare.com** (see `docs/hosting_lock.md`).
+  from this laptop: **https://semevia-298534486429.asia-south1.run.app** (see `docs/hosting_lock.md`).
   `scripts/check_release.py` through the public URL passes (`reports/release_acceptance.json`: page, readiness,
   20 fresh uploads p50/p95, 4 concurrent clients, 6 bad inputs); phone width 375 px checked in a browser (no
   horizontal scroll, upload flow works). UI fixes: the banner and score type no longer say "development",

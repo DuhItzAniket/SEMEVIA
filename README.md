@@ -6,7 +6,7 @@
 Upload a photo of a car. SEMEVIA tells you its make, model and year, and how sure it really is.</p>
 
 <p align="center">
-<a href="https://readings-agency-respond-bacteria.trycloudflare.com"><b>Try it live</b></a> ·
+<a href="https://semevia-298534486429.asia-south1.run.app"><b>Try it live</b></a> ·
 <a href="eval_P5_T35.md">Results</a> ·
 <a href="#video-showing-it-live">Demo video</a>
 </p>
@@ -23,7 +23,7 @@ example *Audi R8 Coupe 2012*), and shows its top 5 guesses. It also gives an **E
 always claiming one exact answer, it says what the photo actually supports. Sometimes that is the exact model;
 sometimes only the model family (e.g. *Ford F-150*) or just the brand.
 
-**Live app:** <https://readings-agency-respond-bacteria.trycloudflare.com>
+**Live app:** <https://semevia-298534486429.asia-south1.run.app>
 (works on phone and laptop; currently served from a team laptop, so it is online only while that laptop is on)
 
 ## Technologies Used
