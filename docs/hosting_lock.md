@@ -4,13 +4,15 @@ Status on 2026-11-07: **live at <https://readings-agency-respond-bacteria.tryclo
 
 ## What runs where
 
-* The release image (`docker compose up -d`, bundle named in `artifacts/release_manifest.json`; iteration r2 since 2026-11-07 03:47) runs in Docker Desktop
-  on the team laptop (Intel i7-14650HX), limited to 2 CPUs and 4 GB by `compose.yaml`, restart `unless-stopped`.
+* The release image (`docker compose up -d`, bundle named in `artifacts/release_manifest.json`; iteration r3,
+  which replaced r2 behind the same URL on 2026-11-07) runs in Docker Desktop on the team laptop (Intel
+  i7-14650HX), limited to 2 CPUs and 4 GB by `compose.yaml`, restart `unless-stopped`.
 * A Cloudflare quick tunnel (`cloudflared tunnel --url http://localhost:8000`, release 2026.10.7, SHA256 and
   Authenticode signature checked) gives the public HTTPS address. Quick tunnels need no account and show no
   interstitial page.
 * Checks through the public URL: [reports/release_acceptance.json](../reports/release_acceptance.json)
-  (`scripts/check_release.py`).
+  (`scripts/check_release.py`), re-run after the r3 deployment; container checks:
+  [reports/container_check.json](../reports/container_check.json).
 
 ## Limits the team must manage
 

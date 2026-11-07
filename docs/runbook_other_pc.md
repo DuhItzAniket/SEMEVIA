@@ -64,8 +64,8 @@ git restore reports artifacts\class_metadata.json
 
 ## 2. Fine-tune (mandatory requirement)
 
-This step as written produced iteration r1 (last-stage fine-tuning, now superseded). The released model
-is r2: run it with `configs\train_v2.yaml` instead (see step 3b).
+This step as written produced iteration r1 (last-stage fine-tuning, 224 px, now superseded). The released model
+is r3: run it with `configs\train_v3.yaml` instead (see step 3b).
 
 ```powershell
 & $PY scripts\train.py --config configs\train.yaml --resume auto
@@ -100,24 +100,37 @@ Optimization evidence on the final model (P5):
 ```
 
 Keep `encoder_runtime: torch` for the release unless you rebuild caches and references with the ONNX
-encoder; the measured in-app gain was small (for r2: `reports\optimization_ckpt_4f3584f597d5.json`).
+encoder; the measured in-app gain was small (for the released r3: `reports\optimization_ckpt_98b1fb55cc6e.json`).
 
 Commit: `reports/*.json`, `artifacts/release_manifest.json`, `artifacts/release_config.json`,
 `artifacts/development_calibration.json` (message e.g. `feat(model): promote fine-tuned backbone`).
 
-## 3b. Iteration r2 (what was actually released)
+## 3b. Iterations r2 and r3 (r3 is what was released)
 
-The released model is iteration r2: the same steps 2-6 with `configs/train_v2.yaml` (full-network fine-tuning).
-Before rebuilding, archive the r1 freeze (`artifacts/history/r1/`), then:
+Each iteration is the same steps 2-6 with its own training config. Before rebuilding, archive the current freeze
+(`artifacts/history/r1/` before r2, `artifacts/history/r2/` before r3).
+
+| Iteration | Config | Recipe | Status |
+|---|---|---|---|
+| r1 | `configs/train.yaml` | last-stage fine-tuning, 224 px | superseded (`artifacts/history/r1/`, release `model-v1`) |
+| r2 | `configs/train_v2.yaml` | full-network fine-tuning, 224 px | superseded (`artifacts/history/r2/`, release `model-v2`) |
+| r3 | `configs/train_v3.yaml` | r2's recipe at 320 px input, same seed | **released** (files to be published as `model-v3`) |
 
 ```powershell
-& $PY scripts\train.py --config configs\train_v2.yaml --resume auto
-$CK = "E:\semevia\store\runs\effb0_r2\best_finetuned.pt"     # then steps 3-6 with this $CK and its printed tag
+& $PY scripts\train.py --config configs\train_v3.yaml --resume auto
+$CK = "E:\semevia\store\runs\effb0_r3\best_finetuned.pt"     # then steps 3-6 with this $CK and its printed tag
 ```
 
-Step 4 below then uses the collected negative suite, and step 7 publishes a new release (`model-v2`).
+The encoder input size is automatic: it travels with the backbone file (`backbone_input_size` and
+`preprocess_version` in `src/models/backbone.py`), so `cache_features.py`, `promote_bundle.py`, `optimize.py` and
+the app use 320 px for r3 with no extra flag; 224 px bundles stay byte-identical.
 
-## 4. Negative suite (collected; used for the r2 freeze)
+r3 was released only because it met the rule written in `NEXT.md` ("Iteration r3 decision record") before r3
+training; the rule was checked on tune and the outcome committed before any r3 test run. Had it failed, r3 would
+never have touched the test split. Step 4 below uses the collected negative suite, and step 7 publishes the
+iteration's release.
+
+## 4. Negative suite (collected; used for the r2 and r3 freezes)
 
 See `docs/negative_suite.md`. With `$env:SEMEVIA_NEG_ROOT` set:
 `& $PY scripts\evaluate_negatives.py --partition tune`
@@ -126,7 +139,7 @@ See `docs/negative_suite.md`. With `$env:SEMEVIA_NEG_ROOT` set:
 
 ```powershell
 & $PY scripts\evaluate.py --partition tune --resume
-& $PY scripts\freeze.py --mode hybrid --negatives reports\negatives_tune_<bundle>.json   # r2; r1 was frozen without --negatives
+& $PY scripts\freeze.py --mode hybrid --negatives reports\negatives_tune_<bundle>.json   # r2 and r3; r1 was frozen without --negatives
 & $PY scripts\evaluate.py --partition calibration --resume
 & $PY scripts\calibrate.py --final
 & $PY scripts\promote_bundle.py --backbone $CK --calibration artifacts\calibration_final.json
@@ -146,17 +159,25 @@ foreach ($c in "clean","bright_0.5","bright_1.5","down_0.50","down_0.25","occl_0
 & $PY scripts\report_robustness.py --subset stress_test
 & $PY scripts\analyze_results.py --partition test
 & $PY scripts\evaluate_negatives.py --partition test          # held-out negatives, once after the freeze
-& $PY scripts\report.py --team-id <TeamID> --usns "<USN1>,<USN2>"
+& $PY scripts\evaluate_oracle.py --partition test --confirm-frozen   # standard Stanford Cars protocol (ground-truth crop)
+& $PY scripts\report.py --team-id T35 --usns "1RUA24CSE0051,1RUA24CSE0097"
+& $PY scripts\make_figures.py                                    # reports\figures\*.png for the team's report
 ```
 
-The test run takes roughly an hour on a GPU machine (keyed and resumable). Do not re-run the test
-to pick a better-looking result. Commit the new `reports/*` files and `eval_P5_<TeamID>.md`.
+The test run is keyed and resumable (`--resume`): if it is interrupted, rerun the same command. Do not re-run
+the test to pick a better-looking result: the test split was evaluated end to end once per iteration (three times
+in total, r1-r3), and the frozen r2 bundle also had one standard-protocol (ground-truth crop) test run after its
+result was known; the status line of `eval_P5_T35.md` discloses this. Commit the new `reports/*` files and
+`eval_P5_T35.md`.
 
 ## 7. Publish model files (so clean Docker builds include recognition)
 
 Create a GitHub Release on the repository and upload the files listed with `"url": null` in
 `artifacts/release_manifest.json` (heads, fine-tuned backbone, reference index). Put each file's
-download URL into its manifest entry (the SHA256 values must stay the same) and commit.
+download URL into its manifest entry (the SHA256 values must stay the same) and commit. Releases: `model-v1`
+(r1) and `model-v2` (r2) are history; r3's files are to be published as `model-v3` (until then their manifest
+URLs are `null`). The CI clean-build container job (`.github/workflows/ci.yml`) downloads these files, so it
+fails until the URLs are in the manifest.
 
 ## 8-9. Docker and deployment
 

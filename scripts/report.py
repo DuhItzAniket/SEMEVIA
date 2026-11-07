@@ -138,9 +138,16 @@ def main() -> None:
                       f"`{freeze.get('production_mode')}`, model fingerprint `{freeze.get('model_fingerprint', '')[:16]}`, "
                       f"bundle `{freeze.get('bundle_id_at_freeze')}`) before this bundle's test run; the final "
                       f"calibration was then added, which changes the bundle id but not the model fingerprint.")
-    status.append("Final values below come from the official Stanford Cars test split (8,041 images), evaluated once "
-                  "for this bundle after its freeze; the same split was evaluated once earlier for the superseded "
-                  "iteration (see Model iterations)." if final else "Final values read *pending* until the official test run.")
+    if final:
+        earlier_e2e = [Path(f).name for f in glob.glob(str(ROOT / "reports/e2e_test_*.json")) if bundle not in f]
+        earlier_orc = [Path(f).name for f in glob.glob(str(ROOT / "reports/oracle_test_*.json")) if bundle not in f]
+        status.append(f"Final values below come from the official Stanford Cars test split (8,041 images), evaluated once "
+                      f"end to end for this bundle after its freeze. The same split was used earlier: {len(earlier_e2e)} "
+                      f"end-to-end run(s) of superseded iterations"
+                      + (f" and {len(earlier_orc)} ground-truth-crop run(s) of a superseded frozen bundle" if earlier_orc else "")
+                      + " (files `reports/e2e_test_*.json`, `reports/oracle_test_*.json`; see Model iterations).")
+    else:
+        status.append("Final values read *pending* until the official test run.")
     status.append("Tune-split numbers are selection-set diagnostics and are optimistic.")
     L += ["Status: " + " ".join(status), ""]
     if train_sum:
@@ -148,8 +155,18 @@ def main() -> None:
         stages = sorted({h["stage"] for h in train_sum["history"]}, key=lambda s: [h["stage"] for h in train_sum["history"]].index(s))
         ft_hist = [h for h in train_sum["history"] if h.get("pretrained_changed")]
         best_ep = next((i + 1 for i, h in enumerate(ft_hist) if h["tune"]["top1"] == train_sum["best_tune_top1_finetuned"]), None)
-        L += [f"Fine-tuning: run `{train_sum['run_name']}` (EfficientNet-B0, ImageNet weights; stages {', '.join(stages)}), "
-              f"{train_sum['finetune_epochs_completed']} completed fine-tuning epochs (early stopping on tune); the released "
+        planned = None
+        for cf in glob.glob(str(ROOT / "configs/train*.yaml")):
+            import yaml as _y
+
+            c = _y.safe_load(Path(cf).read_text(encoding="utf-8"))
+            if c.get("run_name") == train_sum["run_name"]:
+                planned = sum(s["epochs"] for s in c["stages"] if any(not x.startswith("classifier") for x in s["trainable"]))
+                size = c.get("input_size", 224)
+        stop = ("early stopping on tune" if planned and train_sum["finetune_epochs_completed"] < planned
+                else "full schedule, no early stop")
+        L += [f"Fine-tuning: run `{train_sum['run_name']}` (EfficientNet-B0, ImageNet weights, {size} px input; stages "
+              f"{', '.join(stages)}), {train_sum['finetune_epochs_completed']} completed fine-tuning epochs ({stop}); the released "
               f"checkpoint is the best one, from fine-tuning epoch {best_ep} (this is the epoch count in the bundle's backbone "
               f"label); the final pretrained blocks {', '.join(unfrozen)} are verified changed; best tune top-1 "
               f"{pct(train_sum['best_tune_top1_finetuned'])}; "
@@ -184,14 +201,19 @@ def main() -> None:
             fz_rules.append(f"{name}: threshold {rj_old.get('threshold')}, negatives used {rj_old.get('negatives_used')}")
         rj_now = (freeze or {}).get("reject", {})
         fz_rules.append(f"current: threshold {rj_now.get('threshold')}, negatives used {rj_now.get('negatives_used')}")
-        L += ["", "How the second iteration came about, in order: the first iteration was frozen and tested once and its "
-              "test result was known; the second iteration was then designed (full-network instead of last-stage "
-              "fine-tuning, `configs/train_v2.yaml` says why) and trained on train/tune data. Before its test run, the "
-              "decision record in `NEXT.md` (\"Iteration r2 decision record\") fixed that it replaces the first iteration "
-              "whatever its test result, that hybrid stays the production mode, and that its freeze uses the tune negative "
-              "suite. So the freeze rule changed too (reject threshold, from the freeze files: " + "; ".join(fz_rules) + "). "
-              "Heads, calibration and freeze were redone on tune/calibration data before the single test run of this "
-              "bundle. Both test results are reported; all numbers below are for the current iteration.", ""]
+        L += ["", f"How the iterations came about, in order (each later iteration was designed after the previous one's "
+              f"test result was known, so each carries a decision record in `NEXT.md` written before its own test run):", "",
+              "* r2: full-network instead of last-stage fine-tuning (`configs/train_v2.yaml` says why). Its decision record "
+              "(\"Iteration r2 decision record\") fixed, before its test run, that it replaces r1 whatever its test result, "
+              "that hybrid stays the production mode, and that its freeze uses the tune negative suite.",
+              "* r3: r2's recipe at 320 px input instead of 224 (`configs/train_v3.yaml`). Its decision record (\"Iteration "
+              "r3 decision record\") was written before r3 was trained and released r3 only if its tune end-to-end hybrid "
+              "top-1 beat r2's by at least one point; otherwise r3 would never have touched the test split. The outcome was "
+              "recorded before the test run (`reports/e2e_tune_<r3 bundle at freeze>.json`).",
+              "* The reject rule changed across iterations (from the freeze files: " + "; ".join(fz_rules) + ").",
+              "", f"Heads, calibration and freeze were redone on tune/calibration data for every iteration before its single "
+              f"end-to-end test run. All {len(hist) + 1} test results are reported; all numbers below are for the current "
+              f"iteration.", ""]
 
     # 1 -----------------------------------------------------------------------------------------
     L += ["## 1. Classification performance (Top-1 and Top-5)", ""]
@@ -407,16 +429,21 @@ def main() -> None:
         dev, dev_f = find("heads_tune_imagenet_frozen.json")
         if dev:
             ds = dev["heads"]["hybrid"]["selected"]
-            L.append(f"| hybrid on the frozen ImageNet backbone (no fine-tuning; `reports/{dev_f}`) | as hybrid | per_feature | "
+            L.append(f"| hybrid on the frozen ImageNet backbone (no fine-tuning, 224 px; `reports/{dev_f}`) | as hybrid | per_feature | "
                      f"{ds['input_dim']} | {ds['C']} | {pct(ds['tune_top1'])} | {pct(ds['tune_top5'])} | {ds['tune_nll']:.3f} |")
         hd = heads["heads"]
         base = hd["hybrid"]["selected"]["tune_top1"]
         deltas = "; ".join(f"{n}: {100 * (hd[n]['selected']['tune_top1'] - base):+.1f} pt" for n in hd if n != "hybrid")
-        ft_gain = (f"; fine-tuning the backbone: {100 * (base - dev['heads']['hybrid']['selected']['tune_top1']):+.1f} pt "
-                   f"(hybrid, fine-tuned vs frozen)") if dev else ""
+        from src.models.backbone import backbone_input_size
+
+        size_now = backbone_input_size(ROOT / rel_cfg["backbone"]) if rel_cfg.get("backbone") else 224
+        ft_gain = (f"; released fine-tuned backbone vs frozen ImageNet backbone: "
+                   f"{100 * (base - dev['heads']['hybrid']['selected']['tune_top1']):+.1f} pt (hybrid; fine-tuned at "
+                   f"{size_now} px vs frozen at 224 px" + (", so this mixes fine-tuning and input resolution" if size_now != 224 else "")
+                   + ")") if dev else ""
         hc_rm = {n: 100 * (hd[n]["selected"]["tune_top1"] - base) for n in hd if n.startswith("hybrid_no_")}
         ev = hd.get("hybrid_equal_variance", {}).get("selected")
-        L += ["", f"Change in tune top-1 versus the full hybrid head: {deltas}{ft_gain}. Reading: fine-tuning the backbone "
+        L += ["", f"Change in tune top-1 versus the full hybrid head: {deltas}{ft_gain}. Reading: the fine-tuned backbone "
               f"gives by far the largest gain. Removing handcrafted feature groups ("
               + ", ".join(f"{n.replace('hybrid_', '')} {v:+.1f} pt" for n, v in hc_rm.items())
               + f") moves tune top-1 by at most {max(abs(v) for v in hc_rm.values()):.1f} pt, so with fine-tuned features the "

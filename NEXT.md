@@ -1,5 +1,18 @@
 # NEXT: SEMEVIA handoff
 
+## When you wake up (status 2026-11-07 ~06:30 IST)
+* **Released model: r3** (320 px full fine-tuning, bundle `ft_ckpt_98b1fb55cc6e_5d755416fd`), live behind the
+  same URL <https://readings-agency-respond-bacteria.trycloudflare.com>; all results in `eval_P5_T35.md`
+  (r1 and r2 listed under "Model iterations").
+* **Needs your OK:** publish r3's model files as GitHub Release `model-v3` (the safety check requires your
+  approval). Until then the r3 commits are local on `semevia/implementation` (the `r3-experiment` branch with
+  all r3 evidence is already on GitHub); pushing without the release would make CI's clean-build job fail.
+* **Demo video (silent, captioned, ~2:52):** `C:\Users\Luikz\Downloads\SEMEVIA_demo\semevia_demo_silent.webm`.
+  Add your voice-over and face circle in any editor (e.g. Clipchamp). Script: `docs/demo.md`.
+* **Report:** write it yourselves (AI-content limit 30%); outline, sources and figures in `docs/report_kit.md`
+  and `reports/figures/`. Fill in each member's section in the submission form.
+* **Keep running:** laptop awake and online, Docker Desktop, the `cloudflared` terminal tab.
+
 ## Iteration r3 decision record (written before r3 training starts; no r3 result exists)
 * r3 = `configs/train_v3.yaml`: r2's recipe at 320 px input instead of 224 (same seed and data).
 * **Release rule, fixed now:** r3 replaces r2 only if, on the **tune split**, its hybrid end-to-end top-1

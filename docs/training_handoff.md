@@ -1,13 +1,19 @@
 # Fine-tuning run on the training PC
 
+> **Historical hand-off.** Three fine-tuning runs have since finished on the GPU laptop:
+> `effb0_r1` (`configs/train.yaml`, [summary](../reports/training/effb0_r1_summary.json)),
+> `effb0_r2` (`configs/train_v2.yaml`, [summary](../reports/training/effb0_r2_summary.json)) and
+> `effb0_r3` (`configs/train_v3.yaml`, released, [summary](../reports/training/effb0_r3_summary.json)).
+> The text below is the original r1 hand-off, kept as written except where marked.
+
 > **Superseded scope (2026-11-06):** the GPU PC now runs the whole remaining heavy pipeline
 > (training, final bundle, freeze, calibration, test runs, Docker, deployment) and commits its results.
 > Follow `docs/runbook_other_pc.md`; this file remains the detailed reference for the training step.
 
 This closes the mandatory requirement "transfer learning and model fine-tuning": at least one
 completed epoch with the final pretrained EfficientNet-B0 stage unfrozen, validated and
-checkpointed. The script has been smoke-tested on CPU (plumbing only, 64 images); the real run
-has **not** happened yet.
+checkpointed. At the time of this hand-off the script had only been smoke-tested on CPU (plumbing
+only, 64 images); the real runs have since completed (see the note at the top).
 
 Git: one machine commits at a time (see `docs/runbook_other_pc.md`).
 

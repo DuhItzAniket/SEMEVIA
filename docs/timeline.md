@@ -4,7 +4,8 @@ SEMEVIA, Computer Vision Hackathon 2026, problem statement PS5 (fine-grained veh
 Stanford Cars), team T35. Branch `semevia/implementation`.
 
 This page records how the project was built during the 24 hours: the phases P0 to P7, which machine did
-what, the two model iterations (r1 and r2), and the problems found and fixed on the way. It is built from
+what, the three model iterations (r1 and r2, both superseded, and r3, the release), and the problems found
+and fixed on the way. It is built from
 the Git history (`git log --reverse --format='%h %ad %s'`), the checkpoint notes in
 [`docs/checkpoints/`](checkpoints/), [`NEXT.md`](../NEXT.md) and [`docs/resource_lock.md`](resource_lock.md).
 
@@ -29,7 +30,9 @@ from `reports/*.json`.
 ## Gantt chart
 
 Bars run from one recorded commit to the next. The gap between 21:47 and 01:31 is the hand-over to the
-GPU laptop and its setup (no commits in that window).
+GPU laptop and its setup (no commits in that window). In the r3 section, the r3 training, rebuild and
+tune-rule check ran between the pre-registration commit (04:05) and the commit that records the rule outcome
+and the freeze (05:18); the tooling bar in between was committed while r3 trained.
 
 ```mermaid
 gantt
@@ -63,6 +66,17 @@ gantt
     r2 rebuild, negatives, freeze, final cal    :done, r2b, 2026-11-07 03:25, 2026-11-07 03:30
     r2 single test run and analysis             :done, r2c, 2026-11-07 03:30, 2026-11-07 03:46
     r2 redeploy and public checks               :done, r2d, 2026-11-07 03:46, 2026-11-07 03:47
+    Docs describe the r2 release                :done, r2e, 2026-11-07 03:47, 2026-11-07 04:00
+
+    section Iteration r3
+    r3 release rule pre-registered in NEXT.md   :milestone, r3p, 2026-11-07 04:05, 0d
+    r3 training effb0_r3, rebuild, tune rule check :done, r3a, 2026-11-07 04:05, 2026-11-07 05:18
+    CI, size-aware input, standard protocol, report kit, examples :done, r3t, 2026-11-07 04:09, 2026-11-07 04:22
+    r3 rule met on tune, r3 frozen              :milestone, r3m, 2026-11-07 05:18, 0d
+    r3 single test run and analysis             :done, r3b, 2026-11-07 05:18, 2026-11-07 05:44
+    r3 merged into semevia/implementation       :milestone, r3g, 2026-11-07 05:44, 0d
+    r3 redeploy and public checks               :done, r3c, 2026-11-07 05:44, 2026-11-07 05:46
+    UI example row and captioned demo recorder  :done, r3d, 2026-11-07 05:46, 2026-11-07 05:58
 
     section Deadline
     Target submission                           :milestone, dl1, 2026-11-07 12:00, 0d
@@ -78,12 +92,12 @@ Short SHAs link each phase to the commits that delivered it. "Dev" means the dev
 |---|---|---|---|---|
 | P0 | Know the machines, data source and limits; freeze the contracts | [`docs/resource_lock.md`](resource_lock.md) (measured hardware, pilot throughput, data mirror, licences); frozen API schema [`docs/api_schema.json`](api_schema.json), class IDs, box format and split seed in `configs/data.yaml`; [`docs/ownership.md`](ownership.md); `requirements.lock`; FastAPI scaffold, `Dockerfile`, `compose.yaml` | Dev: `6c265d5` | Contracts frozen and the Docker image built once. Two items stayed open at this point: no public host and no CUDA GPU on this laptop. Both were closed later (P7 and P2 on the GPU laptop). |
 | P1 | Verified data and a real detector behind the service | `scripts/prepare_data.py` with frozen manifests (train 6,514 / tune 815 / calibration 815 / test 8,041, seed 20261106) and [`reports/data_audit.json`](../reports/data_audit.json) (duplicates with conflicting labels recorded); YOLO11n detection with bounded uploads; box conversion in `src/vision/coordinates.py` | Dev: `83a18f4`, `15d44d3`, `b446a65`, `e101013` | Manifest hashes identical over three runs; overlay sheet inspected; tests pass; upload flow checked in a browser at phone width. Container run and public deploy were still open (see [`checkpoints/P1.md`](checkpoints/P1.md)). |
-| P2 | Classical baseline and the mandatory fine-tuning run | `src/vision/features.py` (1816-dim handcrafted vector), `src/vision/proposals.py`, versioned caches (`scripts/cache_features.py`, `src/models/cache_io.py`), classical head (`scripts/fit_heads.py`); resumable two-stage trainer `scripts/train.py` + `src/models/training.py`; on the GPU laptop, run `effb0_r1` with [`reports/training/effb0_r1_summary.json`](../reports/training/effb0_r1_summary.json) | Dev: `00a6e22`, `e275c11`, `1a9e948`, `192b7ea`, `27b4dec`. GPU: `1cdf976`, `42e7cbf` | `fine_tuning_requirement_met: true` in the r1 training summary, with `pretrained_changed` true for `features.7` and `features.8`. |
-| P3 | Matched deep, hybrid, classical and ablation heads on cached features | `scripts/fit_heads.py` (one grid from `configs/heads.yaml`, selection on tune only); detector evaluation on tune ([`reports/detector_tune.json`](../reports/detector_tune.json)); metric implementations in `src/evaluation/metrics.py` with fixture tests; on the GPU laptop, everything rebuilt on the fine-tuned backbone (r1: [`reports/heads_tune_ckpt_2339418979e1.json`](../reports/heads_tune_ckpt_2339418979e1.json); r2: [`reports/heads_tune_ckpt_4f3584f597d5.json`](../reports/heads_tune_ckpt_4f3584f597d5.json)) | Dev: `ecd7c2c`, `31aa668`, `e34f645`, `6140788`. GPU: `8ce22e7` | Heads refitted on the fine-tuned backbone; production mode chosen on tune only (hybrid kept, deep not clearly better on tune); `src.release verify` and `pytest` pass. |
+| P2 | Classical baseline and the mandatory fine-tuning run | `src/vision/features.py` (1816-dim handcrafted vector), `src/vision/proposals.py`, versioned caches (`scripts/cache_features.py`, `src/models/cache_io.py`), classical head (`scripts/fit_heads.py`); resumable two-stage trainer `scripts/train.py` + `src/models/training.py`; on the GPU laptop, run `effb0_r1` with [`reports/training/effb0_r1_summary.json`](../reports/training/effb0_r1_summary.json), then `effb0_r2` ([summary](../reports/training/effb0_r2_summary.json)) and the released `effb0_r3` ([summary](../reports/training/effb0_r3_summary.json)) | Dev: `00a6e22`, `e275c11`, `1a9e948`, `192b7ea`, `27b4dec`. GPU: `1cdf976`, `42e7cbf` (r1), `4043f4e` (r2), `e8ce629` (r3) | `fine_tuning_requirement_met: true` in the r1 training summary, with `pretrained_changed` true for `features.7` and `features.8`; r2 and r3 fine-tune the full network. |
+| P3 | Matched deep, hybrid, classical and ablation heads on cached features | `scripts/fit_heads.py` (one grid from `configs/heads.yaml`, selection on tune only); detector evaluation on tune ([`reports/detector_tune.json`](../reports/detector_tune.json)); metric implementations in `src/evaluation/metrics.py` with fixture tests; on the GPU laptop, everything rebuilt on the fine-tuned backbone (r1: [`reports/heads_tune_ckpt_2339418979e1.json`](../reports/heads_tune_ckpt_2339418979e1.json); r2: [`reports/heads_tune_ckpt_4f3584f597d5.json`](../reports/heads_tune_ckpt_4f3584f597d5.json); r3: [`reports/heads_tune_ckpt_98b1fb55cc6e.json`](../reports/heads_tune_ckpt_98b1fb55cc6e.json)) | Dev: `ecd7c2c`, `31aa668`, `e34f645`, `6140788`. GPU: `8ce22e7` (r1), `38b1a62` (r2), `e8ce629` (r3) | Heads refitted on the fine-tuned backbone; production mode chosen on tune only (hybrid kept, deep not clearly better on tune); `src.release verify` and `pytest` pass. |
 | P4 | User-facing recognition with honest uncertainty | `app/main.py` serving three modes (`/predict`), the Passport (conformal set, hierarchy, decision states in `src/passport/`), the Evidence Challenge (`/challenge`), JSON export; training-only reference index (`scripts/build_references.py`) and references panel; resumable end-to-end evaluator `scripts/evaluate.py`; [`docs/architecture.md`](architecture.md) and [`docs/design.md`](design.md) | Dev: `a738562`, `8e612b3`, `789ffd0`, `4abc022`, `8ba7f7f` | Full flow checked in a browser on a test photo; API contract tests for all modes and the challenge; app-vs-offline parity test. References show identifiers, labels and similarity only, no thumbnails (licence decision, see below). |
-| P5 | Measure optimized runtimes; freeze the pipeline before any test image; final calibration | `scripts/optimize.py`, `scripts/optimize_head.py` (ONNX FP32, three INT8 encoder variants, INT8 head); parity-gated ONNX FP32 runtime; `scripts/freeze.py`, `scripts/calibrate.py --final`, release config via `scripts/promote_bundle.py`; on the GPU laptop, `artifacts/production_freeze.json` and `artifacts/calibration_final.json` (now r2's; r1's copies are archived in [`artifacts/history/r1/`](../artifacts/history/r1/)) | Dev: `fa0d5a2`, `5d3139a`, `03354e8`, `684873f`, `5bbc04c`. GPU: `a05ee37` | Freeze file written before the test split was touched; `scripts/evaluate.py` refuses the test split unless it gets `--confirm-frozen` and the final calibration of the frozen pipeline. All INT8 encoder variants failed the accuracy policy, so the release keeps the PyTorch FP32 encoder (`encoder_runtime: torch`); see [`checkpoints/P5_dev.md`](checkpoints/P5_dev.md) and the `reports/optimization_*.json` files. |
-| P6 | One official test run, robustness and failure analysis | Predeclared stress and viewpoint subsets (`scripts/declare_subsets.py`); seven stress conditions on the 392-image subset (`scripts/report_robustness.py`); `scripts/analyze_results.py` (viewpoint subgroups, rule-selected failures); `scripts/report.py` writing [`eval_P5_T35.md`](../eval_P5_T35.md) | Dev: `a6418c6`, `f97888b`, `c712e9a`. GPU: `92ffbae` (r1), `cadcdc3`, `800e7b7` (r2) | Test split (8,041 images) evaluated once per iteration after its freeze (r1 `92ffbae`, r2 `cadcdc3`); the eval file is generated from the report files, and every number in it was re-checked against the JSON. |
-| P7 | A container that works offline, public model files, a public URL | Docker fixes (`4c8c5ec`); runbook, demo script and negative-suite guide (`f94c5d2`); `scripts/check_container.py` → [`reports/container_check.json`](../reports/container_check.json); GitHub Release `model-v1` (r1), replaced by `model-v2` (r2), with URLs and SHA256 in [`artifacts/release_manifest.json`](../artifacts/release_manifest.json); `scripts/prepare_hf_space.py`; Cloudflare tunnel ([`docs/hosting_lock.md`](hosting_lock.md)); `scripts/check_release.py` → [`reports/release_acceptance.json`](../reports/release_acceptance.json); 80-image negative suite manifests and the blind viewpoint check | Dev: `4c8c5ec`, `6cf86de`, `f94c5d2`. GPU: `b763e75`, `900f483`, `2cebf30`, `1c9461d`, `8e0c84b` (r1), `cadcdc3`, `ae9a00b` (r2) | Container ready with all three modes, also with `--network none`; a fresh clone builds an image that downloads and verifies the published model files; public URL passes the release checks and the phone-width check (both checks re-run on r2). |
+| P5 | Measure optimized runtimes; freeze the pipeline before any test image; final calibration | `scripts/optimize.py`, `scripts/optimize_head.py` (ONNX FP32, three INT8 encoder variants, INT8 head); parity-gated ONNX FP32 runtime; `scripts/freeze.py`, `scripts/calibrate.py --final`, release config via `scripts/promote_bundle.py`; on the GPU laptop, `artifacts/production_freeze.json` and `artifacts/calibration_final.json` (now r3's; r1's and r2's copies are archived in [`artifacts/history/r1/`](../artifacts/history/r1/) and [`artifacts/history/r2/`](../artifacts/history/r2/)); r3 optimization reports [`optimization_ckpt_98b1fb55cc6e.json`](../reports/optimization_ckpt_98b1fb55cc6e.json) and [`optimization_head_hybrid_ckpt_98b1fb55cc6e.json`](../reports/optimization_head_hybrid_ckpt_98b1fb55cc6e.json) | Dev: `fa0d5a2`, `5d3139a`, `03354e8`, `684873f`, `5bbc04c`. GPU: `a05ee37` (r1), `38b1a62` (r2), `e8ce629` (r3) | Freeze file written before the test split was touched; `scripts/evaluate.py` refuses the test split unless it gets `--confirm-frozen` and the final calibration of the frozen pipeline. All INT8 encoder variants failed the accuracy policy, so the release keeps the PyTorch FP32 encoder (`encoder_runtime: torch`); see [`checkpoints/P5_dev.md`](checkpoints/P5_dev.md) and the `reports/optimization_*.json` files. |
+| P6 | One official test run, robustness and failure analysis | Predeclared stress and viewpoint subsets (`scripts/declare_subsets.py`); seven stress conditions on the 392-image subset (`scripts/report_robustness.py`); `scripts/analyze_results.py` (viewpoint subgroups, rule-selected failures); `scripts/report.py` writing [`eval_P5_T35.md`](../eval_P5_T35.md); `scripts/evaluate_oracle.py` for the standard Stanford Cars protocol (ground-truth crop) | Dev: `a6418c6`, `f97888b`, `c712e9a`. GPU: `92ffbae` (r1), `cadcdc3`, `800e7b7` (r2), `8ca670c` (frozen r2 bundle, standard-protocol test run), `d028940`, `357a7cb` (r3) | Test split (8,041 images) evaluated end to end once per iteration after its freeze, three times in total (r1 `92ffbae`, r2 `cadcdc3`, r3 `357a7cb`), plus one standard-protocol (ground-truth crop) run of the frozen r2 bundle (`8ca670c`) after r2's result was known, disclosed in the status line of `eval_P5_T35.md`; the eval file is generated from the report files, and every number in it was re-checked against the JSON. |
+| P7 | A container that works offline, public model files, a public URL | Docker fixes (`4c8c5ec`); runbook, demo script and negative-suite guide (`f94c5d2`); `scripts/check_container.py` → [`reports/container_check.json`](../reports/container_check.json); GitHub Release `model-v1` (r1), replaced by `model-v2` (r2); r3's model files to be published as `model-v3` (URLs and SHA256 in [`artifacts/release_manifest.json`](../artifacts/release_manifest.json); r3's URLs stay empty until then); CI in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) (tests and a clean-build container job); `scripts/prepare_hf_space.py`; Cloudflare tunnel ([`docs/hosting_lock.md`](hosting_lock.md)); `scripts/check_release.py` → [`reports/release_acceptance.json`](../reports/release_acceptance.json); 80-image negative suite manifests and the blind viewpoint check | Dev: `4c8c5ec`, `6cf86de`, `f94c5d2`. GPU: `b763e75`, `900f483`, `2cebf30`, `1c9461d`, `8e0c84b` (r1), `cadcdc3`, `ae9a00b` (r2), `d028940`, `c0edf1a`, `50f4d6a` (r3) | Container ready with all three modes, also with `--network none`; a fresh clone builds an image that downloads and verifies the published model files; public URL passes the release checks and the phone-width check (both checks re-run on r2 and again on r3, `c0edf1a`). |
 
 ## Milestones
 
@@ -108,6 +122,13 @@ Short SHAs link each phase to the commits that delivered it. "Dev" means the dev
 | 2026-11-07 03:30 | r2 rebuilt and frozen (hybrid; reject threshold chosen with the 40 tune negatives); final calibration | `38b1a62` |
 | 2026-11-07 03:46 | r2 single official test run, stress, analysis, 40 held-out negatives; GitHub Release `model-v2` | `cadcdc3` |
 | 2026-11-07 03:47 | r2 container live behind the same URL; container and public-URL checks re-run | `ae9a00b` |
+| 2026-11-07 04:05 | r3 release rule pre-registered in `NEXT.md` ("Iteration r3 decision record") before r3 training: r3 replaces r2 only if its tune end-to-end hybrid top-1 reaches a fixed threshold above r2's; otherwise r3 never touches test | `794b237` |
+| 2026-11-07 04:09 | CI (tests and clean-build container job); encoder input size carried by the backbone file; standard-protocol evaluator, report kit and figures, one-tap example row and demo recorder | `d028940`, `ab591ff`, `8ca670c`, `eb33dd5` |
+| 2026-11-07 05:18 | r3 tune rule met, outcome recorded before any r3 test run (branch `r3-experiment`, pushed before the test run); r3 frozen (hybrid; reject threshold chosen with the 40 tune negatives); r2 archived in `artifacts/history/r2/` | `e8ce629` |
+| 2026-11-07 05:44 | r3 single official test run, stress, analysis, 40 held-out negatives, standard protocol | `357a7cb` |
+| 2026-11-07 05:44 | r3 merged into `semevia/implementation` as the release | `403bc9d` |
+| 2026-11-07 05:46 | r3 container live behind the same URL; container and public-URL checks re-run | `c0edf1a` |
+| 2026-11-07 05:58 | Example row shows a rejection openly; demo recorder captions taken from live results | `50f4d6a` |
 
 ## Two-machine workflow
 
@@ -141,7 +162,7 @@ flowchart LR
         G3["Step 3: rebuild caches, heads,<br/>references, promote bundle"]
         G4["Step 5: evaluate tune + calibration,<br/>freeze.py, calibrate.py --final"]
         G5["Step 6: single test run, stress,<br/>analysis, report.py"]
-        G6["Steps 7-9: GitHub Release model-v1<br/>(r2: model-v2), container checks, tunnel"]
+        G6["Steps 7-9: GitHub Release model-v1<br/>(r2: model-v2; r3: model-v3 to be published),<br/>container checks, tunnel"]
         G1 --> G2 --> G3 --> G4 --> G5 --> G6
     end
     D3 -- "push + runbook_other_pc.md" --> GH
@@ -154,43 +175,50 @@ The live service runs on the GPU laptop: the release container in Docker Desktop
 ([`docs/hosting_lock.md`](hosting_lock.md)). The URL works only while that laptop is on, awake and online,
 and it changes if `cloudflared` restarts.
 
-## Two model iterations
+## Three model iterations
 
-Both iterations use the same data partitions, crop, input size (224) and normalisation, so the inference
-pipeline in `app/main.py` does not change between them. Only the backbone weights, and everything built on
-them, are replaced.
+All three iterations use the same data partitions, crop and normalisation. r1 and r2 use a 224 px input; r3
+uses 320 px. The encoder input size now travels with the backbone file (`backbone_input_size` and
+`preprocess_version` in [`src/models/backbone.py`](../src/models/backbone.py)), so `app/main.py` and the
+evaluators pick up the right size from the released backbone and the inference code does not change between
+iterations. Only the backbone weights, and everything built on them, are replaced.
 
-| | r1 (released first, superseded) | r2 (released, current) |
-|---|---|---|
-| Config | [`configs/train.yaml`](../configs/train.yaml) | [`configs/train_v2.yaml`](../configs/train_v2.yaml) |
-| Run name | `effb0_r1` | `effb0_r2` |
-| Stage 1 | Classifier only, up to 3 epochs | Classifier only, up to 2 epochs |
-| Stage 2 | Last stage only: `classifier`, `features.7`, `features.8`, up to 6 epochs | Full network: `classifier` + all of `features`, up to 24 epochs, cosine learning-rate decay |
-| Loss | Cross-entropy | Cross-entropy with label smoothing (training only; evaluation uses plain cross-entropy) |
-| Early stopping patience | 3 | 6 |
-| Seed | 20261106 | 20261107 |
-| Why | Meets the mandatory "last-stage fine-tuning" requirement | r1's training loss was still falling when it stopped, which suggests the frozen early stages limited it (reasoning in the `configs/train_v2.yaml` header). Decided from train and tune behaviour only, but after r1's test result was known; the decision that r2 replaces r1 whatever its result was committed in [`NEXT.md`](../NEXT.md) ("Iteration r2 decision record", `4043f4e`) before r2's test run. |
-| Status | Superseded. Was frozen, evaluated once on test and deployed (backbone `ckpt_2339418979e1`, bundle `ft_ckpt_2339418979e1_0920511710`, GitHub Release `model-v1`); its freeze, calibration and config are archived in [`artifacts/history/r1/`](../artifacts/history/r1/) | Released and live. Whole pipeline redone on backbone `ckpt_4f3584f597d5`: heads (production mode hybrid, kept by the project rule because deep was not clearly better on tune), calibration, freeze with the reject threshold chosen on the 40 tune negatives ([`artifacts/production_freeze.json`](../artifacts/production_freeze.json), bundle at freeze `ft_ckpt_4f3584f597d5_c13883508a`), final calibration (release bundle `ft_ckpt_4f3584f597d5_9662c2e703`), a single test run, GitHub Release `model-v2`, redeploy behind the same URL |
-| Results | Listed under "Model iterations" in [`eval_P5_T35.md`](../eval_P5_T35.md); test reports in `reports/*_ft_ckpt_2339418979e1_0920511710.json`, e.g. [`e2e_test`](../reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json), training summary [`effb0_r1_summary.json`](../reports/training/effb0_r1_summary.json) | [`eval_P5_T35.md`](../eval_P5_T35.md) (generated by `scripts/report.py` for the r2 bundle); [`e2e_test`](../reports/e2e_test_ft_ckpt_4f3584f597d5_9662c2e703.json), [`robustness_stress_test`](../reports/robustness_stress_test_ft_ckpt_4f3584f597d5_9662c2e703.md), [`analysis_test`](../reports/analysis_test_ft_ckpt_4f3584f597d5_9662c2e703.json), [`negatives_test`](../reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json), [`negatives_tune`](../reports/negatives_tune_ft_ckpt_4f3584f597d5_c13883508a.json), [`heads_tune`](../reports/heads_tune_ckpt_4f3584f597d5.json), training summary [`effb0_r2_summary.json`](../reports/training/effb0_r2_summary.json) |
+| | r1 (first release, superseded) | r2 (second release, superseded) | r3 (released, current) |
+|---|---|---|---|
+| Config | [`configs/train.yaml`](../configs/train.yaml) | [`configs/train_v2.yaml`](../configs/train_v2.yaml) | [`configs/train_v3.yaml`](../configs/train_v3.yaml) |
+| Run name | `effb0_r1` | `effb0_r2` | `effb0_r3` |
+| Input size | 224 px | 224 px | 320 px |
+| Stage 1 | Classifier only, up to 3 epochs | Classifier only, up to 2 epochs | As r2 |
+| Stage 2 | Last stage only: `classifier`, `features.7`, `features.8`, up to 6 epochs | Full network: `classifier` + all of `features`, up to 24 epochs, cosine learning-rate decay | As r2 |
+| Loss | Cross-entropy | Cross-entropy with label smoothing (training only; evaluation uses plain cross-entropy) | As r2 |
+| Early stopping patience | 3 | 6 | 6 |
+| Seed | 20261106 | 20261107 | 20261107 (same as r2) |
+| Why | Meets the mandatory "last-stage fine-tuning" requirement | r1's training loss was still falling when it stopped, which suggests the frozen early stages limited it (reasoning in the `configs/train_v2.yaml` header). Decided from train and tune behaviour only, but after r1's test result was known; the decision that r2 replaces r1 whatever its result was committed in [`NEXT.md`](../NEXT.md) ("Iteration r2 decision record", `4043f4e`) before r2's test run. | Fine-grained cues (badges, grilles, lamp shapes) are small and r2's failures include near-identical sibling classes, so r3 keeps r2's recipe and only raises the input resolution (reasoning in the `configs/train_v3.yaml` header). Designed after r2's test result was known, so the release rule was pre-registered in [`NEXT.md`](../NEXT.md) ("Iteration r3 decision record", `794b237`) **before r3 training**: release only if the tune end-to-end hybrid top-1 reaches a fixed threshold above r2's tune result, otherwise r3 never touches test. The outcome (rule met) was recorded in `e8ce629` before the test run. |
+| Status | Superseded. Was frozen, evaluated once on test and deployed (backbone `ckpt_2339418979e1`, bundle `ft_ckpt_2339418979e1_0920511710`, GitHub Release `model-v1`); its freeze, calibration and config are archived in [`artifacts/history/r1/`](../artifacts/history/r1/) | Superseded. Was frozen with the reject threshold chosen on the 40 tune negatives (bundle at freeze `ft_ckpt_4f3584f597d5_c13883508a`), finally calibrated (release bundle `ft_ckpt_4f3584f597d5_9662c2e703`), evaluated once on test and deployed (backbone `ckpt_4f3584f597d5`, GitHub Release `model-v2`); its freeze, calibration, config and manifest are archived in [`artifacts/history/r2/`](../artifacts/history/r2/) | Released and live. Whole pipeline redone on backbone `ckpt_98b1fb55cc6e`: heads (production mode hybrid), calibration, freeze with the reject threshold chosen on the 40 tune negatives ([`artifacts/production_freeze.json`](../artifacts/production_freeze.json), bundle at freeze `ft_ckpt_98b1fb55cc6e_f99e386191`), final calibration (release bundle `ft_ckpt_98b1fb55cc6e_5d755416fd`), a single test run (`357a7cb`), merge (`403bc9d`), redeploy behind the same URL with checks re-run (`c0edf1a`). Model files to be published as GitHub Release `model-v3` |
+| Results | Listed under "Model iterations" in [`eval_P5_T35.md`](../eval_P5_T35.md); test reports in `reports/*_ft_ckpt_2339418979e1_0920511710.json`, e.g. [`e2e_test`](../reports/e2e_test_ft_ckpt_2339418979e1_0920511710.json), training summary [`effb0_r1_summary.json`](../reports/training/effb0_r1_summary.json) | Listed under "Model iterations" in [`eval_P5_T35.md`](../eval_P5_T35.md); [`e2e_test`](../reports/e2e_test_ft_ckpt_4f3584f597d5_9662c2e703.json), [`robustness_stress_test`](../reports/robustness_stress_test_ft_ckpt_4f3584f597d5_9662c2e703.md), [`analysis_test`](../reports/analysis_test_ft_ckpt_4f3584f597d5_9662c2e703.json), [`negatives_test`](../reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json), [`oracle_test`](../reports/oracle_test_ft_ckpt_4f3584f597d5_9662c2e703.json), [`negatives_tune`](../reports/negatives_tune_ft_ckpt_4f3584f597d5_c13883508a.json), [`heads_tune`](../reports/heads_tune_ckpt_4f3584f597d5.json), training summary [`effb0_r2_summary.json`](../reports/training/effb0_r2_summary.json) | [`eval_P5_T35.md`](../eval_P5_T35.md) (generated by `scripts/report.py` for the r3 bundle); [`e2e_test`](../reports/e2e_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json), [`robustness_stress_test`](../reports/robustness_stress_test_ft_ckpt_98b1fb55cc6e_5d755416fd.md), [`analysis_test`](../reports/analysis_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json), [`negatives_test`](../reports/negatives_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json), [`oracle_test`](../reports/oracle_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json), [`e2e_tune`](../reports/e2e_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json) (the pre-registered rule), [`negatives_tune`](../reports/negatives_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json), [`heads_tune`](../reports/heads_tune_ckpt_98b1fb55cc6e.json), training summary [`effb0_r3_summary.json`](../reports/training/effb0_r3_summary.json) |
 
 For r2, `src/models/training.py` gained a per-epoch cosine schedule (computed from the epoch counter, so a
-resumed run gets the same learning rate) and the `label_smoothing` option.
+resumed run gets the same learning rate) and the `label_smoothing` option. For r3, the encoder input size
+became part of the backbone file (`d028940`), so a 320 px backbone cannot be run at 224 px by mistake.
 
 Differences in the freeze: r1 was frozen **without** a negative suite, so its reject threshold was set from
 known tune images only (recorded in r1's freeze file, archived as
 [`artifacts/history/r1/production_freeze.json`](../artifacts/history/r1/production_freeze.json)). The 80-image negative suite
 (40 tune + 40 test, Wikimedia Commons images under CC0, public domain, CC BY or CC BY-SA, manifests in
-[`artifacts/negative_manifests/`](../artifacts/negative_manifests/)) arrived after the r1 release. In the r2 freeze
-(`scripts/freeze.py --negatives ...`, see [`docs/negative_suite.md`](negative_suite.md)) the 40 tune negatives
-were used to choose the reject threshold (`negatives_used: true` in
-[`artifacts/production_freeze.json`](../artifacts/production_freeze.json)); the 40 test negatives were held out
-and evaluated once with r2's test run
-([`reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json`](../reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json)).
+[`artifacts/negative_manifests/`](../artifacts/negative_manifests/)) arrived after the r1 release. In the r2 and r3
+freezes (`scripts/freeze.py --negatives ...`, see [`docs/negative_suite.md`](negative_suite.md)) the 40 tune
+negatives were used to choose the reject threshold (`negatives_used: true` in
+[`artifacts/production_freeze.json`](../artifacts/production_freeze.json) for r3 and in
+[`artifacts/history/r2/production_freeze.json`](../artifacts/history/r2/production_freeze.json) for r2); the 40
+test negatives were held out and evaluated once with each iteration's test run (r3:
+[`reports/negatives_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`](../reports/negatives_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json)).
 
-Rule that holds for both: the test split is evaluated once per frozen bundle, and never re-run to pick a
-better-looking result. It was therefore evaluated twice in total, once for r1 (`92ffbae`) and once for r2
-(`cadcdc3`). The r1 test reports stay in `reports/` (their file names carry the r1 bundle id); the r2 reports
-carry the r2 bundle id.
+Rule that holds for all three: the test split is evaluated once per frozen bundle, and never re-run to pick a
+better-looking result. It was therefore evaluated three times in total, once for r1 (`92ffbae`), once for r2
+(`cadcdc3`) and once for r3 (`357a7cb`). The r1 and r2 test reports stay in `reports/` (their file names carry
+their bundle ids); the r3 reports carry the r3 bundle id. The standard Stanford Cars protocol (ground-truth
+crop instead of the detector, `scripts/evaluate_oracle.py`) is reported separately in the `oracle_test_*.json`
+files, for the frozen r2 bundle (`8ca670c`) and for r3 (`357a7cb`); it selects nothing.
 
 ## Problems found and fixed during the run
 
@@ -219,10 +247,18 @@ Earlier fixes on the development laptop, for completeness:
   Git did not timestamp.
 * Everything in P3-P5 on the development laptop used a frozen ImageNet backbone. Those tune-split numbers,
   in [`checkpoints/P3_P4_dev.md`](checkpoints/P3_P4_dev.md) and [`checkpoints/P5_dev.md`](checkpoints/P5_dev.md),
-  are development diagnostics, not results. Only the GPU-laptop bundles (r1, then r2) were evaluated on test,
-  once each.
+  are development diagnostics, not results. Only the GPU-laptop bundles (r1, r2, then r3) were evaluated on
+  test, once each.
 * r2 was designed after r1's test result was known. To keep that honest, the decision that r2 replaces r1
   whatever its test result was committed in [`NEXT.md`](../NEXT.md) (`4043f4e`) before r2's test run.
+* r3 was designed after r2's test result was known. Its release rule was stricter: it was committed in
+  [`NEXT.md`](../NEXT.md) (`794b237`) before r3 training started, it was decided on the tune split only
+  ([`reports/e2e_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json`](../reports/e2e_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json)),
+  and its outcome was committed and pushed (`e8ce629`, branch `r3-experiment`) before r3's single test run
+  (`357a7cb`). Had the rule failed, r3 would never have been evaluated on test.
+* r3's model files are not yet public: they are to be published as GitHub Release `model-v3` after the team's
+  approval, so r3's URLs in [`artifacts/release_manifest.json`](../artifacts/release_manifest.json) stay empty
+  until then.
 * The viewpoint labels (`reports/viewpoint_labels.csv`) and the blind second labelling pass
   ([`reports/viewpoint_label_check.json`](../reports/viewpoint_label_check.json)) were both made by agents, not
   by humans.

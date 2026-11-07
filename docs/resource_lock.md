@@ -1,5 +1,11 @@
 # P0 resource lock
 
+> **Historical snapshot.** This is the P0 record from 2026-11-06. Since then fine-tuning was done on
+> the GPU laptop (three runs: `effb0_r1`, `effb0_r2`, released `effb0_r3`; summaries in
+> [`reports/training/`](../reports/training/)) and hosting went live (see
+> [`docs/hosting_lock.md`](hosting_lock.md)). The items marked open or not provisioned below are
+> therefore closed.
+
 Recorded 2026-11-06. Values below were measured or observed on this date, not assumed.
 
 ## Compute

@@ -7,24 +7,34 @@ the diagrams below is a real file or function. When a diagram names a function, 
 
 **Release iterations.**
 
-* **r2** is the current release. It is run `effb0_r2` (`configs/train_v2.yaml`: full-network fine-tuning with a
-  cosine learning rate and label smoothing 0.1), backbone tag `ckpt_4f3584f597d5`, release bundle
-  `ft_ckpt_4f3584f597d5_9662c2e703` (the bundle at the freeze was `ft_ckpt_4f3584f597d5_c13883508a`), with its
-  model files on GitHub Release `model-v2`. Every step from `cache_features.py` onwards in
-  [section 4](#4-offline-training-and-evaluation-pipeline) was run again for r2: heads, development calibration,
+* **r3** is the current release. It is run `effb0_r3` (`configs/train_v3.yaml`: r2's full-network recipe with
+  the encoder input raised from 224 px to 320 px, same seed and data), backbone tag `ckpt_98b1fb55cc6e`, release
+  bundle `ft_ckpt_98b1fb55cc6e_5d755416fd` (the bundle at the freeze was `ft_ckpt_98b1fb55cc6e_f99e386191`). Its
+  model files are to be published as GitHub Release `model-v3`; until then their `url` fields in
+  `artifacts/release_manifest.json` are `null`. Every step from `cache_features.py` onwards in
+  [section 4](#4-offline-training-and-evaluation-pipeline) was run again for r3: heads, development calibration,
   a freeze whose reject threshold uses the 40 tune negatives (`negatives_used: true` in
-  `artifacts/production_freeze.json`), final calibration, a single test run, stress, analysis and the 40
-  held-out negatives. The production mode is hybrid. r2 is what the live container serves.
-* **r1** (`configs/train.yaml`, run `effb0_r1`, last-stage fine-tuning, tag `ckpt_2339418979e1`, bundle
+  `artifacts/production_freeze.json`), final calibration, a single test run, stress, analysis, the 40 held-out
+  negatives and the standard ground-truth-crop protocol (`scripts/evaluate_oracle.py`). The production mode is
+  hybrid. r3 is what the live container serves.
+* **r2** (`configs/train_v2.yaml`, run `effb0_r2`, full-network fine-tuning at 224 px, tag `ckpt_4f3584f597d5`,
+  bundle `ft_ckpt_4f3584f597d5_9662c2e703`, GitHub Release `model-v2`) was frozen with the tune negatives,
+  evaluated once on test and deployed. It is superseded; its freeze, calibration files, release config and
+  manifest are archived in [artifacts/history/r2/](../artifacts/history/r2/), and its test reports stay in
+  `reports/*_ft_ckpt_4f3584f597d5_9662c2e703.*`.
+* **r1** (`configs/train.yaml`, run `effb0_r1`, last-stage fine-tuning at 224 px, tag `ckpt_2339418979e1`, bundle
   `ft_ckpt_2339418979e1_0920511710`, GitHub Release `model-v1`) was frozen, evaluated once on test and deployed
-  first. It is superseded. Its freeze, calibration files, release config and release manifest are archived in
-  [artifacts/history/r1/](../artifacts/history/r1/), and its test reports stay in
-  `reports/*_ft_ckpt_2339418979e1_0920511710.json`.
-* r2 was designed after r1's test result was known. The decision that r2 replaces r1 whatever its result was
-  committed in [NEXT.md](../NEXT.md) ("Iteration r2 decision record") before r2's test run. The test split was
-  therefore evaluated once per iteration, twice in total. Both iterations are listed under "Model iterations"
-  in [eval_P5_T35.md](../eval_P5_T35.md). The architecture is the same for both; only the trained files and
-  reports differ.
+  first. It is superseded. Its files are archived in [artifacts/history/r1/](../artifacts/history/r1/), and its
+  test reports stay in `reports/*_ft_ckpt_2339418979e1_0920511710.json`.
+* Each later iteration was designed after the earlier test result was known, so each was pre-registered in
+  [NEXT.md](../NEXT.md) before its own test run: "Iteration r2 decision record" (r2 replaces r1 whatever its
+  result) and "Iteration r3 decision record" (r3 replaces r2 only if a tune-split rule is met; otherwise r3 never
+  touches test). The test split was therefore evaluated end to end once per iteration, three times in total;
+  the frozen r2 bundle also had one standard-protocol (ground-truth crop) test run after its result was known,
+  disclosed in the status line of [eval_P5_T35.md](../eval_P5_T35.md). All three are
+  listed under "Model iterations" in [eval_P5_T35.md](../eval_P5_T35.md). The architecture is the same for all
+  three; r3 differs only in its trained files, reports and the encoder input size, which travels with the
+  backbone file (section 2, "Encoder input size").
 
 The release in service at any moment is the one named in
 [artifacts/release_manifest.json](../artifacts/release_manifest.json) (`bundle_id`) and
@@ -64,8 +74,10 @@ flowchart LR
   time: `src/release.py` fetches release files during `docker build`, and readiness fails if a file is missing
   or has the wrong SHA256.
 * The trained files are not stored in Git. Their URLs and SHA256 hashes are listed in
-  `artifacts/release_manifest.json`. For the current release (r2) they are on GitHub Release `model-v2`; the
-  superseded r1 files stay on `model-v1`. `calibration_final.json`
+  `artifacts/release_manifest.json`. The current release (r3) is to be published as GitHub Release `model-v3`
+  (its manifest URLs stay `null` until then, so a build from a clean checkout cannot fetch them and would serve
+  detection only); the
+  superseded r2 and r1 files stay on `model-v2` and `model-v1`. `calibration_final.json`
   has no URL because it is stored in Git (`"in_git": true`).
 * Hosting details and the reason for this choice (Hugging Face Docker Spaces returned `402 Payment Required`)
   are in [docs/hosting_lock.md](hosting_lock.md). The public URL works only while the laptop, Docker Desktop and
@@ -96,7 +108,7 @@ flowchart TD
     NOBOX -- no --> NV["status no_vehicle<br/>make_passport gives detection_failed"]
     NOBOX -- yes --> CROP["expand_box 5% margin + crop_bounds<br/>src/vision/coordinates.py"]
     CROP --> HC["Predictor.classical, i.e. extract_classical<br/>src/vision/features.py<br/>HOG, LBP, HSV, geometry, flags = 1816 values<br/>+ gray / edges / contours views"]
-    CROP --> EMB["Predictor.learned<br/>src/models/inference.py + backbone.py<br/>EfficientNet-B0 pooled embedding, 1280-d"]
+    CROP --> EMB["Predictor.learned<br/>src/models/inference.py + backbone.py<br/>crop squashed to the backbone's input size<br/>EfficientNet-B0 pooled embedding, 1280-d"]
     HC --> HEAD["Predictor.score_features<br/>per-mode joblib head, src/models/heads.py<br/>classical: scaler + logistic regression on 1816<br/>deep: FusionFeatures learned only + LR<br/>hybrid: learned + PCA 64 of handcrafted + LR"]
     EMB --> HEAD
     EMB --> REF["references.query<br/>src/passport/references.py<br/>cosine top 3 of the curated training index"]
@@ -151,6 +163,22 @@ Notes on the flow, each checked against the code:
   work), `GET /benchmarks` (saved test reports for the bundle being served; not per-upload accuracy), `GET /`
   (the page).
 * `cnn_diagnostic` in the response is always `unavailable` ("optional; not implemented").
+* **Example row.** The page offers four one-tap examples (Audi R8, Lamborghini Aventador, 2021 Kia EV6,
+  motorcycle), Wikimedia Commons photos served as static files from `app/static/examples/`, with source,
+  author and licence in [app/static/examples/credits.json](../app/static/examples/credits.json). They go
+  through the same `POST /predict` path as any upload.
+
+### Encoder input size
+
+r1 and r2 run the encoder at 224 px; r3 runs it at 320 px. The size is not a runtime setting: it travels with
+the backbone file. `scripts/promote_bundle.py` writes `input_size` into a released backbone whose training
+config is not 224 (224 bundles stay byte-identical to the earlier releases), and
+`src/models/backbone.py: backbone_input_size` reads it back (released file, else the training checkpoint's
+config, else 224). `Predictor` (`src/models/inference.py`), `scripts/cache_features.py`, `scripts/optimize.py`
+and `src/models/export_onnx.py` all take the size from there, and `crop_to_tensor` squashes the crop to it.
+`preprocess_version(size)` puts the size into the version string (`crop_squash<size>_bilinear_imagenetnorm_v1`),
+which is part of the feature-cache sidecars (`src/models/cache_io.py`) and of the app's `encoder_version`, so a
+cache or reference index made at another size is refused. This is tested in `tests/test_input_size.py`.
 
 ### Start-up and readiness
 
@@ -174,7 +202,8 @@ flowchart LR
 `artifacts/release_config.json`, which `scripts/promote_bundle.py` writes. These overrides set the backbone
 file, its tag and status text, the calibration file and the precision. The encoder runs in PyTorch unless
 `encoder_runtime` (or the `SEMEVIA_ENCODER_RUNTIME` environment variable) is `onnx_fp32` and the ONNX file is
-in the build. The current release uses `torch`.
+in the build. The current release uses `torch`. The encoder input size is not among the overrides; it is read
+from the backbone file (see "Encoder input size" above).
 
 ## 3. Sequence of one upload
 
@@ -256,10 +285,11 @@ flowchart TD
     S17["17 report_robustness.py --subset stress_test"]:::rep
     S18["18 analyze_results.py --partition test<br/>viewpoints + rule-based failures"]:::held
     S19["19 evaluate_negatives.py --partition test<br/>40 held-out negatives"]:::held
+    S19b["19b evaluate_oracle.py --partition test --confirm-frozen<br/>standard protocol: ground-truth crop"]:::held
     S20["20 report.py --team-id T35<br/>writes eval_P5_T35.md"]:::rep
 
     S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8 --> S9 --> S10 --> S11 --> S12
-    S12 --> S13 --> S14 --> S15 --> S16 --> S17 --> S18 --> S19 --> S20
+    S12 --> S13 --> S14 --> S15 --> S16 --> S17 --> S18 --> S19 --> S19b --> S20
 ```
 
 Blue: train and tune only. Orange: freeze / promotion (writes no new predictions). Pink: held-out data,
@@ -269,8 +299,8 @@ locked until the freeze. Grey: reads reports only.
 |---|---|---|---|---|
 | 1 | `scripts/prepare_data.py` | Checks published checksums, decodes every image, audits boxes and duplicates, assigns partitions (`src/data/manifest.py: assign_partitions`), fails if partitions overlap | all raw Stanford Cars files (audit only) | `artifacts/manifests/*_m1.csv`, `manifest_index.json`, `artifacts/class_metadata.json`, `reports/data_audit.json` |
 | 2 | `scripts/declare_subsets.py` | Fixes stress and viewpoint subsets by seed. No model output is read | manifest keys and labels of test and tune | `stress_test_m1.csv` (392 = 2 per class), `stress_tune_m1.csv`, `viewpoint_test_m1.csv` (60), `subsets_index.json` |
-| 3 | `scripts/train.py` -> `src/models/training.py: run` | Head stage, then a fine-tuning stage. r1 unfreezes `features.7`/`features.8`. r2 unfreezes all of `features` with a cosine LR and label smoothing | train (fitting), tune (model selection, early stopping) | `runs/<run>/best_finetuned.pt` in the artifact store, `reports/training/*` |
-| 4 | `scripts/cache_features.py` | 1816-d classical and 1280-d learned features on annotation crops, tagged `ckpt_<sha12>` | train, tune | feature caches in the artifact store |
+| 3 | `scripts/train.py` -> `src/models/training.py: run` | Head stage, then a fine-tuning stage. r1 unfreezes `features.7`/`features.8`. r2 unfreezes all of `features` with a cosine LR and label smoothing. r3 is r2's recipe at `input_size: 320` | train (fitting), tune (model selection, early stopping) | `runs/<run>/best_finetuned.pt` in the artifact store, `reports/training/*` |
+| 4 | `scripts/cache_features.py` | 1816-d classical and 1280-d learned features on annotation crops, tagged `ckpt_<sha12>`; the encoder input size comes from the backbone file | train, tune | feature caches in the artifact store |
 | 5 | `scripts/fit_heads.py` | Logistic-regression heads. C is chosen from a fixed grid by tune top-1. Scalers and PCA are fit on train rows only | train, tune | head joblibs, `reports/classical_tune.json`, `reports/heads_tune_<tag>.json` |
 | 6 | `scripts/calibrate.py --development` | Development temperature, threshold and quantile from tune predictions | tune | `artifacts/development_calibration.json` (`kind: development`) |
 | 7 | `scripts/build_references.py` | 3 training images per class nearest the class centroid. `validate_index` refuses any tune, calibration or test key | train (index), tune (retrieval diagnostic) | `artifacts/store/release/reference_index.npz/.json`, `reports/references_tune_<tag>.json` |
@@ -286,7 +316,8 @@ locked until the freeze. Grey: reads reports only.
 | 17 | `scripts/report_robustness.py --subset stress_test` | Compares each condition with clean on the same images | reports only | `reports/robustness_stress_test_<bundle>.json/.md` |
 | 18 | `scripts/analyze_results.py --partition test` | Viewpoint subgroups (60 labelled photos) and rule-based failure cases with an annotation-crop check | test predictions, `reports/viewpoint_labels.csv`, failure images | `reports/analysis_test_<bundle>.json` |
 | 19 | `scripts/evaluate_negatives.py --partition test` | Held-out unsupported images | `negatives_test.csv` (40; locked until a freeze file exists) | `reports/negatives_test_<bundle>.json` |
-| 20 | `scripts/report.py --team-id T35 --usns ... [--readme]` | Builds the evaluation file. Reports are chosen by bundle id and backbone tag, never by "latest file". It lists earlier releases archived under `artifacts/history/*/` (r1 is in `artifacts/history/r1/`) | reports and artifacts only | `eval_P5_T35.md` (and the README results block) |
+| 19b | `scripts/evaluate_oracle.py --partition test --confirm-frozen` | Standard Stanford Cars protocol, added for r3: the frozen encoder and heads classify the ground-truth box crop (same 5% margin, no detector), so the result is comparable with published numbers. Refuses to run unless the release matches the freeze; nothing is selected from it | test (after the freeze) | `reports/oracle_test_<bundle>.json` |
+| 20 | `scripts/report.py --team-id T35 --usns ... [--readme]` | Builds the evaluation file. Reports are chosen by bundle id and backbone tag, never by "latest file". It lists earlier releases archived under `artifacts/history/*/` (r1 and r2) | reports and artifacts only | `eval_P5_T35.md` (and the README results block) |
 
 Side steps:
 
@@ -295,6 +326,11 @@ Side steps:
 * `python -m src.models.export_onnx` makes a parity-checked FP32 ONNX encoder (optional; unused by the current
   release).
 * `scripts/evaluate.py --subset stress_tune` checks the stress tooling on tune data.
+* `scripts/make_figures.py` draws the report figures in `reports/figures/` from saved report files (no number
+  typed in); iterations come from `artifacts/history/*/` plus the current release.
+* `scripts/record_demo.py` records a silent, captioned demo video of the live URL with Playwright (separate
+  environment, not in `requirements.lock`), following `docs/demo.md`. It only uploads photos to the public
+  page; nothing is selected from it.
 
 The viewpoint labels were made by an agent before any test result existed. A blind second pass by six
 separate agents is recorded in [reports/viewpoint_label_check.json](../reports/viewpoint_label_check.json).
@@ -367,6 +403,16 @@ Other guards in the code:
 These rules are tested with fixtures in `tests/test_calibration_freeze.py`, `tests/test_reference_index.py` and
 `tests/test_bundle_parity.py`.
 
+### Continuous integration
+
+[.github/workflows/ci.yml](../.github/workflows/ci.yml) runs on pushes to `semevia/implementation` and `main`
+and on pull requests. Job `tests` installs `requirements.lock` (CPU PyTorch), runs
+`python -m src.release fetch` and `verify`, then the whole `tests/` suite (tests that need Stanford Cars images
+skip themselves, because the dataset is not redistributed). Job `container` builds the Dockerfile from a clean
+checkout, starts it with `--network none` and requires `/readyz` to report `ready` and `recognition` true.
+Because the build fetches model files from their manifest URLs, the container job can pass for r3 only once
+its files are published as `model-v3`.
+
 ## 6. Deployment and release
 
 ```mermaid
@@ -407,6 +453,10 @@ flowchart LR
   [eval_P5_T35.md](../eval_P5_T35.md).
 * `scripts/prepare_hf_space.py` packages the same Dockerfile for a Hugging Face Docker Space. That host was not
   used (see `docs/hosting_lock.md`).
+* **Changing the release behind the live URL.** Each iteration (r2, then r3) was deployed the same way: promote
+  the bundle, rebuild the image, restart the container, then re-run `scripts/check_container.py` and
+  `scripts/check_release.py`. The tunnel was not restarted, so the public URL stayed the same; it now serves
+  r3. Readiness and every response carry the bundle id, so the served release can be checked from outside.
 
 ## 7. Module map
 
@@ -419,7 +469,7 @@ flowchart LR
 | `src/vision/proposals.py` | `propose`: classical contour ROI proposal used by classical mode |
 | `src/vision/features.py` | `extract_classical`: HOG 1764, LBP 10, HSV 32, geometry 8, flags 2 = 1816; processing views |
 | `src/models/detector.py` | `VehicleDetector` (YOLO11n on CPU, car/bus/truck to vehicle), `select_target` (largest box with score at least 0.25) |
-| `src/models/backbone.py` | EfficientNet-B0 build, `crop_to_tensor` (224 squash, ImageNet normalisation), `embed_and_logits` (1280-d), freezing helpers |
+| `src/models/backbone.py` | EfficientNet-B0 build, `backbone_input_size` and `preprocess_version` (input size read from the backbone file: 224 for r1/r2, 320 for r3), `crop_to_tensor` (square squash to that size, ImageNet normalisation), `embed_and_logits` (1280-d), freezing helpers |
 | `src/models/training.py` | Resumable staged training, augmentation, cosine schedule, label smoothing, `best_finetuned.pt` |
 | `src/models/heads.py` | `FusionFeatures` (branch scaling, PCA 64), `canonical_logits`, `softmax`, `topk_accuracy` |
 | `src/models/inference.py` | `Predictor`, `CropInput`: one scoring path shared by the app, evaluation, negatives and the challenge |
@@ -438,11 +488,15 @@ flowchart LR
 | `src/evaluation/analysis.py` | Viewpoint subgroup tables and rule-based failure selection |
 | `src/evaluation/hardware.py` | CPU label for timing reports |
 | `scripts/*.py` | Offline pipeline steps (section 4) and deployment checks (section 6) |
-| `configs/data.yaml`, `train.yaml`, `train_v2.yaml`, `features.yaml`, `heads.yaml`, `calibration.yaml`, `evaluation.yaml`, `runtime.yaml` | Fixed settings: data and splits, the r1 and r2 training recipes, feature contract, head grids, calibration targets, stress and viewpoint subsets, runtime limits |
+| `configs/data.yaml`, `train.yaml`, `train_v2.yaml`, `train_v3.yaml`, `features.yaml`, `heads.yaml`, `calibration.yaml`, `evaluation.yaml`, `runtime.yaml` | Fixed settings: data and splits, the r1, r2 and r3 training recipes, feature contract, head grids, calibration targets, stress and viewpoint subsets, runtime limits |
 | `artifacts/manifests/`, `artifacts/negative_manifests/` | Frozen split and subset manifests; negative suite sources |
-| `artifacts/release_manifest.json`, `release_config.json`, `production_freeze.json`, `calibration_final.json`, `class_metadata.json` | Release definition, freeze record, final calibration, class hierarchy |
+| `artifacts/release_manifest.json`, `release_config.json`, `production_freeze.json`, `calibration_final.json` | Release definition, freeze record, final calibration (all describe r3) |
+| `artifacts/class_metadata.json` | Fixed 196-class hierarchy; the same for every iteration (does not depend on r1, r2 or r3) |
+| `artifacts/history/r1/`, `artifacts/history/r2/` | Archived freeze, calibrations, release config and manifest of the superseded iterations |
+| `app/static/examples/` | One-tap example photos (Wikimedia Commons) and `credits.json` |
 | `Dockerfile`, `compose.yaml`, `.dockerignore`, `requirements-infer.txt` | Inference image and how it runs |
-| `tests/` | Fixture and contract tests for data, coordinates, features, detector policy, Passport, calibration and freeze, references, challenge, upload, prediction contract, bundle parity |
+| `.github/workflows/ci.yml` | CI: test suite with fetched and verified release assets; clean-build container that must reach ready offline |
+| `tests/` | Fixture and contract tests for data, coordinates, features, detector policy, Passport, calibration and freeze, references, challenge, upload, prediction contract, bundle parity, encoder input size, training contract |
 
 ## 8. Known architectural limitations
 
@@ -462,3 +516,10 @@ flowchart LR
   The held-out negative step checks that a freeze exists but not its fingerprint.
 * **Challenge cells are geometric**, not car parts. A positive `delta` means the prediction is sensitive to that
   region under blur. It does not prove the region identifies the car.
+* **Test split used three times.** One end-to-end run per iteration (r1, r2, r3), plus one standard-protocol
+  (ground-truth crop) run of the frozen r2 bundle after its result was known (`8ca670c`, disclosed in the status
+  line of [eval_P5_T35.md](../eval_P5_T35.md)). r2 and r3 were each pre-registered in
+  [NEXT.md](../NEXT.md) before their own test run, and all three results are published.
+* **Release files pending.** Until r3's files are published as `model-v3`, the manifest URLs are `null` and a
+  clean build (including CI's container job) cannot fetch the recognition files.
+* Open limitations are also tracked as GitHub issues #1-#5 on the repository.

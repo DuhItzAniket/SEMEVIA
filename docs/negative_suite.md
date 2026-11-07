@@ -9,11 +9,17 @@ Wikimedia Commons under CC0, public domain, CC BY or CC BY-SA. Each row of
 Collection was done by four AI agents (one per bucket) that checked licences through the Commons API, looked at
 every image, and confirmed the `unlisted_car_model` cars are not among the 196 classes; tune and test use
 different photos and mostly different subjects. Images are stored outside Git (`SEMEVIA_NEG_ROOT`, on the team
-laptop `C:\semevia\negatives`). The tune half fed `scripts/freeze.py --negatives` at the r2 freeze
-([reports/negatives_tune_ft_ckpt_4f3584f597d5_c13883508a.json](../reports/negatives_tune_ft_ckpt_4f3584f597d5_c13883508a.json));
-the test half was evaluated once after the freeze
-([reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json](../reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json)),
+laptop `C:\semevia\negatives`). The tune half fed `scripts/freeze.py --negatives`, which chose the reject
+threshold at the freeze of the released iteration r3
+([reports/negatives_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json](../reports/negatives_tune_ft_ckpt_98b1fb55cc6e_f99e386191.json));
+the test half was evaluated once after that freeze
+([reports/negatives_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json](../reports/negatives_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json)),
 and its false-acceptance table is in [eval_P5_T35.md](../eval_P5_T35.md) (section 6).
+
+History: r2 was frozen and tested the same way
+([tune](../reports/negatives_tune_ft_ckpt_4f3584f597d5_c13883508a.json),
+[test](../reports/negatives_test_ft_ckpt_4f3584f597d5_9662c2e703.json)); r1 was frozen before the suite existed,
+without `--negatives`.
 
 ## Target (plan)
 
