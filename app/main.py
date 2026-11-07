@@ -253,11 +253,15 @@ def _run_pipeline(data: bytes, rid: str, mode: str, t_queue: float) -> dict:
         t2 = time.perf_counter()
         props = propose(img.rgb)
         timings["proposal_ms"] = round((time.perf_counter() - t2) * 1000, 1)
+        # When no contour box passes the filters, the app analyses the whole image instead of stopping, and says so.
+        # The evaluated baseline (propose, eval section 2) is unchanged: there a missing proposal counts as a failure.
+        whole = [0.0, 0.0, float(img.width), float(img.height)]
         resp["detection"]["classical_proposal"] = {
             "state": "proposed" if props else "no_proposal",
-            "box": props[0].box if props else None, "score": props[0].score if props else None,
+            "box": props[0].box if props else whole, "score": props[0].score if props else None,
+            "fallback": None if props else "whole_image",
             "rule": "contour proposal: bounded area/edge-support score (not a probability)"}
-        target_box = props[0].box if props else None
+        target_box = props[0].box if props else whole
 
     rec: dict = {"images": images, "mode": mode}
     if target_box is None:

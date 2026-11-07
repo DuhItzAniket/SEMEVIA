@@ -73,6 +73,11 @@ h3 { font-size: .95rem; margin: 18px 0 6px; }
 .drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
 .drop:focus-within { outline: 3px solid var(--signal); outline-offset: 2px; }
 .drop-icon { grid-row: span 2; width: 40px; height: 40px; color: var(--signal); }
+.drop-thumb { grid-row: span 2; width: 64px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid var(--rule); background: #000; }
+.drop.has-file .drop-icon { display: none; }
+.drop.has-file .drop-text { font-weight: 600; overflow-wrap: anywhere; }
+details.tech { margin-top: 12px; }
+details.tech summary { font: 600 .72rem/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
 .drop-icon svg { width: 40px; height: 40px; }
 .drop-text { font-size: 1rem; }
 .drop-hint { font: .78rem/1.4 var(--mono); color: var(--ink-3); overflow-wrap: anywhere; }
@@ -201,12 +206,17 @@ button.ex em.un { color: var(--ink-3); }
 .ch-buttons button:hover { border-color: var(--ink); }
 .ch-buttons button[aria-pressed=true] { border: 2px solid var(--box); }
 .ch-buttons .pos { color: var(--ok); font-weight: 700; } .ch-buttons .neg { color: var(--bad); font-weight: 700; }
+.table-scroll { overflow-x: auto; }
+.cmp-table caption { text-align: left; caption-side: top; padding-bottom: 4px; }
+.cmp-table td:nth-child(n+3) { font-family: var(--mono); }
+.cmp-table td { font-size: .82rem; }
+.cmp-table tr.active td { background: var(--paper); font-weight: 600; }
 .ch-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .84rem; }
 .ch-table th, .ch-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule-2); }
 .ch-table th { font: 600 .72rem/1.3 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); }
-.ch-table td:nth-child(2), .ch-table td:nth-child(3) { font-family: var(--mono); }
+.ch-table:not(.cmp-table) td:nth-child(2), .ch-table:not(.cmp-table) td:nth-child(3) { font-family: var(--mono); }
 .ch-table caption { text-align: left; padding-bottom: 6px; }
-@media (max-width: 560px) { .ch-table th:nth-child(2), .ch-table td:nth-child(2) { display: none; } }
+@media (max-width: 560px) { .ch-table:not(.cmp-table) th:nth-child(2), .ch-table:not(.cmp-table) td:nth-child(2) { display: none; } }
 
 /* processing views */
 .views { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 6px; }

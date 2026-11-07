@@ -8,6 +8,12 @@ Fine-tuning: run `effb0_r3` (EfficientNet-B0, ImageNet weights, 320 px input; st
 
 Test protocol: end-to-end on every test image (8041 images, manifest `5eb7f6150857`); a prediction counts only if the runtime-selected box has IoU >= 0.5 with the annotation and the class is right (misses count as failures). Classical mode uses the contour-proposal box; deep and hybrid use the YOLO11n primary target. Source `reports/e2e_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`.
 
+Dataset: Stanford Cars, 16,185 images in 196 categories (49 makes, model years 1991-2012); official split 8,144 train / 8,041 test. Every image's bounding box and make/model/year label are used. The official train split is divided by a fixed seed into train 6,514 / tune 815 / calibration 815; the test split is only used for the runs listed here (`reports/data_audit.json`).
+
+Preprocessing: uploads are checked (at most 10 MB and 25 MP, formats JPEG, PNG, WEBP, BMP, MPO), EXIF-rotated, flattened to RGB and capped at a 1600 px long edge. The detected box is expanded by 5% and cropped. Classical branch: grayscale, Gaussian blur (kernel 5), Canny (50/150), morphological close, external contours, all on a 256 px aspect-preserving resize; HOG and uniform LBP on a 128x128 grayscale ROI; HSV histograms normalised per channel (1816 features, version `hc_v1`, standardised before the heads). Deep branch: square resize to the training input size (320 px) and ImageNet mean/std normalisation.
+
+Role of the classical branch: it gives the interpretable views and measurements shown in the app, a fully classical mode (contour box plus handcrafted features), and 64 PCA components of the handcrafted features that the hybrid head concatenates with the CNN embedding. On clean test images it adds no accuracy over the fine-tuned CNN (deep vs hybrid in section 1, ablations in section 7); its effect under stress conditions is in section 5.
+
 ## Model iterations (each evaluated once on test after its own freeze)
 
 | Iteration | Backbone | Production mode | Hybrid E2E top-1 | Deep E2E top-1 | Hybrid E2E top-5 | Source |
@@ -158,6 +164,17 @@ Natural viewpoint subgroups: 60 seeded random test photos (disjoint from the str
 | side | 8 | 75.0% (6) | 87.5% (7) | 75.0% (6) | 87.5% (7) |
 | three_quarter_front | 36 | 94.4% (34) | 100.0% (36) | 97.2% (35) | 100.0% (36) |
 | three_quarter_rear | 6 | 100.0% (6) | 100.0% (6) | 100.0% (6) | 100.0% (6) |
+
+Native resolution: all 8,041 test images grouped by the width of the annotated car box in the original photo (bins fixed in `scripts/analyze_resolution.py` before computing; from the saved test predictions, no new test run; `reports/resolution_test_ft_ckpt_98b1fb55cc6e_5d755416fd.json`).
+
+| Car box width | Photos | deep E2E top-1 | hybrid E2E top-1 |
+|---|---|---|---|
+| under 150 px | 102 | 78.4% (80) | 78.4% (80) |
+| 150-299 px | 1,609 | 91.7% (1476) | 91.8% (1477) |
+| 300-499 px | 2,173 | 92.2% (2004) | 92.2% (2003) |
+| 500 px and over | 4,157 | 92.0% (3825) | 91.9% (3822) |
+
+Natural occlusion in the labelled sample: deep: none 51/56, partial 4/4; hybrid: none 52/56, partial 4/4. Labelled sample from reports/viewpoint_labels.csv (team review pending); groups are tiny and descriptive only.
 
 ## 6. Confidence and threshold analysis
 

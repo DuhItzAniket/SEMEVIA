@@ -91,7 +91,7 @@ def main() -> None:
              "Team Hypermetropia (T35) - Computer Vision Hackathon 2026 - Problem statement PS5", 5)
 
         pg.goto(a.url, wait_until="networkidle")
-        pg.wait_for_function("document.getElementById('ready').textContent.includes('ready')", timeout=60000)
+        pg.wait_for_function("document.getElementById('ready').classList.contains('on')", timeout=60000)
         cap("Live public URL. Upload a car photo, choose a mode (Hybrid = classical + deep), press Analyze.")
         hold(4)
 

@@ -151,6 +151,7 @@ def main() -> None:
         status.append("Final values read *pending* until the official test run.")
     status.append("Tune-split numbers are selection-set diagnostics and are optimistic.")
     L += ["Status: " + " ".join(status), ""]
+    size = None
     if train_sum:
         unfrozen = sorted({k for h in train_sum["history"] for k, v in (h.get("pretrained_changed") or {}).items() if v})
         stages = sorted({h["stage"] for h in train_sum["history"]}, key=lambda s: [h["stage"] for h in train_sum["history"]].index(s))
@@ -177,6 +178,34 @@ def main() -> None:
               f"`{test['population']['manifest_sha256'][:12]}`); a prediction counts only if the runtime-selected box has "
               f"IoU >= 0.5 with the annotation and the class is right (misses count as failures). Classical mode uses the "
               f"contour-proposal box; deep and hybrid use the YOLO11n primary target. Source `reports/{test_f}`.", ""]
+    audit = read("reports/data_audit.json")
+    if audit:
+        tc, sc, parts, md = audit["train_coverage"], audit["test_coverage"], audit["partitions"], audit["metadata"]
+        L += [f"Dataset: Stanford Cars, {tc['annotated'] + sc['annotated']:,} images in {md['num_classes']} categories "
+              f"({md['num_makes']} makes, model years {md['years'][0]}-{md['years'][-1]}); official split {tc['annotated']:,} train / "
+              f"{sc['annotated']:,} test. Every image's bounding box and make/model/year label are used. The official train split "
+              f"is divided by a fixed seed into train {parts['train']['count']:,} / tune {parts['tune']['count']:,} / calibration "
+              f"{parts['calibration']['count']:,}; the test split is only used for the runs listed here "
+              f"(`reports/data_audit.json`).", ""]
+    import yaml as _yy
+
+    fc = _yy.safe_load((ROOT / "configs/features.yaml").read_text(encoding="utf-8"))
+    up = _yy.safe_load((ROOT / "configs/runtime.yaml").read_text(encoding="utf-8"))["upload"]
+    hc = _yy.safe_load((ROOT / "configs/heads.yaml").read_text(encoding="utf-8"))
+    pca = next((v["pca_components"] for v in hc.values() if isinstance(v, dict) and v.get("pca_components")), None)
+    L += [f"Preprocessing: uploads are checked (at most {up['max_bytes'] // 1048576} MB and {up['max_pixels'] / 1e6:.0f} MP, "
+          f"formats {', '.join(up['allowed_formats'])}), EXIF-rotated, flattened to RGB and capped at a {up['max_long_edge']} px long "
+          f"edge. The detected box is expanded by {int(fc['crops']['margin'] * 100)}% and cropped. Classical branch: grayscale, "
+          f"Gaussian blur (kernel {fc['smoothing']['gaussian_ksize']}), Canny ({fc['canny']['low']}/{fc['canny']['high']}), "
+          f"morphological close, external contours, all on a {fc['geometry_long_edge']} px aspect-preserving resize; HOG and "
+          f"uniform LBP on a {fc['roi_size']}x{fc['roi_size']} grayscale ROI; HSV histograms normalised per channel "
+          f"({fc['lengths']['total']} features, version `{fc['feature_version']}`, standardised before the heads). Deep branch: "
+          f"square resize to the training input size" + (f" ({size} px)" if size else "") + " and ImageNet mean/std normalisation.", ""]
+    L += [f"Role of the classical branch: it gives the interpretable views and measurements shown in the app, a fully "
+          f"classical mode (contour box plus handcrafted features), and {pca or 'a reduced set of'} PCA components of the "
+          f"handcrafted features that the hybrid head concatenates with the CNN embedding. On clean test images it adds "
+          f"no accuracy over the fine-tuned CNN (deep vs hybrid in section 1, ablations in section 7); its effect under "
+          f"stress conditions is in section 5.", ""]
 
     hist = []
     for f in sorted(glob.glob(str(ROOT / "artifacts/history/*/release_config.json"))):
@@ -372,6 +401,23 @@ def main() -> None:
         L.append("")
     else:
         L += ["Natural viewpoint subgroups (labelled test photos): pending.", ""]
+    res, res_f = find(f"resolution_test_{bundle}.json")
+    if res:
+        bw = res["by_box_width"]
+        ms = list(bw)
+        L += [f"Native resolution: all {sum(c['count'] for c in bw[ms[0]].values()):,} test images grouped by the width of the "
+              f"annotated car box in the original photo (bins fixed in `scripts/analyze_resolution.py` before computing; "
+              f"from the saved test predictions, no new test run; `reports/{res_f}`).", "",
+              "| Car box width | Photos | " + " | ".join(f"{m} E2E top-1" for m in ms) + " |",
+              "|---|---|" + "---|" * len(ms)]
+        for g in res["width_bins"]:
+            if g in bw[ms[0]]:
+                L.append(f"| {g} | {bw[ms[0]][g]['count']:,} | " + " | ".join(
+                    f"{pct(bw[m][g]['top1_rate'])} ({bw[m][g]['top1']})" for m in ms) + " |")
+        oc = res["by_natural_occlusion"]
+        L += ["", "Natural occlusion in the labelled sample: " + "; ".join(
+            f"{m}: " + ", ".join(f"{g} {v['top1']}/{v['count']}" for g, v in oc[m].items()) for m in oc)
+              + f". {res['occlusion_note']}", ""]
 
     # 6 -----------------------------------------------------------------------------------------
     L += ["## 6. Confidence and threshold analysis", ""]

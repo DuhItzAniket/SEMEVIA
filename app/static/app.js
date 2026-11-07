@@ -1,7 +1,7 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const form = $('form'), file = $('file'), analyze = $('analyze'), reset = $('reset'), status = $('status');
-  const cards = ['result', 'verdict', 'pred-card', 'passport-card', 'challenge-card', 'ref-card', 'proc-card', 'record-card'];
+  const cards = ['result', 'verdict', 'pred-card', 'passport-card', 'challenge-card', 'ref-card', 'proc-card', 'cmp-card', 'record-card'];
   let generation = 0, current = null, challenge = null, showAll = false, challengeBusy = false;
 
   const setStatus = (el, text, kind) => { el.textContent = text; el.className = 'status' + (kind ? ' ' + kind : ''); };
@@ -11,24 +11,27 @@
 
   fetch('/readyz').then(r => r.json()).then(d => {
     if (!d.ready) { $('ready').textContent = 'Service not ready: ' + (d.reasons || []).join('; '); $('ready').className = 'ready off'; return; }
-    $('ready').textContent = `Service ready · ${d.detector} · ` + (d.recognition ? `modes ${d.modes.join(', ')}` : 'detection only');
+    $('ready').textContent = d.recognition ? 'Online' : 'Online · detection only';
     $('ready').className = 'ready on';
-    const note = $('build-note');
-    note.hidden = false;
-    note.textContent = d.recognition
-      ? `Model: ${d.backbone}; ${d.calibration_kind} calibration.` + (d.calibration_kind === 'final'
-          ? ' Release bundle frozen before the official test evaluation.'
-          : ' Development calibration: this is not the final release.')
-      : `Development build: vehicle detection only. ${d.recognition_reason || ''}`;
+    $('ready').title = `${d.backbone || ''} · ${d.calibration_kind || ''} calibration · ${d.detector} · bundle ${d.bundle_id}`;
     if (!d.recognition) $('modes').hidden = true;
   }).catch(() => { $('ready').textContent = 'Service unreachable.'; $('ready').className = 'ready off'; });
 
   const drop = $('drop'), dropName = $('drop-name'), dropHint = dropName.textContent;
+  const dropText = $('drop-text'), dropTextHtml = dropText.innerHTML, thumb = $('drop-thumb');
+  let thumbUrl = null;
   const showFile = () => {
     const f = file.files[0];
     drop.classList.toggle('has-file', !!f);
-    dropName.textContent = f ? `${f.name} · ${(f.size / 1048576).toFixed(1)} MB` : dropHint;
+    if (thumbUrl) { URL.revokeObjectURL(thumbUrl); thumbUrl = null; }
+    if (f && f.type.startsWith('image/')) {
+      thumbUrl = URL.createObjectURL(f);
+      thumb.src = thumbUrl; thumb.hidden = false;
+    } else { thumb.hidden = true; thumb.removeAttribute('src'); }
+    if (f) { dropText.textContent = f.name; dropName.textContent = `${(f.size / 1048576).toFixed(1)} MB · ready to analyze · click to change`; }
+    else { dropText.innerHTML = dropTextHtml; dropName.textContent = dropHint; }
   };
+  thumb.addEventListener('error', () => { thumb.hidden = true; });
   file.addEventListener('change', () => { generation++; analyze.disabled = !file.files.length; setStatus(status, ''); showFile(); });
   ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
   ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, () => drop.classList.remove('over')));
@@ -39,7 +42,12 @@
     const dt = new DataTransfer(); dt.items.add(f); file.files = dt.files;
     file.dispatchEvent(new Event('change', { bubbles: true }));
   });
-  reset.addEventListener('click', () => { generation++; form.reset(); analyze.disabled = true; hideAll(); setStatus(status, ''); current = null; challenge = null; showFile(); });
+  // The button's id "reset" shadows form.reset (named form controls become form properties), so call the native method.
+  reset.addEventListener('click', () => {
+    generation++; HTMLFormElement.prototype.reset.call(form); analyze.disabled = true; hideAll();
+    setStatus(status, ''); current = null; challenge = null; showFile();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
   document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', () => { generation++; }));
 
   const drawBoxes = (resp) => {
@@ -56,7 +64,7 @@
     const cp = det.classical_proposal;
     (det.candidates || []).forEach((c, i) => add(c.box, !cp && i === det.selected_index,
       !cp && i === det.selected_index ? labelFor(resp, c.score) : null));
-    if (cp && cp.box) add(cp.box, true, `classical proposal ${cp.score.toFixed(2)}`);
+    if (cp && cp.box) add(cp.box, true, cp.fallback ? 'no contour box · whole image analysed' : `classical proposal ${cp.score.toFixed(2)}`);
   };
 
   const labelFor = (resp, detScore) => {
@@ -65,8 +73,8 @@
     if (!p.available || !p.top5.length) return base;
     const top = p.top5[0];
     const st = resp.passport && resp.passport.decision_state;
-    if (st === 'rejected' || st === 'inadequate') return `not verified (best guess ${top.name}) | ${base}`;
-    return `${top.name} (${pct(top.score)} cls) | ${base}`;
+    if (st === 'rejected' || st === 'inadequate') return `not verified · ${base}`;
+    return `${top.name} · ${pct(top.score)}`;
   };
 
   const renderPrediction = (resp) => {
@@ -75,7 +83,7 @@
     if (!p.available) return;
     const rejected = pp.decision_state === 'rejected';
     $('pred-h').textContent = rejected ? 'Diagnostic guesses, unverified' : 'Best guess (ordinary prediction)';
-    $('pred-label').textContent = `${p.score_type}. Classification score is separate from the detector score.`;
+    $('pred-label').textContent = p.calibrated ? 'Calibrated confidence' : 'Uncalibrated score (comparison mode)';
     const ol = $('top5'); ol.replaceChildren();
     p.top5.forEach(c => {
       const li = el('li');
@@ -105,7 +113,7 @@
     $('pp-dev').textContent = ms.calibration_kind === 'development'
       ? 'Development calibration (tuning data). The 90% target is a population-level setting, not the probability that this result is correct, and no coverage claim applies yet.'
       : (ms.calibration_kind === 'final'
-        ? 'Calibrated on 815 held-out images. The 90% target is a population-level property for supported categories, not the probability that this result is correct; it does not cover unsupported vehicles.' : '');
+        ? 'Calibrated on 815 held-out images to contain the true car 90% of the time (for the 196 supported models).' : '');
     $('pp-dev').hidden = !$('pp-dev').textContent;
     let text = STATE_TEXT[pp.decision_state] || pp.decision_state;
     const spec = pp.specificity;
@@ -114,7 +122,13 @@
     $('pp-state').textContent = text;
     const reasons = [];
     if (spec && spec.unresolved && spec.unresolved.length) reasons.push(spec.unresolved.join('; '));
-    if (pp.reason_codes && pp.reason_codes.length) reasons.push('Reasons: ' + pp.reason_codes.join(', '));
+    const REASON = { max_probability_below_reject_threshold: 'the top score is below the reject threshold',
+      empty_candidate_set: 'no category passed the calibrated threshold', no_shared_make: 'the remaining candidates differ in make',
+      no_shared_family: 'the remaining candidates differ in model', no_vehicle: 'no vehicle was detected',
+      no_eligible_detection: 'no car, bus or truck was detected', no_prediction: 'no prediction was made',
+      no_matching_calibration_bundle: 'this mode has no calibration', specificity_make: 'only the make is certain',
+      specificity_family: 'only the make and model are certain' };
+    if (pp.reason_codes && pp.reason_codes.length) reasons.push('Why: ' + pp.reason_codes.map(c => REASON[c] || c.replace(/_/g, ' ')).join('; '));
     $('pp-reason').textContent = reasons.join('. ');
     const cands = pp.candidates || [];
     const failure = pp.candidate_set_is_failure_convention;
@@ -204,13 +218,14 @@
       if (r.agrees_with_best_guess && !r.agrees_with_best_guess[i]) li.appendChild(el('div', 'Differs from the best guess.', 'muted small'));
       ol.appendChild(li);
     });
-    $('ref-note').textContent = 'Thumbnails are not shown: Stanford Cars images are licensed for non-commercial research only, so this public page shows identifiers, labels and similarity. Index ' + r.index_id + '.';
+    $('ref-note').textContent = 'Training photos are not shown (Stanford Cars is licensed for non-commercial research only).';
   };
 
   const render = (resp) => {
     current = resp; challenge = null; showAll = false;
     $('result').hidden = false;
     $('record-card').hidden = false;
+    if (resp.prediction && resp.prediction.available) { $('cmp-card').hidden = false; resetCompare(); loadTestTable(); }
     $('json').textContent = JSON.stringify(resp, null, 2);
     const det = resp.detection;
     const img = $('display');
@@ -218,18 +233,20 @@
     img.src = resp.processing.images['display.jpg'];
     const p = resp.prediction;
     if (resp.status === 'no_vehicle') {
-      $('summary').textContent = 'No supported vehicle target found. Try a clearer photo with the whole car visible.';
+      $('summary').textContent = 'No car, bus or truck found. Try a clearer photo with the whole vehicle visible.';
     } else if (p.available && p.top5.length) {
       const t = p.top5[0];
       const unver = ['rejected', 'inadequate'].includes(resp.passport && resp.passport.decision_state);
-      $('summary').textContent = (unver ? `Not verified. Best guess ${t.make} ${t.model}, ${t.year} at ${pct(t.score)}` : `${t.make} ${t.model}, ${t.year}: classification score ${pct(t.score)}`) +
-        (det.detector_score != null ? `; detector score ${det.detector_score.toFixed(2)}` : '') + '.';
+      $('summary').textContent = (unver ? 'Vehicle found; identity not verified' : 'Vehicle found') +
+        (det.detector_score != null ? ` · detector confidence ${(100 * det.detector_score).toFixed(0)}%` : '');
     } else {
       $('summary').textContent = `Vehicle detected (detector score ${det.detector_score.toFixed(2)}). ${p.unavailable_reason || ''}`;
     }
     $('caption').textContent = det.classical_proposal
-      ? 'Classical mode: the analyzed region (thick box) comes from the contour-based proposal, not the neural detector. YOLO detections are drawn thin for comparison.'
-      : 'One primary vehicle is analyzed: the largest detected car, bus or truck above the detector threshold (thick box). Other candidates are drawn thin.';
+      ? (det.classical_proposal.fallback
+          ? 'Classical mode: no contour box passed the size and shape filters, so the whole image was analysed. Thin boxes are YOLO detections.'
+          : 'Classical mode: thick box from the contour proposal; thin boxes are YOLO detections.')
+      : 'Thick box: the vehicle analysed (largest one found). Thin boxes: other vehicles.';
     const t = resp.timings;
     const facts = [
       ['Mode', resp.active_mode + (resp.active_mode === resp.production_mode ? ' (Passport production mode)' : ' (comparison mode)')],
@@ -279,6 +296,60 @@
     } finally {
       if (my === generation) analyze.disabled = !file.files.length;
     }
+  });
+
+  // ---------------- Model comparison (same photo through all three modes + saved test results)
+  const MODE_NAMES = { classical: 'Classical', deep: 'Deep', hybrid: 'Hybrid' };
+  let cmpTestLoaded = false;
+  const loadTestTable = async () => {
+    if (cmpTestLoaded) return;
+    try {
+      const b = await (await fetch('/benchmarks')).json();
+      const rep = b.reports[`e2e_test_${b.bundle_id}.json`];
+      if (!rep) { $('cmp-test').replaceChildren(el('tr')); $('cmp-test-cap').textContent = 'Official test results are not available for this build.'; return; }
+      $('cmp-test-cap').textContent = `Official test set (${rep.population.count.toLocaleString('en')} unseen images)`;
+      $('cmp-test').replaceChildren(...['classical', 'deep', 'hybrid'].filter(m => rep.modes[m]).map(m => {
+        const r = rep.modes[m], tr = el('tr');
+        [MODE_NAMES[m], pct(r.end_to_end_top1.value), pct(r.end_to_end_top5.value),
+         r.localization.mean_iou_valid_selected.value.toFixed(3), r.fine_grained_ap.AP50.toFixed(3)].forEach(v => tr.appendChild(el('td', v)));
+        return tr;
+      }));
+      cmpTestLoaded = true;
+    } catch (e) { $('cmp-test-cap').textContent = 'Could not load the saved test results.'; }
+  };
+  const resetCompare = () => {
+    $('cmp-rows').replaceChildren(Object.assign(el('tr'), { innerHTML: '<td colspan="5" class="muted">Not run yet.</td>' }));
+    setStatus($('cmp-status'), '');
+  };
+  $('run-compare').addEventListener('click', async () => {
+    if (!file.files.length) return;
+    const my = generation, btn = $('run-compare');
+    btn.disabled = true;
+    const rows = [];
+    try {
+      for (const m of ['classical', 'deep', 'hybrid']) {
+        setStatus($('cmp-status'), `Running ${MODE_NAMES[m]}...`, 'busy');
+        const fd = new FormData(); fd.append('file', file.files[0]); fd.append('mode', m);
+        const t0 = performance.now();
+        const r = await (await fetch('/predict', { method: 'POST', body: fd })).json();
+        if (my !== generation) return;
+        const tr = el('tr', null, current && current.active_mode === m ? 'active' : '');
+        const p = r.prediction || {}, cp = r.detection && r.detection.classical_proposal;
+        const top = p.available && p.top5 && p.top5.length ? p.top5[0] : null;
+        const st = r.passport && r.passport.decision_state;
+        const answer = r.error ? r.error.message : !top ? 'No vehicle found'
+          : top.name + (['rejected', 'inadequate'].includes(st) ? ' (not verified)' : '');
+        const region = m === 'classical' ? (cp && cp.fallback ? 'whole image (no contour box)' : 'contour proposal')
+          : (r.detection && r.detection.selected_box ? 'YOLO11n box' : 'none');
+        [MODE_NAMES[m], answer, top ? pct(top.score) + (p.calibrated ? ' cal.' : '') : '–', region,
+         `${((performance.now() - t0) / 1000).toFixed(1)} s`].forEach(v => tr.appendChild(el('td', v)));
+        rows.push(tr);
+        $('cmp-rows').replaceChildren(...rows);
+      }
+      setStatus($('cmp-status'), 'Done. The highlighted row is the model shown above.');
+    } catch (e) {
+      if (my === generation) setStatus($('cmp-status'), 'Network error while comparing. Retry.', 'error');
+    } finally { btn.disabled = false; }
   });
 
   // ---------------- Evidence Challenge

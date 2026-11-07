@@ -49,7 +49,9 @@ def test_modes_return_genuine_196_class_output(client, mode):
     for k in ("crop.jpg", "gray.png", "edges.png", "contours.png"):
         assert client.get(imgs[k]).status_code == 200
     if mode == "classical":
-        assert "classical_proposal" in j["detection"]
+        cp = j["detection"]["classical_proposal"]
+        # the app always analyses a region: the contour box, or the whole image when no contour box passes
+        assert cp["box"] is not None and (cp["fallback"] is None) == (cp["state"] == "proposed")
 
 
 @pytest.mark.skipif(not IMG.exists(), reason="dataset not available")

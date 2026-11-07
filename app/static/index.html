@@ -7,7 +7,7 @@
   <meta name="description" content="Upload a car photo: SEMEVIA finds the vehicle, names make, model and year among 196 categories, and shows how much of that answer the evidence supports.">
   <meta name="theme-color" content="#f4f1ea">
   <link rel="icon" type="image/svg+xml" href="/static/brand/favicon.svg?v=7">
-  <link rel="stylesheet" href="/static/style.css?v=7">
+  <link rel="stylesheet" href="/static/style.css?v=9">
 </head>
 <body>
   <header class="masthead">
@@ -31,7 +31,6 @@
   </header>
 
   <main class="wrap">
-    <p id="build-note" class="model-line" hidden></p>
 
     <section class="intake" aria-labelledby="upload-h">
       <div class="intake-main">
@@ -42,10 +41,11 @@
         <form id="form">
           <label class="drop" id="drop">
             <input id="file" name="file" type="file" accept="image/*" required>
+            <img id="drop-thumb" class="drop-thumb" alt="Preview of the chosen photo" hidden>
             <span class="drop-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 8v8M8.5 11.5 12 8l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
-            <span class="drop-text"><strong>Choose or take a photo</strong>, or drop it here</span>
+            <span class="drop-text" id="drop-text"><strong>Choose or take a photo</strong>, or drop it here</span>
             <span class="drop-hint" id="drop-name">JPEG, PNG, WEBP or BMP · up to 10 MB</span>
           </label>
           <fieldset id="modes" class="segmented">
@@ -99,7 +99,7 @@
             </div>
             <p id="caption" class="caption"></p>
           </div>
-          <dl id="facts" class="facts"></dl>
+          <details class="tech"><summary>Technical details</summary><dl id="facts" class="facts"></dl></details>
         </section>
       </div>
 
@@ -128,8 +128,7 @@
         <section id="ref-card" class="panel" hidden aria-labelledby="ref-h">
           <p class="eyebrow">Library</p>
           <h2 id="ref-h">Nearest training references</h2>
-          <p class="muted small">The three nearest of 588 curated training photos (3 per category), by cosine similarity of the
-            model's embedding. Similarity is not a probability, and a neighbour is not proof of identity.</p>
+          <p class="muted small">Most similar training photos by the model's embedding. Similarity is not proof of identity.</p>
           <ol id="refs" class="ranked plain"></ol>
           <p id="ref-note" class="fineprint"></p>
         </section>
@@ -139,8 +138,7 @@
     <section id="challenge-card" class="panel wide" hidden aria-labelledby="ch-h">
       <p class="eyebrow">04 · Evidence Challenge</p>
       <h2 id="ch-h">Which part of the photo is the model relying on?</h2>
-      <p class="muted">Blurs one of six regions of the crop at a time and measures how the margin between the
-        two leading categories changes. This tests the model's sensitivity, not which car part identifies the make.</p>
+      <p class="muted">Blur one of six regions at a time and see how much the lead of the top answer shrinks.</p>
       <button id="run-challenge" type="button" class="primary">Run six-region challenge</button>
       <p id="ch-status" class="status" role="status" aria-live="polite"></p>
       <div id="ch-result" hidden>
@@ -177,8 +175,33 @@
       <dl id="measurements" class="facts cols"></dl>
     </section>
 
+    <section id="cmp-card" class="panel wide" hidden aria-labelledby="cmp-h">
+      <p class="eyebrow">06 · Model comparison</p>
+      <h2 id="cmp-h">Classical vs deep vs hybrid</h2>
+      <p class="muted">Run the same photo through all three models, next to their results on the official test set.</p>
+      <button id="run-compare" type="button" class="primary">Run all three on this photo</button>
+      <p id="cmp-status" class="status" role="status" aria-live="polite"></p>
+      <div class="table-scroll">
+        <table class="ch-table cmp-table">
+          <caption class="muted small">This photo</caption>
+          <thead><tr><th>Model</th><th>Top answer</th><th>Score</th><th>Vehicle region</th><th>Time</th></tr></thead>
+          <tbody id="cmp-rows"><tr><td colspan="5" class="muted">Not run yet.</td></tr></tbody>
+        </table>
+      </div>
+      <div class="table-scroll">
+        <table class="ch-table cmp-table">
+          <caption class="muted small" id="cmp-test-cap">Official test set</caption>
+          <thead><tr><th>Model</th><th>Top-1</th><th>Top-5</th><th>Box IoU</th><th>AP50</th></tr></thead>
+          <tbody id="cmp-test"></tbody>
+        </table>
+      </div>
+      <p class="fineprint">Top-1/top-5 count a hit only when the box overlaps the true car (IoU at least 0.5) and the category is right.
+        Classical finds the car with contours instead of YOLO. Only hybrid is calibrated, so only its score is a calibrated confidence.
+        Values are read from the saved report files (<a class="textlink" href="/benchmarks" target="_blank" rel="noopener">/benchmarks</a>).</p>
+    </section>
+
     <section id="record-card" class="panel wide" hidden aria-labelledby="rec-h">
-      <p class="eyebrow">06 · Record</p>
+      <p class="eyebrow">07 · Record</p>
       <h2 id="rec-h">Reproducibility record</h2>
       <p class="muted">The Passport is a reproducibility record, not a certificate. It contains hashes, not your image.</p>
       <div class="actions">
@@ -195,9 +218,9 @@
   <footer class="foot">
     <div class="wrap foot-row">
       <span id="ready" class="ready">Checking service…</span>
-      <span>Team Hypermetropia · Computer Vision Hackathon 2026 · PS5 · Stanford Cars (196 categories, model years 1991–2012)</span>
+      <span>Team Hypermetropia · Stanford Cars, 196 models (1991–2012)</span>
     </div>
   </footer>
-  <script src="/static/app.js?v=7"></script>
+  <script src="/static/app.js?v=9"></script>
 </body>
 </html>

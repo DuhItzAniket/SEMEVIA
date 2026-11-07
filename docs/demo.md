@@ -21,7 +21,7 @@ Rules for the demo:
 | 1 | Laptop on mains power, lid open, sleep off, online | Windows power settings |
 | 2 | Container and tunnel running | Docker Desktop shows the `semevia-semevia-1` container; the `cloudflared` terminal tab is still open |
 | 3 | Service ready, right bundle | Open `<URL>/readyz`: `"ready": true`, `"recognition": true`, `"calibration_kind": "final"`. The `bundle_id` must equal the bundle in the first lines of `eval_P5_T35.md` (`ft_ckpt_98b1fb55cc6e_5d755416fd`) |
-| 4 | Local fallback works | Open <http://localhost:8000> on the laptop; the footer says "Service ready" |
+| 4 | Local fallback works | Open <http://localhost:8000> on the laptop; the footer says "Online" |
 | 5 | Tabs open in this order | (1) live URL, (2) `eval_P5_T35.md` on GitHub, (3) `docs/architecture.md` on GitHub, (4) <http://localhost:8000> |
 | 6 | Example row visible | Under the upload box the page shows "No photo at hand? Try an example:" with four one-tap buttons (table below) |
 | 7 | Sample photos copied to one folder on the laptop and on the presenter's phone | Table below |
