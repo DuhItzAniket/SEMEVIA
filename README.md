@@ -162,7 +162,7 @@ to `.env`. To retrain or re-run the evaluation, follow [docs/runbook_other_pc.md
 
 If you use SEMEVIA, please cite it as:
 
-> C Lakshanaa and Aniket Kumar (2026). *SEMEVIA: fine-grained vehicle recognition with an Identity Evidence
+> Aniket Kumar and C Lakshanaa (2026). *SEMEVIA: fine-grained vehicle recognition with an Identity Evidence
 > Passport* (Version 1.0.0). Zenodo. <https://doi.org/10.5281/zenodo.24026963>
 
 The project is archived on Zenodo (the DOI above covers all versions; v1.0.0 alone is
@@ -173,8 +173,8 @@ in the sidebar, gives the same citation in APA and BibTeX from [CITATION.cff](CI
 <summary>BibTeX (for LaTeX)</summary>
 
 ```bibtex
-@software{lakshanaa_kumar_2026_semevia,
-  author    = {Lakshanaa, C and Kumar, Aniket},
+@software{kumar_lakshanaa_2026_semevia,
+  author    = {Kumar, Aniket and Lakshanaa, C},
   title     = {SEMEVIA: fine-grained vehicle recognition with an Identity Evidence Passport},
   year      = {2026},
   version   = {1.0.0},
