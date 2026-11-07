@@ -58,10 +58,6 @@ sometimes only the model family (e.g. *Ford F-150*) or just the brand.
 - **Clear messages** for wrong files (not an image, too large, empty) and for photos with no car.
 - **Privacy**: uploaded photos are never saved; they are kept in memory briefly and then deleted.
 
-## Keyboard Shortcuts
-
-There are no special shortcuts. The whole page works with a normal keyboard: **Tab** moves between controls, and
-**Enter** or **Space** presses a button or picks a mode.
 
 ## The Process
 
@@ -96,7 +92,7 @@ Measured on the 8,041 unseen test photos (full details in [eval_P5_T35.md](eval_
 - The classical features on their own are weak at telling 196 similar models apart; the neural network makes
   the big difference.
 
-## What I Learnt
+## What We Learnt
 
 - **Finding a car is easy; telling similar cars apart is hard.** The ready-made detector was enough, and almost
   all the effort went into recognising the model.
