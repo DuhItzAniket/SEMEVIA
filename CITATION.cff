@@ -3,10 +3,10 @@ message: "If you use SEMEVIA, please cite it using the metadata below."
 title: "SEMEVIA: fine-grained vehicle recognition with an Identity Evidence Passport"
 type: software
 authors:
-  - family-names: Kumar
-    given-names: Aniket
   - family-names: Lakshanaa
     given-names: C
+  - family-names: Kumar
+    given-names: Aniket
 version: 1.0.0
 date-released: "2026-11-07"
 doi: 10.5281/zenodo.24026963

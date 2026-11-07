@@ -165,8 +165,8 @@ v1.0.0 is [10.5281/zenodo.24026964](https://doi.org/10.5281/zenodo.24026964)). G
 repository** button uses [CITATION.cff](CITATION.cff).
 
 ```bibtex
-@software{kumar_lakshanaa_2026_semevia,
-  author    = {Kumar, Aniket and Lakshanaa, C},
+@software{lakshanaa_kumar_2026_semevia,
+  author    = {Lakshanaa, C and Kumar, Aniket},
   title     = {SEMEVIA: fine-grained vehicle recognition with an Identity Evidence Passport},
   year      = {2026},
   version   = {1.0.0},
