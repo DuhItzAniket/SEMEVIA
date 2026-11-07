@@ -18,12 +18,12 @@
   "modified": "resized"
  },
  {
-  "key": "bus",
-  "label": "Unsupported: bus",
-  "file": "bus.jpg",
-  "source": "https://commons.wikimedia.org/wiki/File:AMU_public_bus_-_Ariano_Irpino.jpg",
-  "license": "CC BY 4.0",
-  "author": "ALC",
+  "key": "kia_ev6",
+  "label": "Unsupported: 2021 Kia EV6",
+  "file": "kia_ev6.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Kia_EV6_GT-Line_Snow_White_Pearl_-_front.jpg",
+  "license": "CC BY-SA 4.0",
+  "author": "Ethan Llamas",
   "modified": "resized"
  },
  {

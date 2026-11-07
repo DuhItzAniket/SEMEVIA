@@ -57,9 +57,10 @@ def main() -> None:
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     clear_car = DATA / "cars_test" / "00957.jpg"      # Audi R8 Coupe 2012: one category in the candidate set
-    family_car = DATA / "cars_test" / "05245.jpg"     # Ford F-150 Regular Cab: only the family is supported
+    family_car = DATA / "cars_test" / "06207.jpg"     # Dodge Caliber Wagon: two model years remain (r3)
     bus = NEG / "tune" / "uv_tune_01.jpg"             # CC BY 4.0, ALC, Wikimedia Commons
     moto = NEG / "tune" / "tw_tune_03.jpg"            # CC BY-SA 4.0, Terragio67, Wikimedia Commons
+    kia = NEG / "tune" / "uc_tune_01.jpg"             # CC BY-SA 4.0, Ethan Llamas, Wikimedia Commons
 
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -86,7 +87,7 @@ def main() -> None:
             hold(1.2)
 
         card("SEMEVIA", "Vehicle identity through evidence",
-             "Team Hypermetropia (T35) · Computer Vision Hackathon 2026 · Problem statement PS5", 5)
+             "Team Hypermetropia (T35) - Computer Vision Hackathon 2026 - Problem statement PS5", 5)
 
         pg.goto(a.url, wait_until="networkidle")
         pg.wait_for_function("document.getElementById('ready').textContent.includes('ready')", timeout=60000)
@@ -98,11 +99,11 @@ def main() -> None:
         scroll_to("#result", 3)
         cap("Best guess and Top-5: make, model and year among 196 categories. Detector and classifier scores are separate.")
         scroll_to("#pred-card", 4)
-        cap("Identity Evidence Passport: a calibrated candidate set. Here exactly one category is supported.")
+        cap("Identity Evidence Passport, a calibrated candidate set: " + pg.locator("#pp-state").inner_text().strip())
         scroll_to("#passport-card", 5)
 
         analyze(family_car)
-        cap("A harder photo: two model years remain, so the Passport commits only to the family.")
+        cap("A harder photo. Passport: " + pg.locator("#pp-state").inner_text().strip())
         scroll_to("#passport-card", 5)
         if pg.locator("#show-all").is_visible():
             pg.locator("#show-all").click()
@@ -125,15 +126,30 @@ def main() -> None:
         cap("Classical computer vision, shown for every upload: crop, grayscale, Canny edges, contours, geometry.")
         scroll_to("#proc-card", 5)
 
+        def outcome() -> str:
+            """Caption text for what the app actually decided (never assumed)."""
+            if pg.locator("#passport-card").is_visible():
+                state = pg.locator("#pp-state").inner_text().strip()
+                if state.lower().startswith("one category"):
+                    return f"Accepted as a car identity: '{state}'"
+                return f"No identity accepted: '{state}'"
+            return "No supported vehicle detected: no identity claimed."
+
         analyze(moto)
-        cap("Unsupported input 1: a motorcycle (Wikimedia Commons, CC BY-SA 4.0, Terragio67). No supported vehicle: no identity claimed.")
+        cap("Unsupported input: a motorcycle (Wikimedia Commons, CC BY-SA 4.0, Terragio67). " + outcome())
         scroll_to("#result", 5)
 
+        analyze(kia)
+        cap("Unsupported input: a 2021 Kia EV6, newer than every Stanford Cars class (Wikimedia Commons, CC BY-SA 4.0, Ethan Llamas).")
+        scroll_to("#passport-card", 3)
+        cap(outcome())
+        hold(4)
+
         analyze(bus)
-        cap("Unsupported input 2: a city bus (Wikimedia Commons, CC BY 4.0, ALC). It looks like a van to the classifier...")
-        scroll_to("#pred-card", 4)
-        cap("...but the Passport refuses to name an identity: two different makes remain. Evidence, not a guess.")
-        scroll_to("#passport-card", 5)
+        cap("Known failure, shown on purpose: a city bus (Wikimedia Commons, CC BY 4.0, ALC). " + outcome())
+        scroll_to("#passport-card", 4)
+        cap("Softmax rejection is not an open-set detector; false acceptance on 40 held-out negatives is reported in the eval file.")
+        hold(4)
 
         cap("")
         pg.goto(f"{a.repo}/eval_P5_T35.md", wait_until="domcontentloaded")
@@ -152,7 +168,7 @@ def main() -> None:
         pg.evaluate('window.scrollBy({top: 900, behavior: \"smooth\"})')
         hold(5)
         cap("")
-        card("SEMEVIA", "github.com/DuhItzAniket/SEMEVIA", "Team Hypermetropia · Aniket Kumar · C Lakshanaa", 5)
+        card("SEMEVIA", "github.com/DuhItzAniket/SEMEVIA", "Team Hypermetropia - Aniket Kumar - C Lakshanaa", 5)
 
         video = pg.video.path()
         ctx.close()
