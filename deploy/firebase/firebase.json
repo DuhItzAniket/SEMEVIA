@@ -1,0 +1,9 @@
+{
+  "hosting": {
+    "public": "public",
+    "ignore": ["**/.*", "README.md"],
+    "rewrites": [
+      { "source": "**", "run": { "serviceId": "semevia", "region": "asia-south1" } }
+    ]
+  }
+}

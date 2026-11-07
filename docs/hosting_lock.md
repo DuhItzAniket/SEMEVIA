@@ -1,7 +1,19 @@
 # Hosting lock
 
-Status on 2026-11-07: **live at <https://semevia-298534486429.asia-south1.run.app>** on Google Cloud Run. It no
-longer depends on the team laptop.
+Status on 2026-11-07: **live at <https://semevia.web.app>** (also <https://semevia.firebaseapp.com>), Firebase
+Hosting in front of the Google Cloud Run service whose direct address is
+<https://semevia-298534486429.asia-south1.run.app>. It no longer depends on the team laptop.
+
+## Short address (Firebase Hosting)
+
+* Firebase was added to the same Google Cloud project (`semevia`); its default Hosting site `semevia` serves
+  `semevia.web.app`. `deploy/firebase/firebase.json` forwards every path to the Cloud Run service `semevia` in
+  `asia-south1`; nothing is served from Firebase itself (`deploy/firebase/public/` is empty).
+* Firebase Hosting limits a request to 60 seconds (a prediction takes about a second). The extra hop adds some
+  latency compared with the direct address; both are measured with `scripts/check_release.py` (the current
+  [reports/release_acceptance.json](../reports/release_acceptance.json) is for the address named in its `url`).
+* Redeploy the forwarding rule only if it changes (`deploy/firebase/README.md`); a new Cloud Run revision is picked
+  up automatically.
 
 ## What runs where
 

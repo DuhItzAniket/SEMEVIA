@@ -6,7 +6,7 @@
 Upload a photo of a car. SEMEVIA tells you its make, model and year, and how sure it really is.</p>
 
 <p align="center">
-<a href="https://semevia-298534486429.asia-south1.run.app"><img src="https://img.shields.io/badge/demo-live-brightgreen?logo=googlecloud&logoColor=white" alt="Live demo"></a>
+<a href="https://semevia.web.app"><img src="https://img.shields.io/badge/demo-live-brightgreen?logo=googlecloud&logoColor=white" alt="Live demo"></a>
 <a href="https://github.com/DuhItzAniket/SEMEVIA/actions/workflows/ci.yml"><img src="https://github.com/DuhItzAniket/SEMEVIA/actions/workflows/ci.yml/badge.svg?branch=semevia/implementation" alt="CI"></a>
 <a href="https://doi.org/10.5281/zenodo.24026963"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.24026963.svg" alt="DOI 10.5281/zenodo.24026963"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0"></a>
@@ -23,7 +23,7 @@ Upload a photo of a car. SEMEVIA tells you its make, model and year, and how sur
 </p>
 
 <p align="center">
-<a href="https://semevia-298534486429.asia-south1.run.app"><b>Try it live</b></a> ·
+<a href="https://semevia.web.app"><b>Try it live</b></a> ·
 <a href="eval_P5_T35.md">Results</a> ·
 <a href="#video-showing-it-live">Demo video</a>
 </p>
@@ -39,7 +39,7 @@ You give it a photo. It finds the car, names it among **196 car models** from th
 always claiming one exact answer, it says what the photo actually supports. Sometimes that is the exact model;
 sometimes only the model family or just the brand.
 
-**Live app:** <https://semevia-298534486429.asia-south1.run.app>
+**Live app:** <https://semevia.web.app> (direct Cloud Run address: <https://semevia-298534486429.asia-south1.run.app>)
 
 
 ## Technologies Used

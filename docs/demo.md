@@ -1,6 +1,6 @@
 # Three-minute demo script
 
-Live URL: <https://semevia-298534486429.asia-south1.run.app>
+Live URL: <https://semevia.web.app> (direct Cloud Run address: <https://semevia-298534486429.asia-south1.run.app>)
 (Google Cloud Run service `semevia`, region `asia-south1`, running the release image; it does not depend on the team
 laptop. See [hosting_lock.md](hosting_lock.md). Until 2026-11-07 the demo ran through a Cloudflare quick tunnel to
 the laptop.)
@@ -26,7 +26,7 @@ Rules for the demo:
 |---|---|---|
 | 1 | Laptop on mains power, lid open, sleep off, online (it shows the tabs and runs the local fallback) | Windows power settings |
 | 2 | Local fallback container running | Docker Desktop shows the `semevia-semevia-1` container (if not: `docker compose up -d`). There is no tunnel to keep alive; the public URL runs on Cloud Run |
-| 3 | Cloud Run service ready, right bundle | Open <https://semevia-298534486429.asia-south1.run.app/readyz>: `"ready": true`, `"recognition": true`, `"calibration_kind": "final"`. The `bundle_id` must equal the bundle in the first lines of `eval_P5_T35.md` (`ft_ckpt_98b1fb55cc6e_f3734d4f40`). Also `"head_runtime"` shows `"hybrid": "onnx_int8"`, `"encoder_precision": "fp32"` and `"model_fingerprint": "2ef1643c29b6"` (`NEXT.md`, r3-int8 record) |
+| 3 | Cloud Run service ready, right bundle | Open <https://semevia.web.app/readyz>: `"ready": true`, `"recognition": true`, `"calibration_kind": "final"`. The `bundle_id` must equal the bundle in the first lines of `eval_P5_T35.md` (`ft_ckpt_98b1fb55cc6e_f3734d4f40`). Also `"head_runtime"` shows `"hybrid": "onnx_int8"`, `"encoder_precision": "fp32"` and `"model_fingerprint": "2ef1643c29b6"` (`NEXT.md`, r3-int8 record) |
 | 4 | Local fallback works | Open <http://localhost:8000> on the laptop; the footer says "Online" |
 | 5 | Tabs open in this order | (1) live URL, (2) `eval_P5_T35.md` on GitHub, (3) `docs/architecture.md` on GitHub, (4) <http://localhost:8000> |
 | 6 | Example row visible | Next to the upload box the page shows "No photo at hand? Try one" with four one-tap buttons (table below) |
@@ -35,7 +35,7 @@ Rules for the demo:
 | 9 | One warm-up upload done on the live URL and on localhost | The first request after a restart or redeploy can be slower |
 
 The URL does not change on redeploy. If the service was redeployed, rerun
-`scripts/check_release.py --url https://semevia-298534486429.asia-south1.run.app` and check 3 again (see [hosting_lock.md](hosting_lock.md)).
+`scripts/check_release.py --url https://semevia.web.app` and check 3 again (see [hosting_lock.md](hosting_lock.md)).
 
 ## Photos to keep ready
 
@@ -128,7 +128,7 @@ flowchart TD
 * **Cloud Run URL down, laptop fine**: demo on <http://localhost:8000> on the laptop. It is the same image and
   bundle, so the demo is unchanged. Say that the public URL is down and the demo runs on the local container. After
   judging, check the `semevia` service in project `semevia` (region `asia-south1`) and rerun
-  `scripts/check_release.py --url https://semevia-298534486429.asia-south1.run.app`.
+  `scripts/check_release.py --url https://semevia.web.app`.
 * **Container stopped**: `docker compose up -d` in `C:\Users\Luikz\Downloads\SEMEVIA` (the image is already built;
   readiness waits for a real warm-up of every mode). Check `http://localhost:8000/readyz`.
 * **Laptop unusable**: the live URL does not need the laptop; open it on the phone or any other device. If it is

@@ -1,0 +1,1 @@
+This folder is intentionally empty: every request is forwarded to Cloud Run (see ../firebase.json).

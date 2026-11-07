@@ -5,8 +5,9 @@
   served as row-wise ONNX INT8 (PS5 4.6 now met). Results in `eval_P5_T35.md` (r1, r2, r3 FP32 listed as superseded).
   INT8 vs FP32 on the same test images (`reports/int8_vs_fp32_test_ft_ckpt_98b1fb55cc6e_f3734d4f40.json`): hybrid
   end-to-end top-1 91.80% vs 91.82%. Zenodo DOI 10.5281/zenodo.24026963 (v1.0.0, r3 FP32).
-* **Hosting: Google Cloud Run** at <https://semevia-298534486429.asia-south1.run.app> (project `semevia`, region asia-south1, one warm instance;
-  `docs/hosting_lock.md`). Acceptance passed on that URL (2026-11-07T05:34 UTC, `reports/release_acceptance.json`).
+* **Hosting: <https://semevia.web.app>** (Firebase Hosting in front of Google Cloud Run; direct address <https://semevia-298534486429.asia-south1.run.app>; project
+  `semevia`, region asia-south1, one warm instance;
+  `docs/hosting_lock.md`). Acceptance passed on https://semevia.web.app (2026-11-07T06:12 UTC, `reports/release_acceptance.json`).
   The laptop and the Cloudflare tunnel are no longer needed. After judging, set `--min-instances 0` to save credit.
 * **Commits today:** cf2b69e (UI fixes, comparison panel), b85ddae (r3-int8 decision record), 5b0961a (INT8
   implementation, checks passed before the test run), 2e55498 (r3-int8 test results), then docs and hosting.

@@ -33,7 +33,7 @@ Goals:
    **Evidence Challenge**, which lets a user see how the model's lead between its top two answers
    changes when one part of the crop is blurred.
 4. A public demo that answers a fresh upload within about ten seconds (target). Status: live at
-   <https://semevia-298534486429.asia-south1.run.app> (section 8); measured latency through the
+   <https://semevia.web.app> (section 8); measured latency through the
    public URL is in [reports/release_acceptance.json](../reports/release_acceptance.json).
 
 Non-goals: number-plate reading, tracking, VIN or build-date checks, and vehicles outside the 196 classes
@@ -623,7 +623,7 @@ Figures for the report are drawn from the saved report files by `scripts/make_fi
   never downloads; the container also reaches ready with `--network none`
   ([reports/container_check.json](../reports/container_check.json)).
 * **Where:** **Google Cloud Run**, service `semevia` in project `semevia`, region `asia-south1`, at
-  <https://semevia-298534486429.asia-south1.run.app>. The image is built locally with `docker compose build`
+  <https://semevia-298534486429.asia-south1.run.app>, with Firebase Hosting in front for the short public address <https://semevia.web.app>. The image is built locally with `docker compose build`
   (it fetches the `model-v3` files, rebuilds the INT8 head and runs `check-derived`) and pushed to Artifact
   Registry as `asia-south1-docker.pkg.dev/semevia/semevia/semevia:r3-int8`. Settings: 2 CPUs, 4 GiB, minimum 1
   and maximum 2 instances, 8 concurrent requests per instance, 300 s timeout, startup CPU boost, public access.

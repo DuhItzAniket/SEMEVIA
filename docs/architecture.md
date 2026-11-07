@@ -85,7 +85,7 @@ flowchart LR
     BLD["Local build: docker compose build<br/>(local fallback: docker compose up on the<br/>team laptop, http://localhost:8000)"]
     GH["GitHub Release model-v*<br/>backbone, heads, reference index<br/>(INT8 hybrid head is derived, not uploaded)"]
     UL["Ultralytics assets release<br/>yolo11n.pt"]
-    U -- "HTTPS: GET /, POST /predict,<br/>POST /challenge, GET /request-image<br/>https://semevia-298534486429.asia-south1.run.app" --> C
+    U -- "HTTPS: GET /, POST /predict,<br/>POST /challenge, GET /request-image<br/>https://semevia.web.app (Firebase Hosting rewrite)<br/>or https://semevia-298534486429.asia-south1.run.app" --> C
     GH -. "build time only:<br/>python -m src.release fetch<br/>SHA256-checked; INT8 head rebuilt<br/>and checked by check-derived" .-> BLD
     UL -. "build time only" .-> BLD
     BLD -. "docker push" .-> AR
@@ -101,7 +101,8 @@ flowchart LR
   URL because it is stored in Git (`"in_git": true`). `head_hybrid_int8.onnx` has no URL either: its manifest
   entry names `derived_from: head_hybrid.joblib` with that file's sha256 and the build recipe, and
   `src/release.py: fetch` rebuilds it from the verified joblib.
-* The public app runs on Google Cloud Run at <https://semevia-298534486429.asia-south1.run.app>. It no longer
+* The public app runs on Google Cloud Run at <https://semevia-298534486429.asia-south1.run.app>; Firebase Hosting forwards the short address
+  <https://semevia.web.app> to it (`deploy/firebase/firebase.json`, 60-second request limit). It no longer
   depends on the team laptop, and the URL stays the same across redeploys. One minimum instance keeps the models
   loaded. Hosting details, the redeploy steps and the options considered are in
   [docs/hosting_lock.md](hosting_lock.md). Until 2026-11-07 the app was served from the team laptop through a

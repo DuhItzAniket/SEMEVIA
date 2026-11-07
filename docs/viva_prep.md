@@ -472,10 +472,10 @@ fine-grained classifier is expected to fail.
   bundle and verifying every SHA256 (tests that need Stanford Cars images skip themselves; the dataset is not
   redistributed); (2) the Docker image built from a clean checkout, started with **no network**, must report
   ready with recognition on.
-* Public URL: <https://semevia-298534486429.asia-south1.run.app>, a Cloudflare quick tunnel to the
-  release container on the team laptop. Hugging Face Docker Spaces asked for payment, so we used the tunnel
-  (`docs/hosting_lock.md`). The URL works only while the laptop, Docker and `cloudflared` run, and changes if the
-  tunnel restarts. Live checks, re-run on r3-int8 after the redeploy (both files name bundle
+* Public URL: <https://semevia.web.app>: Firebase Hosting in front of the Google Cloud Run service (direct address
+  <https://semevia-298534486429.asia-south1.run.app>; `docs/hosting_lock.md`). It does not depend on the team laptop. Until 2026-11-07 the app was
+  served from the laptop through a Cloudflare quick tunnel, because Hugging Face Docker Spaces asked for payment.
+  Live checks, re-run on r3-int8 after the redeploy (both files name bundle
   `ft_ckpt_98b1fb55cc6e_f3734d4f40`): `reports/release_acceptance.json` (`scripts/check_release.py`) and
   `reports/container_check.json`.
 * Endpoints: `/healthz`, `/readyz`, `/predict`, `/challenge`, `/benchmarks`, `/request-image/...`; contract in
