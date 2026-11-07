@@ -1,5 +1,7 @@
 <p align="center"><img src="docs/assets/semevia-banner.svg" alt="SEMEVIA: vehicle identity through evidence" width="100%"></p>
 
+<p align="center"><a href="https://doi.org/10.5281/zenodo.24026963"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.24026963.svg" alt="DOI 10.5281/zenodo.24026963"></a></p>
+
 # SEMEVIA
 
 **Vehicle identity through evidence.** SEMEVIA recognises the make, model and year of a car in a photo
@@ -336,8 +338,9 @@ Open limitations are also tracked as GitHub issues #1-#5 in the
 * **Licences:** code under [AGPL-3.0](LICENSE) (compatible with Ultralytics); trained model files (GitHub Releases
   `model-v1` to `model-v3`) under CC BY-NC 4.0 because Stanford Cars is non-commercial; reports, figures and docs
   under CC BY 4.0. Details and third-party material: [LICENSE-MODELS.md](LICENSE-MODELS.md).
-* **Citation:** [CITATION.cff](CITATION.cff) (GitHub shows a "Cite this repository" button); `.zenodo.json` holds
-  the metadata for a Zenodo DOI once the team enables the Zenodo GitHub integration.
+* **Citation:** archived on Zenodo, DOI [10.5281/zenodo.24026963](https://doi.org/10.5281/zenodo.24026963) (all
+  versions; v1.0.0 is [10.5281/zenodo.24026964](https://doi.org/10.5281/zenodo.24026964)). [CITATION.cff](CITATION.cff)
+  powers GitHub's "Cite this repository" button; `.zenodo.json` holds the Zenodo metadata.
 
 ## Team and submission
 

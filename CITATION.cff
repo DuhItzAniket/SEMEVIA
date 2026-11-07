@@ -9,6 +9,7 @@ authors:
     given-names: C
 version: 1.0.0
 date-released: "2026-11-07"
+doi: 10.5281/zenodo.24026963
 license: AGPL-3.0-only
 repository-code: "https://github.com/DuhItzAniket/SEMEVIA"
 abstract: >-
